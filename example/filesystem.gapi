@@ -1,0 +1,280 @@
+schema filesystem
+
+alias ErrUnauth = None
+alias ErrNotFound = None
+alias ErrUserNotFound = None
+alias ErrDestinationNotFound = None
+alias ErrInvalidInput = String
+alias ErrNameReserved = None
+alias ErrSkippedChunk = None
+alias ErrOutOfBound = None
+
+alias UserID = ID
+alias FileID = ID
+alias CollectionID = ID
+
+resolver User {
+	id       ID
+	name     String
+	home     Directory
+	trash    Directory
+	sessions []Session
+}
+
+enum DirectoryType {
+	home
+	trash
+}
+
+resolver Directory {
+	type        DirectoryType
+	owner       User
+	size        Uint64
+	files       []File
+	collections []Collection
+	objects     []Object
+}
+
+struct Access {
+	users User
+	since Time
+}
+
+resolver ObjectInfo {
+	id       ID
+	name     String
+	creation Time
+	owner    User
+	parent   Parent
+	access   []Access
+	tags     []String
+}
+
+trait Object {
+	object ObjectInfo
+	access []Access
+}
+
+union Parent {
+	Collection
+	Directory
+}
+
+resolver Collection {
+	object      ObjectInfo
+	size        Uint64
+	files       []File
+	collections []Directory
+	objects     []Object
+}
+
+resolver File {
+	object    ObjectInfo
+	mimeType  String
+	bodySize  Uint64
+	uploading Bool
+	body(
+		offset Uint64,
+		length Uint64,
+	) []Byte
+}
+
+resolver Session {
+	user     User
+	creation Time
+	ip       String
+	agent    String
+}
+
+union Destination {
+	CollectionID
+	UserID
+}
+
+query user(id ID) ?User
+
+query file(id ID) ?File
+
+union QrCollection {
+	Collection
+	ErrUnauth
+}
+
+query collection(id ID) ?QrCollection
+
+union ResSetup {
+	User
+	ErrUnauth
+	ErrInvalidInput
+}
+
+mutation setup(
+	setupCode String,
+	adminName String,
+	adminPassword String,
+) ResSetup
+
+union ResAuth {
+	Session
+	ErrUnauth
+}
+
+mutation auth(sessionId String) ResAuth
+
+union ResCreateSession {
+	Session
+	ErrUnauth
+}
+
+mutation createSession(
+	name String,
+	password String,
+) ResCreateSession
+
+mutation closeSession(sessionId String) ?ErrUnauth
+mutation closeAllSessions(userId UserID) ?ErrUnauth
+
+union ResCreateUser {
+	User
+	ErrUnauth
+	ErrNameReserved
+}
+
+mutation createUser(
+	name String,
+	password String,
+) ResCreateUser
+
+union ResEditUser {
+	User
+	ErrUnauth
+	ErrInvalidInput
+}
+
+mutation editUser(
+	name ?String,
+	password ?String,
+) ResEditUser
+
+union ResCreateFile {
+	File
+	ErrUnauth
+	ErrInvalidInput
+	ErrNameReserved
+}
+
+mutation createFile(
+	destination Destination,
+	name String,
+) ResCreateFile
+
+union ResUploadChunk {
+	File
+	ErrUnauth
+	ErrNotFound
+	ErrSkippedChunk
+	ErrOutOfBound
+}
+
+mutation uploadChunk(
+	id FileID,
+	offset Uint64,
+	chunk []Byte,
+) ResUploadChunk
+
+union ResCreateCollection {
+	Collection
+	ErrUnauth
+	ErrInvalidInput
+	ErrNameReserved
+}
+
+mutation createCollection(
+	destination Destination,
+	name String,
+) ResCreateCollection
+
+union ResMoveCollection {
+	Collection
+	ErrUnauth
+	ErrNotFound
+	ErrDestinationNotFound
+}
+
+mutation moveCollection(
+	id CollectionID,
+	destination Destination,
+) ResMoveCollection
+
+union ResMoveFile {
+	Collection
+	ErrUnauth
+	ErrNotFound
+	ErrDestinationNotFound
+}
+
+mutation moveFile(
+	id FileID,
+	destination Destination,
+) ResMoveFile
+
+mutation setTags(objectId ID, newTags []String) Object
+
+union ResRename {
+	ErrUnauth
+	ErrNotFound
+}
+
+mutation rename(objectId ID, newName String) ResRename
+
+union ResRemoveFile {
+	ErrUnauth
+	ErrNotFound
+}
+
+mutation removeFile(id FileID) ?ResRemoveFile
+
+union ResRemoveCollection {
+	ErrUnauth
+	ErrNotFound
+}
+
+mutation removeCollection(
+	id CollectionID,
+	recursively Bool,
+) ?ResRemoveCollection
+
+union ResShare {
+	ErrUnauth
+	ErrNotFound
+	ErrUserNotFound
+}
+
+mutation share(
+	objectId ID,
+	user UserID,
+	message ?String,
+) ?ResShare
+
+union ResRevokeShare {
+	ErrUnauth
+	ErrNotFound
+	ErrUserNotFound
+}
+
+mutation revokeShare(
+	objectId ID,
+	user UserID,
+) ?ResRevokeShare
+
+subscription objectCreated(in ?Destination) Object
+
+subscription objectRemoved(from ?Destination) Object
+
+resolver ShareReceived {
+	object  Object
+	from    User
+	message ?String
+}
+
+subscription shareReceived ShareReceived

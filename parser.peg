@@ -1,0 +1,57 @@
+package main
+
+type GAPIParser Peg {
+
+}
+
+Schema <- DclSchema (SpVr (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / DclQr / DclMt / DclSb))+ SpOpt !.
+
+DclSchema <- KSCM SpLn WdLowCase
+
+DclAl <- TpName SpLn OEQ SpLn TpName
+DclEn <- KEN SpLn TpName SpLnOpt BlkEn
+DclSt <- KST SpLn TpName SpLnOpt BlkSt
+DclRv <- KRV SpLn TpName SpLnOpt BlkRv
+DclTr <- KTR SpLn TpName SpLnOpt BlkRv
+DclUn <- KUN SpLn TpName SpLnOpt BlkUn
+DclQr <- KQR SpLn WdLowCase SpLnOpt (Args)? SpLnOpt Tp
+DclMt <- KMT SpLn WdLowCase SpLnOpt (Args)? SpLnOpt Tp
+DclSb <- KSB SpLn WdLowCase SpLnOpt (Args)? SpLnOpt Tp
+BlkEn <- BLK SpOpt WdLowCase+ SpOpt BLKE
+BlkSt <- BLK SpOpt PropSt+ SpOpt BLKE
+BlkRv <- BLK SpOpt PropRv+ SpOpt BLKE
+BlkUn <- BLK SpOpt TpName+ SpOpt BLKE
+PropSt <- WdLowCase SpLn Tp
+PropRv <- WdLowCase SpLn (Args)? Tp
+
+Args <- PRN SpOpt (WdLowCase Tp ',')+ SpOpt PRNE
+
+Tp <- TpName / TpNullable / TpList
+TpNullable <- '?' Tp
+TpList <- '[]' Tp
+
+TpName <- [A-Z]([a-zA-Z0-9]*)?
+
+WdLowCase <- [a-z]([a-zA-Z0-9]*)?
+
+SpLn <- (' ' / '\t')+
+SpOpt <- (SpLn / '\n')*
+SpLnOpt <- (' ' / '\t')*
+SpVr <- '\n'+
+
+OEQ <- '='
+
+KSCM <- 'schema'
+KEN <- 'enum'
+KST <- 'struct'
+KRV <- 'resolver'
+KTR <- 'trait'
+KUN <- 'union'
+KQR <- 'query'
+KMT <- 'mutation'
+KSB <- 'subscription'
+
+PRN <- '('
+PRNE <- ')'
+BLK <- '{'
+BLKE <- '}'
