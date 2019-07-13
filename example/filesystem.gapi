@@ -9,6 +9,7 @@ alias ErrNameReserved = None
 alias ErrSkippedChunk = None
 alias ErrOutOfBound = None
 
+alias ID = String
 alias UserID = ID
 alias FileID = ID
 alias CollectionID = ID
