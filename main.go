@@ -4,6 +4,8 @@ import (
 	"flag"
 	"io/ioutil"
 	"log"
+
+	"github.com/romshark/gapi/compiler"
 )
 
 var schemaFilePath = flag.String("schema", "", "schema file path")
@@ -16,23 +18,24 @@ func main() {
 		log.Fatal("missing schema file path (use -schema)")
 	}
 
-	// load schema file
+	// Load schema file
 	fileContents, err := ioutil.ReadFile(*schemaFilePath)
 	if err != nil {
 		log.Fatalf("reading file: %s", err)
 	}
 
-	parser := GAPIParser{
-		Buffer: string(fileContents),
+	// Initialize compiler
+	compiler, err := compiler.NewCompiler()
+	if err != nil {
+		log.Fatalf("compiler init: %s", err)
 	}
 
-	if err := parser.Init(); err != nil {
-		log.Fatalf("parser initialization: %s", err)
+	// Compile
+	ast, err := compiler.Compile(string(fileContents))
+	if err != nil {
+		log.Fatalf("compiler: %s", err)
 	}
 
-	if err := parser.Parse(); err != nil {
-		log.Fatalf("parser: %s", err)
-	}
-
-	log.Print("SUCCESS: ", parser.Tokens())
+	log.Print("SUCCESS: ", ast)
+	log.Print("SCHEMA NAME: ", ast.SchemaName)
 }
