@@ -385,11 +385,14 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 
 	_rules = [...]func() bool{
 		nil,
-		/* 0 Schema <- <(DclSc (SpVr+ (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / DclQr / DclMt / DclSb))+ SpOpt)> */
+		/* 0 Schema <- <(SpOpt DclSc (SpVr+ (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / DclQr / DclMt / DclSb))+ SpOpt)> */
 		func() bool {
 			position0, tokenIndex0 := position, tokenIndex
 			{
 				position1 := position
+				if !_rules[ruleSpOpt]() {
+					goto l0
+				}
 				if !_rules[ruleDclSc]() {
 					goto l0
 				}

@@ -4,7 +4,7 @@ type GAPIParser Peg {
 
 }
 
-Schema <- DclSc (SpVr+ (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / DclQr / DclMt / DclSb))+ SpOpt
+Schema <- SpOpt DclSc (SpVr+ (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / DclQr / DclMt / DclSb))+ SpOpt
 
 DclSc <- KSC SpLn WdLowCase
 DclAl <- KAL SpLn TpName SpLn OEQ SpLn TpName

@@ -97,10 +97,15 @@ func (c *Compiler) Compile(src string) (*AST, error) {
 	}
 
 	// Extract schema name
-	ast.SchemaName = getSrc(src, root.up.up.next.next)
+	current := root.up
+	if current.pegRule == ruleSpOpt {
+		// Ignore space before schema declaration
+		current = current.next
+	}
+	ast.SchemaName = getSrc(src, current.up.next.next)
 
 	// Read all declarations
-	current := root.up
+	current = root.up
 	var handler func(src string, ast *AST, node *node32) error
 	for ; current != nil; current = current.next {
 		switch current.pegRule {
