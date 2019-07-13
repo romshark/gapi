@@ -60,11 +60,25 @@ func TestDeclAliasTypes(t *testing.T) {
 
 		require.Equal(t, "T1", t1.Name())
 		require.Equal(t, compiler.TypeCategoryAlias, t1.Category())
+		require.IsType(t, &compiler.TypeAlias{}, t1)
+		require.Equal(
+			t,
+			compiler.TypeStdString{},
+			t1.(*compiler.TypeAlias).AliasedType,
+		)
 
 		require.Equal(t, "T2", t2.Name())
 		require.Equal(t, compiler.TypeCategoryAlias, t2.Category())
+		require.IsType(t, &compiler.TypeAlias{}, t2)
+		require.Equal(
+			t,
+			compiler.TypeStdUint32{},
+			t2.(*compiler.TypeAlias).AliasedType,
+		)
 
 		require.Equal(t, "T3", t3.Name())
 		require.Equal(t, compiler.TypeCategoryAlias, t3.Category())
+		require.IsType(t, &compiler.TypeAlias{}, t3)
+		require.Equal(t, t1, t3.(*compiler.TypeAlias).AliasedType)
 	})
 }

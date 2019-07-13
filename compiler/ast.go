@@ -10,12 +10,11 @@ type AST struct {
 	SchemaName     string
 }
 
-func (ast *AST) isTypeNameDefined(name string) bool {
-	if isStandardTypeName(name) {
-		return true
+func (ast *AST) typeByName(name string) Type {
+	if t := stdTypeByName(name); t != nil {
+		return t
 	}
-	_, defined := ast.Types[name]
-	return defined
+	return ast.Types[name]
 }
 
 // defineType returns an error if the type name is already reserved
@@ -23,7 +22,7 @@ func (ast *AST) defineType(newType Type) error {
 	// Check for collisions with reserved standard types
 	srcNode := newType.Src()
 	name := newType.Name()
-	if isStandardTypeName(name) {
+	if stdTypeByName(name) != nil {
 		return errors.Errorf(
 			"Redeclaration of type %s at %d:%d (reserved standard type)",
 			name,

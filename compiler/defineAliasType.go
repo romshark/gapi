@@ -10,19 +10,22 @@ func (c *Compiler) defineAliasType(
 	typeName := getSrc(source, node.up.next.next)
 	aliasedTypeName := getSrc(source, node.up.next.next.next.next.next.next)
 
-	// Try to define the type
-	if err := ast.defineType(&TypeAlias{
+	newType := &TypeAlias{
 		typeBaseInfo: typeBaseInfo{
 			src:  src(node),
 			name: typeName,
 		},
-	}); err != nil {
+	}
+
+	// Try to define the type
+	if err := ast.defineType(newType); err != nil {
 		return err
 	}
 
 	c.deferJob(func() error {
 		// Ensure the aliased type exists after all types have been defined
-		if !ast.isTypeNameDefined(aliasedTypeName) {
+		aliasedType := ast.typeByName(aliasedTypeName)
+		if aliasedType == nil {
 			return errors.Errorf(
 				"undefined type %s aliased by %s at %d:%d",
 				aliasedTypeName,
@@ -31,6 +34,10 @@ func (c *Compiler) defineAliasType(
 				node.end,
 			)
 		}
+
+		// Reference the aliased type
+		newType.AliasedType = aliasedType
+
 		return nil
 	})
 

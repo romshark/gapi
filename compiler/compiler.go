@@ -35,22 +35,31 @@ type Mutation struct {
 	Type Type
 }
 
-func isStandardTypeName(name string) bool {
+func stdTypeByName(name string) Type {
 	switch name {
 	case "None":
+		return TypeStdNone{}
 	case "Bool":
+		return TypeStdBool{}
 	case "Byte":
+		return TypeStdByte{}
 	case "Int32":
+		return TypeStdInt32{}
 	case "Uint32":
+		return TypeStdUint32{}
 	case "Int64":
+		return TypeStdInt64{}
 	case "Uint64":
+		return TypeStdUint64{}
 	case "Float64":
+		return TypeStdFloat64{}
 	case "String":
+		return TypeStdString{}
 	case "Time":
+		return TypeStdTime{}
 	default:
-		return false
+		return nil
 	}
-	return true
 }
 
 type job func() error

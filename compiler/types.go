@@ -66,18 +66,166 @@ func (t *TypeEnum) Category() TypeCategory {
 }
 
 /****************************************************************
-	Standard Scalar
+	Standard Bool
 ****************************************************************/
 
-// TypeScalarStd represents a standard scalar type implementation
-type TypeScalarStd struct {
-	typeBaseInfo
-}
+// TypeStdNone represents a standard scalar type implementation
+type TypeStdNone struct{}
+
+// Src implements the Type interface
+func (t TypeStdNone) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t TypeStdNone) Name() string { return "None" }
 
 // Category implements the Type interface
-func (t *TypeScalarStd) Category() TypeCategory {
+func (t TypeStdNone) Category() TypeCategory { return TypeCategoryScalarStd }
+
+/****************************************************************
+	Standard Bool
+****************************************************************/
+
+// TypeStdBool represents a standard scalar type implementation
+type TypeStdBool struct{}
+
+// Src implements the Type interface
+func (t TypeStdBool) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t TypeStdBool) Name() string { return "Bool" }
+
+// Category implements the Type interface
+func (t TypeStdBool) Category() TypeCategory { return TypeCategoryScalarStd }
+
+/****************************************************************
+	Standard Byte
+****************************************************************/
+
+// TypeStdByte represents a standard scalar type implementation
+type TypeStdByte struct{}
+
+// Src implements the Type interface
+func (t TypeStdByte) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t TypeStdByte) Name() string { return "Byte" }
+
+// Category implements the Type interface
+func (t TypeStdByte) Category() TypeCategory { return TypeCategoryScalarStd }
+
+/****************************************************************
+	Standard Int32
+****************************************************************/
+
+// TypeStdInt32 represents a standard scalar type implementation
+type TypeStdInt32 struct{}
+
+// Src implements the Type interface
+func (t TypeStdInt32) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t TypeStdInt32) Name() string { return "Int32" }
+
+// Category implements the Type interface
+func (t TypeStdInt32) Category() TypeCategory { return TypeCategoryScalarStd }
+
+/****************************************************************
+	Standard Uint32
+****************************************************************/
+
+// TypeStdUint32 represents a standard scalar type implementation
+type TypeStdUint32 struct{}
+
+// Src implements the Type interface
+func (t TypeStdUint32) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t TypeStdUint32) Name() string { return "Uint32" }
+
+// Category implements the Type interface
+func (t TypeStdUint32) Category() TypeCategory { return TypeCategoryScalarStd }
+
+/****************************************************************
+	Standard Int64
+****************************************************************/
+
+// TypeStdInt64 represents a standard scalar type implementation
+type TypeStdInt64 struct{}
+
+// Src implements the Type interface
+func (t TypeStdInt64) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t TypeStdInt64) Name() string { return "Int64" }
+
+// Category implements the Type interface
+func (t TypeStdInt64) Category() TypeCategory { return TypeCategoryScalarStd }
+
+/****************************************************************
+	Standard Uint64
+****************************************************************/
+
+// TypeStdUint64 represents a standard scalar type implementation
+type TypeStdUint64 struct{}
+
+// Src implements the Type interface
+func (t TypeStdUint64) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t TypeStdUint64) Name() string { return "Uint64" }
+
+// Category implements the Type interface
+func (t TypeStdUint64) Category() TypeCategory { return TypeCategoryScalarStd }
+
+/****************************************************************
+	Standard Float64
+****************************************************************/
+
+// TypeStdFloat64 represents a standard scalar type implementation
+type TypeStdFloat64 struct{}
+
+// Src implements the Type interface
+func (t TypeStdFloat64) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t TypeStdFloat64) Name() string { return "Float64" }
+
+// Category implements the Type interface
+func (t TypeStdFloat64) Category() TypeCategory {
 	return TypeCategoryScalarStd
 }
+
+/****************************************************************
+	Standard String
+****************************************************************/
+
+// TypeStdString represents a standard scalar type implementation
+type TypeStdString struct{}
+
+// Src implements the Type interface
+func (t TypeStdString) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t TypeStdString) Name() string { return "String" }
+
+// Category implements the Type interface
+func (t TypeStdString) Category() TypeCategory { return TypeCategoryScalarStd }
+
+/****************************************************************
+	Standard Time
+****************************************************************/
+
+// TypeStdTime represents a standard scalar type implementation
+type TypeStdTime struct{}
+
+// Src implements the Type interface
+func (t TypeStdTime) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t TypeStdTime) Name() string { return "Time" }
+
+// Category implements the Type interface
+func (t TypeStdTime) Category() TypeCategory { return TypeCategoryScalarStd }
 
 /****************************************************************
 	Struct
