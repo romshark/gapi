@@ -114,16 +114,15 @@ func (c *Compiler) Compile(src string) (*AST, error) {
 	ast.SchemaName = getSrc(src, current.up.next.next)
 
 	// Read all declarations
-	current = root.up
 	var handler func(src string, ast *AST, node *node32) error
-	for ; current != nil; current = current.next {
+	for current = root.up; current != nil; current = current.next {
 		switch current.pegRule {
 		case ruleDclAl:
 			// Alias type declaration
 			handler = c.defineAliasType
 		case ruleDclEn:
 			// Enum type declaration
-			log.Print("Enum type declaration")
+			handler = c.defineEnumType
 		case ruleDclRv:
 			// Resolver type declaration
 			log.Print("Resolver type declaration")

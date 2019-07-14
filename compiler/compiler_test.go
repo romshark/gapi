@@ -82,3 +82,46 @@ func TestDeclAliasTypes(t *testing.T) {
 		require.Equal(t, t1, t3.(*compiler.TypeAlias).AliasedType)
 	})
 }
+
+// TestDeclEnumTypes tests enum type declaration
+func TestDeclEnumTypes(t *testing.T) {
+	src := `schema test
+	
+	enum E1 {
+		oneVal
+	}
+	enum E2 {
+		foo
+		bar
+	}
+	enum E3 {
+		foo1
+		bar2
+		baz3
+	}
+	`
+
+	test(t, src, func(ast AST) {
+		require.Len(t, ast.QueryEndpoints, 0)
+		require.Len(t, ast.Mutations, 0)
+
+		expected := map[string][]string{
+			"E1": []string{"oneVal"},
+			"E2": []string{"foo", "bar"},
+			"E3": []string{"foo1", "bar2", "baz3"},
+		}
+
+		require.Len(t, ast.Types, len(expected))
+		for name, vals := range expected {
+			require.Contains(t, ast.Types, name)
+			tp := ast.Types[name]
+			require.Equal(t, name, tp.Name())
+			require.Equal(t, compiler.TypeCategoryEnum, tp.Category())
+			require.IsType(t, &compiler.TypeEnum{}, tp)
+			tpe := tp.(*compiler.TypeEnum)
+			for _, val := range vals {
+				require.Contains(t, tpe.Values, val)
+			}
+		}
+	})
+}

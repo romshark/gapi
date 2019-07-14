@@ -838,7 +838,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position44, tokenIndex44
 			return false
 		},
-		/* 11 BlkEn <- <(BLK SpOpt WdLowCase+ SpOpt BLKE)> */
+		/* 11 BlkEn <- <(BLK (SpOpt WdLowCase)+ SpOpt BLKE)> */
 		func() bool {
 			position48, tokenIndex48 := position, tokenIndex
 			{
@@ -855,6 +855,9 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			l50:
 				{
 					position51, tokenIndex51 := position, tokenIndex
+					if !_rules[ruleSpOpt]() {
+						goto l51
+					}
 					if !_rules[ruleWdLowCase]() {
 						goto l51
 					}

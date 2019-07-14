@@ -54,10 +54,16 @@ func (t *TypeUnion) Category() TypeCategory {
 	Enumeration
 ****************************************************************/
 
+// EnumValue represents an enumeration value
+type EnumValue struct {
+	Src
+	Name string
+}
+
 // TypeEnum represents a standard scalar type implementation
 type TypeEnum struct {
 	typeBaseInfo
-	Values []string
+	Values map[string]EnumValue
 }
 
 // Category implements the Type interface
