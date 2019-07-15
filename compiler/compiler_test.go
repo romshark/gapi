@@ -45,6 +45,24 @@ func testErrs(t *testing.T, cases map[string]ErrCase) {
 	}
 }
 
+// TestDeclSchemaErrs tests schema declaration errors
+func TestDeclSchemaErrs(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"IllegalName": ErrCase{
+			Src: `schema _illegalName
+			enum E { e }`,
+		},
+		"IllegalName2": ErrCase{
+			Src: `schema illegal_Name
+			enum E { e }`,
+		},
+		"IllegalName3": ErrCase{
+			Src: `schema IllegalName
+			enum E { e }`,
+		},
+	})
+}
+
 // TestDeclAliasTypes tests alias type declaration
 func TestDeclAliasTypes(t *testing.T) {
 	src := `schema test
