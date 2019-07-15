@@ -134,6 +134,47 @@ func TestDeclEnumTypes(t *testing.T) {
 	})
 }
 
+// TestDeclEnumTypeErrs tests enum type declaration errors
+func TestDeclEnumTypeErrs(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"IllegalTypeName": ErrCase{Src: `schema test
+		enum illegalName {
+			foo
+			bar
+		}`},
+		"IllegalTypeName2": ErrCase{Src: `schema test
+		enum _IllegalName {
+			foo
+			bar
+		}`},
+		"IllegalTypeName3": ErrCase{Src: `schema test
+		enum Illegal_Name {
+			foo
+			bar
+		}`},
+		"RedundantValue": ErrCase{Src: `schema test
+		enum E {
+			foo
+			foo
+		}`},
+		"IllegalValueIdentifier": ErrCase{Src: `schema test
+		enum E {
+			_foo
+			_bar
+		}`},
+		"IllegalValueIdentifier2": ErrCase{Src: `schema test
+		enum E {
+			1foo
+			2bar
+		}`},
+		"IllegalValueIdentifier3": ErrCase{Src: `schema test
+		enum E {
+			fo_o
+			ba_r
+		}`},
+	})
+}
+
 // TestDeclUnionTypes tests union type declaration
 func TestDeclUnionTypes(t *testing.T) {
 	src := `schema test
@@ -192,7 +233,8 @@ func TestDeclUnionTypes(t *testing.T) {
 	})
 }
 
-func TestDeclUnionTypesErr(t *testing.T) {
+// TestDeclUnionTypeErrs tests union type declaration errors
+func TestDeclUnionTypeErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"IllegalTypeName": ErrCase{Src: `schema test
 		union illegalName {
@@ -214,7 +256,7 @@ func TestDeclUnionTypesErr(t *testing.T) {
 			String
 		}`},
 		"MultiReferencedType": ErrCase{Src: `schema test
-			union U {
+		union U {
 			String
 			String
 		}`},
