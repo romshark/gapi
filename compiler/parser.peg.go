@@ -550,7 +550,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position22, tokenIndex22
 			return false
 		},
-		/* 2 DclAl <- <(KAL SpLn TpName SpLn OEQ SpLn TpName)> */
+		/* 2 DclAl <- <(KAL SpLn Wrd SpLn OEQ SpLn Wrd)> */
 		func() bool {
 			position24, tokenIndex24 := position, tokenIndex
 			{
@@ -561,7 +561,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 				if !_rules[ruleSpLn]() {
 					goto l24
 				}
-				if !_rules[ruleTpName]() {
+				if !_rules[ruleWrd]() {
 					goto l24
 				}
 				if !_rules[ruleSpLn]() {
@@ -573,7 +573,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 				if !_rules[ruleSpLn]() {
 					goto l24
 				}
-				if !_rules[ruleTpName]() {
+				if !_rules[ruleWrd]() {
 					goto l24
 				}
 				add(ruleDclAl, position25)

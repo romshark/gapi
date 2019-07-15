@@ -17,7 +17,7 @@ func (c *Compiler) defineAliasType(node *node32) error {
 	if err := verifyTypeName(newAliasTypeName); err != nil {
 		c.err(cErr{
 			ErrTypeIllegalIdent,
-			fmt.Sprintf("illegal type identifier %d:%d: %s",
+			fmt.Sprintf("illegal type identifier at %d:%d: %s",
 				aliasTypeNameNode.begin,
 				aliasTypeNameNode.end,
 				err,
@@ -29,7 +29,7 @@ func (c *Compiler) defineAliasType(node *node32) error {
 	if err := verifyTypeName(aliasedTypeName); err != nil {
 		c.err(cErr{
 			ErrTypeIllegalIdent,
-			fmt.Sprintf("illegal type identifier %d:%d: %s",
+			fmt.Sprintf("illegal type identifier at %d:%d: %s",
 				aliasedTypeNameNode.begin,
 				aliasedTypeNameNode.end,
 				err,

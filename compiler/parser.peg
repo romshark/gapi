@@ -7,7 +7,7 @@ type GAPIParser Peg {
 Schema <- SpOpt DclSc (SpOpt (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / DclQr / DclMt / DclSb))+ SpOpt
 
 DclSc <- KSC SpLn Wrd
-DclAl <- KAL SpLn TpName SpLn OEQ SpLn TpName
+DclAl <- KAL SpLn Wrd SpLn OEQ SpLn Wrd
 DclEn <- KEN SpLn Wrd SpLnOpt BlkEn
 DclSt <- KST SpLn TpName SpLnOpt BlkSt
 DclRv <- KRV SpLn TpName SpLnOpt BlkRv
