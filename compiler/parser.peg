@@ -12,7 +12,7 @@ DclEn <- KEN SpLn TpName SpLnOpt BlkEn
 DclSt <- KST SpLn TpName SpLnOpt BlkSt
 DclRv <- KRV SpLn TpName SpLnOpt BlkRv
 DclTr <- KTR SpLn TpName SpLnOpt BlkRv
-DclUn <- KUN SpLn TpName SpLnOpt BlkUn
+DclUn <- KUN SpLn Wrd SpLnOpt BlkUn
 DclQr <- KQR SpLn WdLowCase SpLnOpt Args? SpLnOpt Tp
 DclMt <- KMT SpLn WdLowCase SpLnOpt Args? SpLnOpt Tp
 DclSb <- KSB SpLn WdLowCase SpLnOpt Args? SpLnOpt Tp
