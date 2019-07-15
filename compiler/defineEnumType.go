@@ -1,8 +1,6 @@
 package compiler
 
 import (
-	"log"
-
 	"github.com/pkg/errors"
 )
 
@@ -55,7 +53,6 @@ func (c *Compiler) defineEnumType(
 		}
 		current = next
 	}
-	log.Print(newType.Values)
 
 	// Try to define the type
 	return ast.defineType(newType)
