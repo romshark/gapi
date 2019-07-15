@@ -183,3 +183,30 @@ func TestDeclUnionTypes(t *testing.T) {
 		}
 	})
 }
+
+func TestDeclUnionTypesErr(t *testing.T) {
+	t.Run("OneTypeUnion", func(t *testing.T) {
+		testErr(t, `schema test
+		union U1 {
+			String
+		}
+		`)
+	})
+
+	t.Run("MultiReferencedType", func(t *testing.T) {
+		testErr(t, `schema test
+		union U1 {
+			String
+			String
+		}
+		`)
+	})
+
+	t.Run("UndefinedType", func(t *testing.T) {
+		testErr(t, `schema test
+		union U1 {
+			Undefined
+		}
+		`)
+	})
+}
