@@ -42,7 +42,7 @@ func (t *TypeAlias) Category() TypeCategory {
 // TypeUnion represents an alias type implementation
 type TypeUnion struct {
 	typeBaseInfo
-	Types []Type
+	Types map[string]Type
 }
 
 // Category implements the Type interface

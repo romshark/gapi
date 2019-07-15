@@ -134,7 +134,7 @@ func (c *Compiler) Compile(src string) (*AST, error) {
 			log.Print("Trait type declaration")
 		case ruleDclUn:
 			// Union type declaration
-			log.Print("Union type declaration")
+			handler = c.defineUnionType
 		case ruleDclQr:
 			// Query declaration
 			log.Print("Query declaration")

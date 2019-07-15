@@ -952,7 +952,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position56, tokenIndex56
 			return false
 		},
-		/* 14 BlkUn <- <(BLK SpOpt TpName+ SpOpt BLKE)> */
+		/* 14 BlkUn <- <(BLK (SpOpt TpName)+ SpOpt BLKE)> */
 		func() bool {
 			position60, tokenIndex60 := position, tokenIndex
 			{
@@ -969,6 +969,9 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			l62:
 				{
 					position63, tokenIndex63 := position, tokenIndex
+					if !_rules[ruleSpOpt]() {
+						goto l63
+					}
 					if !_rules[ruleTpName]() {
 						goto l63
 					}

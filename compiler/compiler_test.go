@@ -125,3 +125,61 @@ func TestDeclEnumTypes(t *testing.T) {
 		}
 	})
 }
+
+// TestDeclUnionTypes tests union type declaration
+func TestDeclUnionTypes(t *testing.T) {
+	src := `schema test
+	
+	union U1 {
+		String
+		Uint32
+	}
+	union U2 {
+		Uint32
+		Float64
+		String
+	}
+	union U3 {
+		String
+		Float64
+		Int32
+		Int64
+	}
+	`
+
+	test(t, src, func(ast AST) {
+		require.Len(t, ast.QueryEndpoints, 0)
+		require.Len(t, ast.Mutations, 0)
+
+		expected := map[string][]compiler.Type{
+			"U1": []compiler.Type{
+				compiler.TypeStdString{},
+				compiler.TypeStdUint32{},
+			},
+			"U2": []compiler.Type{
+				compiler.TypeStdUint32{},
+				compiler.TypeStdFloat64{},
+				compiler.TypeStdString{},
+			},
+			"U3": []compiler.Type{
+				compiler.TypeStdString{},
+				compiler.TypeStdFloat64{},
+				compiler.TypeStdInt32{},
+				compiler.TypeStdInt64{},
+			},
+		}
+
+		require.Len(t, ast.Types, len(expected))
+		for name, expectedReferencedTypes := range expected {
+			require.Contains(t, ast.Types, name)
+			tp := ast.Types[name]
+			require.Equal(t, name, tp.Name())
+			require.Equal(t, compiler.TypeCategoryUnion, tp.Category())
+			require.IsType(t, &compiler.TypeUnion{}, tp)
+			tpe := tp.(*compiler.TypeUnion)
+			for _, referencedType := range expectedReferencedTypes {
+				require.Contains(t, tpe.Types, referencedType.Name())
+			}
+		}
+	})
+}

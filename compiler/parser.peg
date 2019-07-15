@@ -19,7 +19,7 @@ DclSb <- KSB SpLn WdLowCase SpLnOpt Args? SpLnOpt Tp
 BlkEn <- BLK (SpOpt WdLowCase)+ SpOpt BLKE
 BlkSt <- BLK SpOpt PropSt+ SpOpt BLKE
 BlkRv <- BLK SpOpt PropRv+ SpOpt BLKE
-BlkUn <- BLK SpOpt TpName+ SpOpt BLKE
+BlkUn <- BLK (SpOpt TpName)+ SpOpt BLKE
 PropSt <- WdLowCase SpLn Tp
 PropRv <- WdLowCase SpLn Args? Tp
 
