@@ -143,6 +143,52 @@ func TestDeclAliasTypes(t *testing.T) {
 	})
 }
 
+// TestDeclAliasTypeErrs tests alias type declaration errors
+func TestDeclAliasTypeErrs(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"IllegalTypeName": ErrCase{
+			Src: `schema test
+			alias illegalName = String`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalTypeName2": ErrCase{
+			Src: `schema test
+			alias Illegal_Name = String`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalTypeName3": ErrCase{
+			Src: `schema test
+			alias _IllegalName = String`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalAliasedTypeName": ErrCase{
+			Src: `schema test
+			alias A = illegalName`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalAliasedTypeName2": ErrCase{
+			Src: `schema test
+			alias A = Illegal_Name`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalAliasedTypeName3": ErrCase{
+			Src: `schema test
+			alias A = _IllegalName`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"UndefinedAliasedType": ErrCase{
+			Src: `schema test
+			alias A = Undefined`,
+			Errs: []ErrCode{compiler.ErrTypeUndef},
+		},
+		"SelfReference": ErrCase{
+			Src: `schema test
+			alias A = A`,
+			Errs: []ErrCode{compiler.ErrAliasRecur},
+		},
+	})
+}
+
 // TestDeclEnumTypes tests enum type declaration
 func TestDeclEnumTypes(t *testing.T) {
 	src := `schema test
