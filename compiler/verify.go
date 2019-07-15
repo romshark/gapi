@@ -18,6 +18,35 @@ func isLetter(r byte) bool {
 	return isLowLetter(r) || isUpLetter(r)
 }
 
+func verifySchemaName(name string) error {
+	if len(name) < 1 {
+		return errors.New("missing schema identifier")
+	}
+
+	// [a-z]
+	if !isLowLetter(name[0]) {
+		// Non-capitalized first letter
+		return errors.New(
+			"illegal schema identifier (must begin with " +
+				"a lower case latin character (a-z))",
+		)
+	}
+
+	for i := 1; i < len(name); i++ {
+		r := name[i]
+		// [a-zA-Z0-9]
+		if !isLetter(r) && !isDigit(r) {
+			return errors.Errorf(
+				"illegal schema identifier "+
+					"(contains illegal character '%s')",
+				string(r),
+			)
+		}
+	}
+
+	return nil
+}
+
 func verifyTypeName(name string) error {
 	if len(name) < 1 {
 		return errors.New("missing type name")

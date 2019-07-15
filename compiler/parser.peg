@@ -6,7 +6,7 @@ type GAPIParser Peg {
 
 Schema <- SpOpt DclSc (SpOpt (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / DclQr / DclMt / DclSb))+ SpOpt
 
-DclSc <- KSC SpLn WdLowCase
+DclSc <- KSC SpLn Wrd
 DclAl <- KAL SpLn TpName SpLn OEQ SpLn TpName
 DclEn <- KEN SpLn Wrd SpLnOpt BlkEn
 DclSt <- KST SpLn TpName SpLnOpt BlkSt
@@ -32,7 +32,6 @@ TpList <- '[]' Tp
 TpName <- [A-Z][a-zA-Z0-9]*
 
 Wrd <- [a-zA-Z0-9_]+
-WdLowCase <- [a-z][a-zA-Z0-9]*
 
 SpLn <- (' ' / '\t')+
 SpOpt <- (SpLn / SpVr)*

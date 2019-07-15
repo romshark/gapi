@@ -113,6 +113,10 @@ func (c *Compiler) Compile(src string) (*AST, error) {
 	}
 	ast.SchemaName = getSrc(src, current.up.next.next)
 
+	if err := verifySchemaName(ast.SchemaName); err != nil {
+		return nil, err
+	}
+
 	// Read all declarations
 	var handler func(src string, ast *AST, node *node32) error
 	for current = root.up; current != nil; current = current.next {
