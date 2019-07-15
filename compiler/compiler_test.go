@@ -221,6 +221,11 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 			}`,
 			Errs: []ErrCode{compiler.ErrEnumValRedecl},
 		},
+		"NoValues": ErrCase{
+			Src: `schema test
+			enum E {}`,
+			Errs: []ErrCode{compiler.ErrSyntax},
+		},
 		"IllegalValueIdentifier": ErrCase{
 			Src: `schema test
 			enum E {
