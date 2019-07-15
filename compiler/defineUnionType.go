@@ -12,6 +12,15 @@ func (c *Compiler) defineUnionType(
 	current := node.up.next.next
 	newUnionTypeName := getSrc(source, current)
 
+	if err := verifyTypeName(newUnionTypeName); err != nil {
+		return errors.Errorf(
+			"invalid union type identifier %d:%d: %s",
+			current.begin,
+			current.end,
+			err,
+		)
+	}
+
 	newType := &TypeUnion{
 		typeBaseInfo: typeBaseInfo{
 			src:  src(node),
@@ -25,10 +34,19 @@ func (c *Compiler) defineUnionType(
 	for {
 		referencedTypeName := source[current.begin:current.end]
 
+		if err := verifyTypeName(referencedTypeName); err != nil {
+			return errors.Errorf(
+				"invalid union option-type identifier at %d:%d: %s",
+				current.begin,
+				current.end,
+				err,
+			)
+		}
+
 		// Check for duplicate values
 		if _, isDefined := newType.Types[referencedTypeName]; isDefined {
 			return errors.Errorf(
-				"Multiple references to the same type (%s) "+
+				"multiple references to the same type (%s) "+
 					"in union type %s at %d:%d ",
 				referencedTypeName,
 				newUnionTypeName,
@@ -49,7 +67,7 @@ func (c *Compiler) defineUnionType(
 
 	if len(newType.Types) < 2 {
 		return errors.Errorf(
-			"Union %s requires at least two types at %d:%d",
+			"union %s requires at least two types at %d:%d",
 			newUnionTypeName,
 			node.begin,
 			node.end,
@@ -62,7 +80,7 @@ func (c *Compiler) defineUnionType(
 			reg := ast.typeByName(name)
 			if reg == nil {
 				return errors.Errorf(
-					"Undefined type %s referenced "+
+					"undefined type %s referenced "+
 						"in union type %s at %d:%d ",
 					name,
 					newUnionTypeName,
@@ -72,7 +90,7 @@ func (c *Compiler) defineUnionType(
 			}
 			if name == newUnionTypeName {
 				return errors.Errorf(
-					"Union type %s references itself at %d:%d",
+					"union type %s references itself at %d:%d",
 					newUnionTypeName,
 					node.begin,
 					node.end,
