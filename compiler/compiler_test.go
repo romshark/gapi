@@ -181,9 +181,15 @@ func TestDeclAliasTypeErrs(t *testing.T) {
 			alias A = Undefined`,
 			Errs: []ErrCode{compiler.ErrTypeUndef},
 		},
-		"SelfReference": ErrCase{
+		"DirectlyRecursiveAlias": ErrCase{
 			Src: `schema test
 			alias A = A`,
+			Errs: []ErrCode{compiler.ErrAliasRecur},
+		},
+		"IndirectlyRecursiveAlias": ErrCase{
+			Src: `schema test
+			alias A = B
+			alias B = A`,
 			Errs: []ErrCode{compiler.ErrAliasRecur},
 		},
 	})
