@@ -137,41 +137,55 @@ func TestDeclEnumTypes(t *testing.T) {
 // TestDeclEnumTypeErrs tests enum type declaration errors
 func TestDeclEnumTypeErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
-		"IllegalTypeName": ErrCase{Src: `schema test
-		enum illegalName {
-			foo
-			bar
-		}`},
-		"IllegalTypeName2": ErrCase{Src: `schema test
-		enum _IllegalName {
-			foo
-			bar
-		}`},
-		"IllegalTypeName3": ErrCase{Src: `schema test
-		enum Illegal_Name {
-			foo
-			bar
-		}`},
-		"RedundantValue": ErrCase{Src: `schema test
-		enum E {
-			foo
-			foo
-		}`},
-		"IllegalValueIdentifier": ErrCase{Src: `schema test
-		enum E {
-			_foo
-			_bar
-		}`},
-		"IllegalValueIdentifier2": ErrCase{Src: `schema test
-		enum E {
-			1foo
-			2bar
-		}`},
-		"IllegalValueIdentifier3": ErrCase{Src: `schema test
-		enum E {
-			fo_o
-			ba_r
-		}`},
+		"IllegalTypeName": ErrCase{
+			Src: `schema test
+			enum illegalName {
+				foo
+				bar
+			}`,
+		},
+		"IllegalTypeName2": ErrCase{
+			Src: `schema test
+			enum _IllegalName {
+				foo
+				bar
+			}`,
+		},
+		"IllegalTypeName3": ErrCase{
+			Src: `schema test
+			enum Illegal_Name {
+				foo
+				bar
+			}`,
+		},
+		"RedundantValue": ErrCase{
+			Src: `schema test
+			enum E {
+				foo
+				foo
+			}`,
+		},
+		"IllegalValueIdentifier": ErrCase{
+			Src: `schema test
+			enum E {
+				_foo
+				_bar
+			}`,
+		},
+		"IllegalValueIdentifier2": ErrCase{
+			Src: `schema test
+			enum E {
+				1foo
+				2bar
+			}`,
+		},
+		"IllegalValueIdentifier3": ErrCase{
+			Src: `schema test
+			enum E {
+				fo_o
+				ba_r
+			}`,
+		},
 	})
 }
 
@@ -236,48 +250,65 @@ func TestDeclUnionTypes(t *testing.T) {
 // TestDeclUnionTypeErrs tests union type declaration errors
 func TestDeclUnionTypeErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
-		"IllegalTypeName": ErrCase{Src: `schema test
-		union illegalName {
-			String
-			Int32
-		}`},
-		"IllegalTypeName2": ErrCase{Src: `schema test
-		union _IllegalName {
-			String
-			Int32
-		}`},
-		"IllegalTypeName3": ErrCase{Src: `schema test
-		union Illegal_Name {
-			String
-			Int32
-		}`},
-		"OneTypeUnion": ErrCase{Src: `schema test
-		union U {
-			String
-		}`},
-		"MultiReferencedType": ErrCase{Src: `schema test
-		union U {
-			String
-			String
-		}`},
-		"UndefinedType": ErrCase{Src: `schema test
-		union U {
-			Undefined
-		}`},
-		"SelfReference": ErrCase{Src: `schema test
-		union U {
-			Int32
-			U
-		}`},
-		"NonTypeElements": ErrCase{Src: `schema test
-		union U {
-			foo
-			bar
-		}`},
-		"NonTypeElements2": ErrCase{Src: `schema test
-		union U {
-			_foo
-			_bar
-		}`},
+		"IllegalTypeName": ErrCase{
+			Src: `schema test
+			union illegalName {
+				String
+				Int32
+			}`,
+		},
+		"IllegalTypeName2": ErrCase{
+			Src: `schema test
+			union _IllegalName {
+				String
+				Int32
+			}`,
+		},
+		"IllegalTypeName3": ErrCase{
+			Src: `schema test
+			union Illegal_Name {
+				String
+				Int32
+			}`,
+		},
+		"OneTypeUnion": ErrCase{
+			Src: `schema test
+			union U {
+				String
+			}`,
+		},
+		"MultiReferencedType": ErrCase{
+			Src: `schema test
+			union U {
+				String
+				String
+			}`,
+		},
+		"UndefinedType": ErrCase{
+			Src: `schema test
+			union U {
+				Undefined
+			}`},
+		"SelfReference": ErrCase{
+			Src: `schema test
+			union U {
+				Int32
+				U
+			}`,
+		},
+		"NonTypeElements": ErrCase{
+			Src: `schema test
+			union U {
+				foo
+				bar
+			}`,
+		},
+		"NonTypeElements2": ErrCase{
+			Src: `schema test
+			union U {
+				_foo
+				_bar
+			}`,
+		},
 	})
 }
