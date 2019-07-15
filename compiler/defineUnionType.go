@@ -47,6 +47,15 @@ func (c *Compiler) defineUnionType(
 		current = next
 	}
 
+	if len(newType.Types) < 2 {
+		return errors.Errorf(
+			"Union %s requires at least two types at %d:%d",
+			newUnionTypeName,
+			node.begin,
+			node.end,
+		)
+	}
+
 	c.deferJob(func() error {
 		// Ensure all referenced types are defined
 		for name := range newType.Types {
