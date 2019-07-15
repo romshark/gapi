@@ -26,15 +26,23 @@ func test(
 	astInspector(ast)
 }
 
-func testErr(t *testing.T, source string) {
-	// Initialize compiler
-	compiler, err := compiler.NewCompiler()
-	require.NoError(t, err)
+type ErrCase struct {
+	Src string
+}
 
-	// Compile
-	ast, err := compiler.Compile(source)
-	require.Error(t, err)
-	require.Nil(t, ast)
+func testErrs(t *testing.T, cases map[string]ErrCase) {
+	for tst, errCase := range cases {
+		t.Run(tst, func(t *testing.T) {
+			// Initialize compiler
+			compiler, err := compiler.NewCompiler()
+			require.NoError(t, err)
+
+			// Compile
+			ast, err := compiler.Compile(errCase.Src)
+			require.Error(t, err)
+			require.Nil(t, ast)
+		})
+	}
 }
 
 // TestDeclAliasTypes tests alias type declaration
@@ -185,28 +193,24 @@ func TestDeclUnionTypes(t *testing.T) {
 }
 
 func TestDeclUnionTypesErr(t *testing.T) {
-	cases := map[string]string{
-		"OneTypeUnion": `schema test
+	testErrs(t, map[string]ErrCase{
+		"OneTypeUnion": ErrCase{Src: `schema test
 		union U {
 			String
-		}`,
-		"MultiReferencedType": `schema test
+		}`},
+		"MultiReferencedType": ErrCase{Src: `schema test
 			union U {
 			String
 			String
-		}`,
-		"UndefinedType": `schema test
+		}`},
+		"UndefinedType": ErrCase{Src: `schema test
 		union U {
 			Undefined
-		}`,
-		"SelfReference": `schema test
+		}`},
+		"SelfReference": ErrCase{Src: `schema test
 		union U {
 			Int32
 			U
-		}`,
-	}
-
-	for tName, src := range cases {
-		t.Run(tName, func(t *testing.T) { testErr(t, src) })
-	}
+		}`},
+	})
 }
