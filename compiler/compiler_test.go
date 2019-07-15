@@ -185,28 +185,28 @@ func TestDeclUnionTypes(t *testing.T) {
 }
 
 func TestDeclUnionTypesErr(t *testing.T) {
-	t.Run("OneTypeUnion", func(t *testing.T) {
-		testErr(t, `schema test
-		union U1 {
+	cases := map[string]string{
+		"OneTypeUnion": `schema test
+		union U {
 			String
-		}
-		`)
-	})
-
-	t.Run("MultiReferencedType", func(t *testing.T) {
-		testErr(t, `schema test
-		union U1 {
+		}`,
+		"MultiReferencedType": `schema test
+			union U {
 			String
 			String
-		}
-		`)
-	})
-
-	t.Run("UndefinedType", func(t *testing.T) {
-		testErr(t, `schema test
-		union U1 {
+		}`,
+		"UndefinedType": `schema test
+		union U {
 			Undefined
-		}
-		`)
-	})
+		}`,
+		"SelfReference": `schema test
+		union U {
+			Int32
+			U
+		}`,
+	}
+
+	for tName, src := range cases {
+		t.Run(tName, func(t *testing.T) { testErr(t, src) })
+	}
 }
