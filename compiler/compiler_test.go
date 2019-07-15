@@ -212,5 +212,15 @@ func TestDeclUnionTypesErr(t *testing.T) {
 			Int32
 			U
 		}`},
+		"NonTypeElements": ErrCase{Src: `schema test
+		union U {
+			foo
+			bar
+		}`},
+		"NonTypeElements2": ErrCase{Src: `schema test
+		union U {
+			_foo
+			_bar
+		}`},
 	})
 }
