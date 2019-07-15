@@ -194,6 +194,21 @@ func TestDeclUnionTypes(t *testing.T) {
 
 func TestDeclUnionTypesErr(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
+		"IllegalTypeName": ErrCase{Src: `schema test
+		union illegalName {
+			String
+			Int32
+		}`},
+		"IllegalTypeName2": ErrCase{Src: `schema test
+		union _IllegalName {
+			String
+			Int32
+		}`},
+		"IllegalTypeName3": ErrCase{Src: `schema test
+		union Illegal_Name {
+			String
+			Int32
+		}`},
 		"OneTypeUnion": ErrCase{Src: `schema test
 		union U {
 			String
