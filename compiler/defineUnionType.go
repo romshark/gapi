@@ -70,6 +70,14 @@ func (c *Compiler) defineUnionType(
 					node.end,
 				)
 			}
+			if name == newUnionTypeName {
+				return errors.Errorf(
+					"Union type %s references itself at %d:%d",
+					newUnionTypeName,
+					node.begin,
+					node.end,
+				)
+			}
 			newType.Types[name] = reg
 		}
 
