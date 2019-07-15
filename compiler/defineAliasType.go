@@ -38,6 +38,18 @@ func (c *Compiler) defineAliasType(node *node32) error {
 		return nil
 	}
 
+	if newAliasTypeName == aliasedTypeName {
+		c.err(cErr{
+			ErrAliasRecur,
+			fmt.Sprintf(
+				"recursive alias type %s at %d:%d (direct)",
+				newAliasTypeName,
+				node.begin,
+				node.end,
+			),
+		})
+	}
+
 	newType := &TypeAlias{
 		typeBaseInfo: typeBaseInfo{
 			src:  src(node),

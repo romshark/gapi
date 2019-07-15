@@ -21,6 +21,9 @@ const (
 	// ErrTypeIllegalIdent indicates an illegal type identifier
 	ErrTypeIllegalIdent
 
+	// ErrAliasRecur indicates a recursive alias type
+	ErrAliasRecur
+
 	// ErrEnumValIllegalIdent indicates an illegal enum value identifier
 	ErrEnumValIllegalIdent
 
@@ -50,6 +53,8 @@ func (c ErrCode) String() string {
 		return "TypeRedecl"
 	case ErrTypeIllegalIdent:
 		return "TypeIllegalIdent"
+	case ErrAliasRecur:
+		return "AliasRecur"
 	case ErrEnumValIllegalIdent:
 		return "EnumValueIllegalIdent"
 	case ErrEnumValRedecl:
