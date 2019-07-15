@@ -70,12 +70,25 @@ func getSrc(source string, token *node32) string {
 
 // Compiler represents a GAPI compiler
 type Compiler struct {
+	parser       GAPIParser
+	errors       []Error
 	deferredJobs []job
+	ast          *AST
 }
 
 // NewCompiler creates a new compiler instance
-func NewCompiler() (*Compiler, error) {
-	c := &Compiler{}
+func NewCompiler(source string) (*Compiler, error) {
+	c := &Compiler{
+		parser: GAPIParser{
+			Buffer: source,
+		},
+	}
+
+	// Initialize parser
+	if err := c.parser.Init(); err != nil {
+		return nil, errors.Wrap(err, "parser init")
+	}
+
 	return c, nil
 }
 
@@ -83,25 +96,52 @@ func (c *Compiler) deferJob(job job) {
 	c.deferredJobs = append(c.deferredJobs, job)
 }
 
-// Compile compiles
-func (c *Compiler) Compile(src string) (*AST, error) {
-	parser := GAPIParser{
-		Buffer: src,
+func (c *Compiler) err(err Error) {
+	if err == nil {
+		panic("nil error")
 	}
+	if err.Code() == 0 {
+		panic("invalid error code (0)")
+	}
+	c.errors = append(c.errors, err)
+}
 
-	// Initialize parser
-	if err := parser.Init(); err != nil {
-		return nil, errors.Wrap(err, "parser init")
+// resetState resets the compiler
+func (c *Compiler) resetState() {
+	c.errors = nil
+	c.deferredJobs = nil
+	c.ast = nil
+}
+
+// Errors returns a copy of the list of all compiler errors
+func (c *Compiler) Errors() []Error {
+	errs := make([]Error, len(c.errors))
+	copy(errs, c.errors)
+	return errs
+}
+
+// AST returns a copy of the abstract syntax tree
+func (c *Compiler) AST() *AST {
+	if len(c.errors) > 0 {
+		return nil
 	}
+	return c.ast.Clone()
+}
+
+// Compile compiles
+func (c *Compiler) Compile() error {
+	c.resetState()
 
 	// Parse source
-	if err := parser.Parse(); err != nil {
-		log.Fatalf("parser: %s", err)
+	if err := c.parser.Parse(); err != nil {
+		// Tokenization errors are fatal because we're missing the parse tree
+		c.err(cErr{ErrSyntax, err.Error()})
+		return errors.Errorf("tokenization error: %s", err)
 	}
 
 	// Get parse-tree
-	root := parser.AST()
-	ast := &AST{
+	root := c.parser.AST()
+	c.ast = &AST{
 		Types: make(map[string]Type),
 	}
 
@@ -111,14 +151,14 @@ func (c *Compiler) Compile(src string) (*AST, error) {
 		// Ignore space before schema declaration
 		current = current.next
 	}
-	ast.SchemaName = getSrc(src, current.up.next.next)
+	c.ast.SchemaName = getSrc(c.parser.Buffer, current.up.next.next)
 
-	if err := verifySchemaName(ast.SchemaName); err != nil {
-		return nil, err
+	if err := verifySchemaName(c.ast.SchemaName); err != nil {
+		c.err(cErr{ErrSchemaIllegalIdent, err.Error()})
 	}
 
 	// Read all declarations
-	var handler func(src string, ast *AST, node *node32) error
+	var handler func(node *node32) error
 	for current = root.up; current != nil; current = current.next {
 		switch current.pegRule {
 		case ruleDclAl:
@@ -152,19 +192,21 @@ func (c *Compiler) Compile(src string) (*AST, error) {
 			continue
 		}
 
-		if err := handler(src, ast, current); err != nil {
-			return nil, err
+		if fatalErr := handler(current); fatalErr != nil {
+			return errors.Wrap(fatalErr, "fatal compiler error")
 		}
 	}
 
 	// Executed all deferred jobs
 	for _, job := range c.deferredJobs {
-		if err := job(); err != nil {
-			return nil, err
+		if fatalErr := job(); fatalErr != nil {
+			return errors.Wrap(fatalErr, "fatal compiler error")
 		}
 	}
 
-	//TODO: Perform semantic analysis
+	if len(c.errors) > 0 {
+		return errors.Errorf("%d compiler errors", len(c.errors))
+	}
 
-	return ast, nil
+	return nil
 }

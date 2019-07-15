@@ -1,24 +1,22 @@
 package compiler
 
-import (
-	"github.com/pkg/errors"
-)
+import "fmt"
 
-func (c *Compiler) defineUnionType(
-	source string,
-	ast *AST,
-	node *node32,
-) error {
+func (c *Compiler) defineUnionType(node *node32) error {
 	current := node.up.next.next
-	newUnionTypeName := getSrc(source, current)
+	newUnionTypeName := getSrc(c.parser.Buffer, current)
 
 	if err := verifyTypeName(newUnionTypeName); err != nil {
-		return errors.Errorf(
-			"invalid union type identifier %d:%d: %s",
-			current.begin,
-			current.end,
-			err,
-		)
+		c.err(cErr{
+			ErrTypeIllegalIdent,
+			fmt.Sprintf(
+				"invalid union type identifier %d:%d: %s",
+				current.begin,
+				current.end,
+				err,
+			),
+		})
+		return nil
 	}
 
 	newType := &TypeUnion{
@@ -31,33 +29,45 @@ func (c *Compiler) defineUnionType(
 
 	// Parse types
 	current = current.next.next.up.next.next
+	checkOpts := true
 	for {
-		referencedTypeName := source[current.begin:current.end]
+		referencedTypeName := c.parser.Buffer[current.begin:current.end]
 
 		if err := verifyTypeName(referencedTypeName); err != nil {
-			return errors.Errorf(
-				"invalid union option-type identifier at %d:%d: %s",
-				current.begin,
-				current.end,
-				err,
-			)
+			c.err(cErr{
+				ErrTypeIllegalIdent,
+				fmt.Sprintf(
+					"invalid union option-type identifier at %d:%d: %s",
+					current.begin,
+					current.end,
+					err,
+				),
+			})
+			checkOpts = false
+			goto NEXT
 		}
 
 		// Check for duplicate values
 		if _, isDefined := newType.Types[referencedTypeName]; isDefined {
-			return errors.Errorf(
-				"multiple references to the same type (%s) "+
-					"in union type %s at %d:%d ",
-				referencedTypeName,
-				newUnionTypeName,
-				node.begin,
-				node.end,
-			)
+			c.err(cErr{
+				ErrUnionRedund,
+				fmt.Sprintf(
+					"multiple references to the same type (%s) "+
+						"in union type %s at %d:%d ",
+					referencedTypeName,
+					newUnionTypeName,
+					node.begin,
+					node.end,
+				),
+			})
+			checkOpts = false
+			goto NEXT
 		}
 
 		// Mark type for deferred checking
 		newType.Types[referencedTypeName] = nil
 
+	NEXT:
 		next := current.next.next
 		if next == nil || next.pegRule == ruleBLKE {
 			break
@@ -65,36 +75,48 @@ func (c *Compiler) defineUnionType(
 		current = next
 	}
 
-	if len(newType.Types) < 2 {
-		return errors.Errorf(
-			"union %s requires at least two types at %d:%d",
-			newUnionTypeName,
-			node.begin,
-			node.end,
-		)
+	if checkOpts && len(newType.Types) < 2 {
+		c.err(cErr{
+			ErrUnionMissingOpts,
+			fmt.Sprintf(
+				"union %s requires at least two types at %d:%d",
+				newUnionTypeName,
+				node.begin,
+				node.end,
+			),
+		})
+		return nil
 	}
 
 	c.deferJob(func() error {
 		// Ensure all referenced types are defined
 		for name := range newType.Types {
-			reg := ast.typeByName(name)
+			reg := c.ast.typeByName(name)
 			if reg == nil {
-				return errors.Errorf(
-					"undefined type %s referenced "+
-						"in union type %s at %d:%d ",
-					name,
-					newUnionTypeName,
-					node.begin,
-					node.end,
-				)
+				c.err(cErr{
+					ErrTypeUndef,
+					fmt.Sprintf(
+						"undefined type %s referenced "+
+							"in union type %s at %d:%d ",
+						name,
+						newUnionTypeName,
+						node.begin,
+						node.end,
+					),
+				})
+				continue
 			}
 			if name == newUnionTypeName {
-				return errors.Errorf(
-					"union type %s references itself at %d:%d",
-					newUnionTypeName,
-					node.begin,
-					node.end,
-				)
+				c.err(cErr{
+					ErrUnionSelfref,
+					fmt.Sprintf(
+						"union type %s references itself at %d:%d",
+						newUnionTypeName,
+						node.begin,
+						node.end,
+					),
+				})
+				continue
 			}
 			newType.Types[name] = reg
 		}
@@ -103,5 +125,9 @@ func (c *Compiler) defineUnionType(
 	})
 
 	// Try to define the type
-	return ast.defineType(newType)
+	if err := c.ast.defineType(newType); err != nil {
+		c.err(err)
+	}
+
+	return nil
 }

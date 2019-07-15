@@ -7,7 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type AST *compiler.AST
+type AST = *compiler.AST
+type ErrCode = compiler.ErrCode
 
 func test(
 	t *testing.T,
@@ -15,32 +16,62 @@ func test(
 	astInspector func(AST),
 ) {
 	// Initialize compiler
-	compiler, err := compiler.NewCompiler()
+	compiler, err := compiler.NewCompiler(source)
 	require.NoError(t, err)
 
 	// Compile
-	ast, err := compiler.Compile(source)
-	require.NoError(t, err)
+	require.NoError(t, compiler.Compile())
+	ast := compiler.AST()
 	require.NotNil(t, ast)
-
 	astInspector(ast)
 }
 
 type ErrCase struct {
+	// Src defines the source-code
 	Src string
+
+	// Errs defines all expected compiler error codes
+	Errs []ErrCode
 }
 
 func testErrs(t *testing.T, cases map[string]ErrCase) {
 	for tst, errCase := range cases {
+		if len(errCase.Errs) < 1 {
+			panic("missing expected errors in error test case")
+		}
 		t.Run(tst, func(t *testing.T) {
 			// Initialize compiler
-			compiler, err := compiler.NewCompiler()
+			compiler, err := compiler.NewCompiler(errCase.Src)
 			require.NoError(t, err)
 
 			// Compile
-			ast, err := compiler.Compile(errCase.Src)
-			require.Error(t, err)
-			require.Nil(t, ast)
+			require.Error(t, compiler.Compile())
+			require.Nil(t, compiler.AST())
+
+			type Err struct {
+				Code ErrCode
+				Name string
+			}
+
+			actualErrs := compiler.Errors()
+			actualCodes := make([]Err, len(actualErrs))
+			for i, actulErr := range actualErrs {
+				c := actulErr.Code()
+				actualCodes[i] = Err{
+					Code: c,
+					Name: c.String(),
+				}
+			}
+
+			expectedCodes := make([]Err, len(errCase.Errs))
+			for i, expectedCode := range errCase.Errs {
+				expectedCodes[i] = Err{
+					Code: expectedCode,
+					Name: expectedCode.String(),
+				}
+			}
+
+			require.Equal(t, expectedCodes, actualCodes)
 		})
 	}
 }
@@ -51,14 +82,17 @@ func TestDeclSchemaErrs(t *testing.T) {
 		"IllegalName": ErrCase{
 			Src: `schema _illegalName
 			enum E { e }`,
+			Errs: []ErrCode{compiler.ErrSchemaIllegalIdent},
 		},
 		"IllegalName2": ErrCase{
 			Src: `schema illegal_Name
 			enum E { e }`,
+			Errs: []ErrCode{compiler.ErrSchemaIllegalIdent},
 		},
 		"IllegalName3": ErrCase{
 			Src: `schema IllegalName
 			enum E { e }`,
+			Errs: []ErrCode{compiler.ErrSchemaIllegalIdent},
 		},
 	})
 }
@@ -161,6 +195,7 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 				foo
 				bar
 			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
 		},
 		"IllegalTypeName2": ErrCase{
 			Src: `schema test
@@ -168,6 +203,7 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 				foo
 				bar
 			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
 		},
 		"IllegalTypeName3": ErrCase{
 			Src: `schema test
@@ -175,6 +211,7 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 				foo
 				bar
 			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
 		},
 		"RedundantValue": ErrCase{
 			Src: `schema test
@@ -182,6 +219,7 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 				foo
 				foo
 			}`,
+			Errs: []ErrCode{compiler.ErrEnumValRedecl},
 		},
 		"IllegalValueIdentifier": ErrCase{
 			Src: `schema test
@@ -189,6 +227,10 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 				_foo
 				_bar
 			}`,
+			Errs: []ErrCode{
+				compiler.ErrEnumValIllegalIdent,
+				compiler.ErrEnumValIllegalIdent,
+			},
 		},
 		"IllegalValueIdentifier2": ErrCase{
 			Src: `schema test
@@ -196,6 +238,10 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 				1foo
 				2bar
 			}`,
+			Errs: []ErrCode{
+				compiler.ErrEnumValIllegalIdent,
+				compiler.ErrEnumValIllegalIdent,
+			},
 		},
 		"IllegalValueIdentifier3": ErrCase{
 			Src: `schema test
@@ -203,6 +249,10 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 				fo_o
 				ba_r
 			}`,
+			Errs: []ErrCode{
+				compiler.ErrEnumValIllegalIdent,
+				compiler.ErrEnumValIllegalIdent,
+			},
 		},
 	})
 }
@@ -274,6 +324,7 @@ func TestDeclUnionTypeErrs(t *testing.T) {
 				String
 				Int32
 			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
 		},
 		"IllegalTypeName2": ErrCase{
 			Src: `schema test
@@ -281,6 +332,7 @@ func TestDeclUnionTypeErrs(t *testing.T) {
 				String
 				Int32
 			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
 		},
 		"IllegalTypeName3": ErrCase{
 			Src: `schema test
@@ -288,31 +340,38 @@ func TestDeclUnionTypeErrs(t *testing.T) {
 				String
 				Int32
 			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
 		},
 		"OneTypeUnion": ErrCase{
 			Src: `schema test
 			union U {
 				String
 			}`,
+			Errs: []ErrCode{compiler.ErrUnionMissingOpts},
 		},
-		"MultiReferencedType": ErrCase{
+		"RedundantOptionType": ErrCase{
 			Src: `schema test
 			union U {
 				String
 				String
 			}`,
+			Errs: []ErrCode{compiler.ErrUnionRedund},
 		},
 		"UndefinedType": ErrCase{
 			Src: `schema test
 			union U {
+				String
 				Undefined
-			}`},
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeUndef},
+		},
 		"SelfReference": ErrCase{
 			Src: `schema test
 			union U {
 				Int32
 				U
 			}`,
+			Errs: []ErrCode{compiler.ErrUnionSelfref},
 		},
 		"NonTypeElements": ErrCase{
 			Src: `schema test
@@ -320,6 +379,10 @@ func TestDeclUnionTypeErrs(t *testing.T) {
 				foo
 				bar
 			}`,
+			Errs: []ErrCode{
+				compiler.ErrTypeIllegalIdent,
+				compiler.ErrTypeIllegalIdent,
+			},
 		},
 		"NonTypeElements2": ErrCase{
 			Src: `schema test
@@ -327,6 +390,10 @@ func TestDeclUnionTypeErrs(t *testing.T) {
 				_foo
 				_bar
 			}`,
+			Errs: []ErrCode{
+				compiler.ErrTypeIllegalIdent,
+				compiler.ErrTypeIllegalIdent,
+			},
 		},
 	})
 }

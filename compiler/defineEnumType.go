@@ -1,24 +1,21 @@
 package compiler
 
-import (
-	"github.com/pkg/errors"
-)
+import "fmt"
 
-func (c *Compiler) defineEnumType(
-	source string,
-	ast *AST,
-	node *node32,
-) error {
+func (c *Compiler) defineEnumType(node *node32) error {
 	current := node.up.next.next
-	newEnumTypeName := getSrc(source, node.up.next.next)
+	newEnumTypeName := getSrc(c.parser.Buffer, node.up.next.next)
 
 	if err := verifyTypeName(newEnumTypeName); err != nil {
-		return errors.Errorf(
-			"invalid enum type identifier %d:%d: %s",
-			current.begin,
-			current.end,
-			err,
-		)
+		c.err(cErr{
+			ErrTypeIllegalIdent,
+			fmt.Sprintf("illegal enum type identifier %d:%d: %s",
+				current.begin,
+				current.end,
+				err,
+			),
+		})
+		return nil
 	}
 
 	newType := &TypeEnum{
@@ -32,28 +29,36 @@ func (c *Compiler) defineEnumType(
 	// Parse values
 	current = current.next.next.up.next.next
 	for {
-		valueName := source[current.begin:current.end]
+		valueName := c.parser.Buffer[current.begin:current.end]
 
 		if err := verifyEnumValue(valueName); err != nil {
-			return errors.Errorf(
-				"invalid enum value identifier at %d:%d: %s",
-				current.begin,
-				current.end,
-				err,
-			)
+			c.err(cErr{
+				ErrEnumValIllegalIdent,
+				fmt.Sprintf(
+					"invalid enum value identifier at %d:%d: %s",
+					current.begin,
+					current.end,
+					err,
+				),
+			})
+			goto NEXT
 		}
 
 		// Check for duplicate values
 		if defined, isDefined := newType.Values[valueName]; isDefined {
-			return errors.Errorf(
-				"Redeclaration of enum value %s at %d:%d "+
-					"(previously declared at %d:%d)",
-				valueName,
-				current.begin,
-				current.end,
-				defined.Begin,
-				defined.End,
-			)
+			c.err(cErr{
+				ErrEnumValRedecl,
+				fmt.Sprintf(
+					"Redeclaration of enum value %s at %d:%d "+
+						"(previously declared at %d:%d)",
+					valueName,
+					current.begin,
+					current.end,
+					defined.Begin,
+					defined.End,
+				),
+			})
+			goto NEXT
 		}
 
 		// Add enum value
@@ -65,6 +70,7 @@ func (c *Compiler) defineEnumType(
 			Name: valueName,
 		}
 
+	NEXT:
 		next := current.next.next
 		if next == nil || next.pegRule == ruleBLKE {
 			break
@@ -73,5 +79,9 @@ func (c *Compiler) defineEnumType(
 	}
 
 	// Try to define the type
-	return ast.defineType(newType)
+	if err := c.ast.defineType(newType); err != nil {
+		c.err(err)
+	}
+
+	return nil
 }

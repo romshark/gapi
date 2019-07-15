@@ -1,38 +1,68 @@
 package compiler
 
-import "github.com/pkg/errors"
+import "fmt"
 
-func (c *Compiler) defineAliasType(
-	source string,
-	ast *AST,
-	node *node32,
-) error {
-	typeName := getSrc(source, node.up.next.next)
-	aliasedTypeName := getSrc(source, node.up.next.next.next.next.next.next)
+func (c *Compiler) defineAliasType(node *node32) error {
+	aliasTypeNameNode := node.up.next.next
+	newAliasTypeName := getSrc(
+		c.parser.Buffer,
+		aliasTypeNameNode,
+	)
+	aliasedTypeNameNode := node.up.next.next.next.next.next.next
+	aliasedTypeName := getSrc(
+		c.parser.Buffer,
+		aliasedTypeNameNode,
+	)
+
+	if err := verifyTypeName(newAliasTypeName); err != nil {
+		c.err(cErr{
+			ErrTypeIllegalIdent,
+			fmt.Sprintf("illegal type identifier %d:%d: %s",
+				aliasTypeNameNode.begin,
+				aliasTypeNameNode.end,
+				err,
+			),
+		})
+		return nil
+	}
+
+	if err := verifyTypeName(aliasedTypeName); err != nil {
+		c.err(cErr{
+			ErrTypeIllegalIdent,
+			fmt.Sprintf("illegal type identifier %d:%d: %s",
+				aliasedTypeNameNode.begin,
+				aliasedTypeNameNode.end,
+				err,
+			),
+		})
+		return nil
+	}
 
 	newType := &TypeAlias{
 		typeBaseInfo: typeBaseInfo{
 			src:  src(node),
-			name: typeName,
+			name: newAliasTypeName,
 		},
 	}
 
 	// Try to define the type
-	if err := ast.defineType(newType); err != nil {
-		return err
+	if err := c.ast.defineType(newType); err != nil {
+		c.err(err)
+		return nil
 	}
 
 	c.deferJob(func() error {
 		// Ensure the aliased type exists after all types have been defined
-		aliasedType := ast.typeByName(aliasedTypeName)
+		aliasedType := c.ast.typeByName(aliasedTypeName)
 		if aliasedType == nil {
-			return errors.Errorf(
+			c.err(cErr{ErrTypeUndef, fmt.Sprintf(
 				"undefined type %s aliased by %s at %d:%d",
 				aliasedTypeName,
-				typeName,
+				newAliasTypeName,
 				node.begin,
 				node.end,
-			)
+			)})
+			return nil
 		}
 
 		// Reference the aliased type
