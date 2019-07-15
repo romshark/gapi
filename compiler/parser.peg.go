@@ -585,7 +585,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position24, tokenIndex24
 			return false
 		},
-		/* 3 DclEn <- <(KEN SpLn TpName SpLnOpt BlkEn)> */
+		/* 3 DclEn <- <(KEN SpLn Wrd SpLnOpt BlkEn)> */
 		func() bool {
 			position26, tokenIndex26 := position, tokenIndex
 			{
@@ -596,7 +596,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 				if !_rules[ruleSpLn]() {
 					goto l26
 				}
-				if !_rules[ruleTpName]() {
+				if !_rules[ruleWrd]() {
 					goto l26
 				}
 				if !_rules[ruleSpLnOpt]() {
@@ -720,7 +720,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position34, tokenIndex34
 			return false
 		},
-		/* 8 DclQr <- <(KQR SpLn WdLowCase SpLnOpt Args? SpLnOpt Tp)> */
+		/* 8 DclQr <- <(KQR SpLn Wrd SpLnOpt Args? SpLnOpt Tp)> */
 		func() bool {
 			position36, tokenIndex36 := position, tokenIndex
 			{
@@ -731,7 +731,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 				if !_rules[ruleSpLn]() {
 					goto l36
 				}
-				if !_rules[ruleWdLowCase]() {
+				if !_rules[ruleWrd]() {
 					goto l36
 				}
 				if !_rules[ruleSpLnOpt]() {
@@ -760,7 +760,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position36, tokenIndex36
 			return false
 		},
-		/* 9 DclMt <- <(KMT SpLn WdLowCase SpLnOpt Args? SpLnOpt Tp)> */
+		/* 9 DclMt <- <(KMT SpLn Wrd SpLnOpt Args? SpLnOpt Tp)> */
 		func() bool {
 			position40, tokenIndex40 := position, tokenIndex
 			{
@@ -771,7 +771,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 				if !_rules[ruleSpLn]() {
 					goto l40
 				}
-				if !_rules[ruleWdLowCase]() {
+				if !_rules[ruleWrd]() {
 					goto l40
 				}
 				if !_rules[ruleSpLnOpt]() {
@@ -800,7 +800,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position40, tokenIndex40
 			return false
 		},
-		/* 10 DclSb <- <(KSB SpLn WdLowCase SpLnOpt Args? SpLnOpt Tp)> */
+		/* 10 DclSb <- <(KSB SpLn Wrd SpLnOpt Args? SpLnOpt Tp)> */
 		func() bool {
 			position44, tokenIndex44 := position, tokenIndex
 			{
@@ -811,7 +811,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 				if !_rules[ruleSpLn]() {
 					goto l44
 				}
-				if !_rules[ruleWdLowCase]() {
+				if !_rules[ruleWrd]() {
 					goto l44
 				}
 				if !_rules[ruleSpLnOpt]() {
@@ -840,7 +840,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position44, tokenIndex44
 			return false
 		},
-		/* 11 BlkEn <- <(BLK (SpOpt WdLowCase)+ SpOpt BLKE)> */
+		/* 11 BlkEn <- <(BLK (SpOpt Wrd)+ SpOpt BLKE)> */
 		func() bool {
 			position48, tokenIndex48 := position, tokenIndex
 			{
@@ -851,7 +851,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 				if !_rules[ruleSpOpt]() {
 					goto l48
 				}
-				if !_rules[ruleWdLowCase]() {
+				if !_rules[ruleWrd]() {
 					goto l48
 				}
 			l50:
@@ -860,7 +860,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 					if !_rules[ruleSpOpt]() {
 						goto l51
 					}
-					if !_rules[ruleWdLowCase]() {
+					if !_rules[ruleWrd]() {
 						goto l51
 					}
 					goto l50
@@ -994,12 +994,12 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position60, tokenIndex60
 			return false
 		},
-		/* 15 PropSt <- <(WdLowCase SpLn Tp)> */
+		/* 15 PropSt <- <(Wrd SpLn Tp)> */
 		func() bool {
 			position64, tokenIndex64 := position, tokenIndex
 			{
 				position65 := position
-				if !_rules[ruleWdLowCase]() {
+				if !_rules[ruleWrd]() {
 					goto l64
 				}
 				if !_rules[ruleSpLn]() {
@@ -1015,12 +1015,12 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position64, tokenIndex64
 			return false
 		},
-		/* 16 PropRv <- <(WdLowCase SpLn Args? Tp)> */
+		/* 16 PropRv <- <(Wrd SpLn Args? Tp)> */
 		func() bool {
 			position66, tokenIndex66 := position, tokenIndex
 			{
 				position67 := position
-				if !_rules[ruleWdLowCase]() {
+				if !_rules[ruleWrd]() {
 					goto l66
 				}
 				if !_rules[ruleSpLn]() {
@@ -1046,7 +1046,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			position, tokenIndex = position66, tokenIndex66
 			return false
 		},
-		/* 17 Args <- <(PRN SpOpt (WdLowCase Tp ',')+ SpOpt PRNE)> */
+		/* 17 Args <- <(PRN SpOpt (Wrd Tp ',')+ SpOpt PRNE)> */
 		func() bool {
 			position70, tokenIndex70 := position, tokenIndex
 			{
@@ -1057,7 +1057,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 				if !_rules[ruleSpOpt]() {
 					goto l70
 				}
-				if !_rules[ruleWdLowCase]() {
+				if !_rules[ruleWrd]() {
 					goto l70
 				}
 				if !_rules[ruleTp]() {
@@ -1070,7 +1070,7 @@ func (p *GAPIParser) Init(options ...func(*GAPIParser) error) error {
 			l72:
 				{
 					position73, tokenIndex73 := position, tokenIndex
-					if !_rules[ruleWdLowCase]() {
+					if !_rules[ruleWrd]() {
 						goto l73
 					}
 					if !_rules[ruleTp]() {

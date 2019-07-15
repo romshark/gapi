@@ -8,22 +8,22 @@ Schema <- SpOpt DclSc (SpOpt (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / Dc
 
 DclSc <- KSC SpLn WdLowCase
 DclAl <- KAL SpLn TpName SpLn OEQ SpLn TpName
-DclEn <- KEN SpLn TpName SpLnOpt BlkEn
+DclEn <- KEN SpLn Wrd SpLnOpt BlkEn
 DclSt <- KST SpLn TpName SpLnOpt BlkSt
 DclRv <- KRV SpLn TpName SpLnOpt BlkRv
 DclTr <- KTR SpLn TpName SpLnOpt BlkRv
 DclUn <- KUN SpLn Wrd SpLnOpt BlkUn
-DclQr <- KQR SpLn WdLowCase SpLnOpt Args? SpLnOpt Tp
-DclMt <- KMT SpLn WdLowCase SpLnOpt Args? SpLnOpt Tp
-DclSb <- KSB SpLn WdLowCase SpLnOpt Args? SpLnOpt Tp
-BlkEn <- BLK (SpOpt WdLowCase)+ SpOpt BLKE
+DclQr <- KQR SpLn Wrd SpLnOpt Args? SpLnOpt Tp
+DclMt <- KMT SpLn Wrd SpLnOpt Args? SpLnOpt Tp
+DclSb <- KSB SpLn Wrd SpLnOpt Args? SpLnOpt Tp
+BlkEn <- BLK (SpOpt Wrd)+ SpOpt BLKE
 BlkSt <- BLK SpOpt PropSt+ SpOpt BLKE
 BlkRv <- BLK SpOpt PropRv+ SpOpt BLKE
 BlkUn <- BLK (SpOpt Wrd)+ SpOpt BLKE
-PropSt <- WdLowCase SpLn Tp
-PropRv <- WdLowCase SpLn Args? Tp
+PropSt <- Wrd SpLn Tp
+PropRv <- Wrd SpLn Args? Tp
 
-Args <- PRN SpOpt (WdLowCase Tp ',')+ SpOpt PRNE
+Args <- PRN SpOpt (Wrd Tp ',')+ SpOpt PRNE
 
 Tp <- TpName / TpNullable / TpList
 TpNullable <- '?' Tp

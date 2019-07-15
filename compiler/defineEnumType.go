@@ -10,12 +10,21 @@ func (c *Compiler) defineEnumType(
 	node *node32,
 ) error {
 	current := node.up.next.next
-	typeName := getSrc(source, node.up.next.next)
+	newEnumTypeName := getSrc(source, node.up.next.next)
+
+	if err := verifyTypeName(newEnumTypeName); err != nil {
+		return errors.Errorf(
+			"invalid enum type identifier %d:%d: %s",
+			current.begin,
+			current.end,
+			err,
+		)
+	}
 
 	newType := &TypeEnum{
 		typeBaseInfo: typeBaseInfo{
 			src:  src(node),
-			name: typeName,
+			name: newEnumTypeName,
 		},
 		Values: make(map[string]EnumValue),
 	}
@@ -24,6 +33,15 @@ func (c *Compiler) defineEnumType(
 	current = current.next.next.up.next.next
 	for {
 		valueName := source[current.begin:current.end]
+
+		if err := verifyEnumValue(valueName); err != nil {
+			return errors.Errorf(
+				"invalid enum value identifier at %d:%d: %s",
+				current.begin,
+				current.end,
+				err,
+			)
+		}
 
 		// Check for duplicate values
 		if defined, isDefined := newType.Values[valueName]; isDefined {
