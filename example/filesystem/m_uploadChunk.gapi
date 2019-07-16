@@ -1,0 +1,15 @@
+schema filesystem
+
+mutation uploadChunk(
+	id FileID,
+	offset Uint64,
+	chunk []Byte,
+) ResUploadChunk
+
+union ResUploadChunk {
+	File
+	ErrUnauth
+	ErrNotFound
+	ErrSkippedChunk
+	ErrOutOfBound
+}

@@ -1,0 +1,12 @@
+schema filesystem
+
+mutation revokeShare(
+	objectId ID,
+	user UserID,
+) ?ResRevokeShare
+
+union ResRevokeShare {
+	ErrUnauth
+	ErrNotFound
+	ErrUserNotFound
+}

@@ -1,0 +1,12 @@
+schema filesystem
+
+mutation editUser(
+	name ?String,
+	password ?String,
+) ResEditUser
+
+union ResEditUser {
+	User
+	ErrUnauth
+	ErrInvalidInput
+}

@@ -1,0 +1,3 @@
+schema filesystem
+
+subscription objectCreated(in ?Destination) Object

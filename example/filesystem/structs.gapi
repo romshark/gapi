@@ -1,0 +1,6 @@
+schema filesystem
+
+struct Access {
+	users User
+	since Time
+}

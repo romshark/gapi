@@ -1,0 +1,13 @@
+schema filesystem
+
+mutation createCollection(
+	destination Destination,
+	name String,
+) ResCreateCollection
+
+union ResCreateCollection {
+	Collection
+	ErrUnauth
+	ErrInvalidInput
+	ErrNameReserved
+}

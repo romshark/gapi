@@ -1,0 +1,10 @@
+schema filesystem
+
+alias ErrUnauth = None
+alias ErrNotFound = None
+alias ErrUserNotFound = None
+alias ErrDestinationNotFound = None
+alias ErrInvalidInput = String
+alias ErrNameReserved = None
+alias ErrSkippedChunk = None
+alias ErrOutOfBound = None

@@ -1,0 +1,5 @@
+schema filesystem
+
+query user(id ID) ?User
+query file(id ID) ?File
+query collection(id ID) ?QrCollection

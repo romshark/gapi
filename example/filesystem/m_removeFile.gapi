@@ -1,0 +1,8 @@
+schema filesystem
+
+mutation removeFile(id FileID) ?ResRemoveFile
+
+union ResRemoveFile {
+	ErrUnauth
+	ErrNotFound
+}

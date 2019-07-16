@@ -1,0 +1,16 @@
+schema filesystem
+
+union Parent {
+	Collection
+	Directory
+}
+
+union Destination {
+	CollectionID
+	UserID
+}
+
+union QrCollection {
+	Collection
+	ErrUnauth
+}

@@ -1,0 +1,54 @@
+schema filesystem
+
+resolver User {
+	id       ID
+	name     String
+	home     Directory
+	trash    Directory
+	sessions []Session
+}
+
+resolver ObjectInfo {
+	id       ID
+	name     String
+	creation Time
+	owner    User
+	parent   Parent
+	access   []Access
+	tags     []String
+}
+
+resolver Directory {
+	type        DirectoryType
+	owner       User
+	size        Uint64
+	files       []File
+	collections []Collection
+	objects     []Object
+}
+
+resolver Collection {
+	object      ObjectInfo
+	size        Uint64
+	files       []File
+	collections []Directory
+	objects     []Object
+}
+
+resolver File {
+	object    ObjectInfo
+	mimeType  String
+	bodySize  Uint64
+	uploading Bool
+	body(
+		offset Uint64,
+		length Uint64,
+	) []Byte
+}
+
+resolver Session {
+	user     User
+	creation Time
+	ip       String
+	agent    String
+}

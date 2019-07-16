@@ -1,0 +1,6 @@
+schema filesystem
+
+trait Object {
+	object ObjectInfo
+	access []Access
+}

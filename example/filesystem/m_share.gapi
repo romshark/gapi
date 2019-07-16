@@ -1,0 +1,13 @@
+schema filesystem
+
+mutation share(
+	objectId ID,
+	user UserID,
+	message ?String,
+) ?ResShare
+
+union ResShare {
+	ErrUnauth
+	ErrNotFound
+	ErrUserNotFound
+}

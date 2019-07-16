@@ -1,0 +1,6 @@
+schema filesystem
+
+enum DirectoryType {
+	home
+	trash
+}

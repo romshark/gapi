@@ -1,0 +1,11 @@
+schema filesystem
+
+mutation removeCollection(
+	id CollectionID,
+	recursively Bool,
+) ?ResRemoveCollection
+
+union ResRemoveCollection {
+	ErrUnauth
+	ErrNotFound
+}

@@ -1,0 +1,13 @@
+schema filesystem
+
+mutation moveFile(
+	id FileID,
+	destination Destination,
+) ResMoveFile
+
+union ResMoveFile {
+	Collection
+	ErrUnauth
+	ErrNotFound
+	ErrDestinationNotFound
+}

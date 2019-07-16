@@ -1,0 +1,6 @@
+schema filesystem
+
+alias ID = String
+alias UserID = ID
+alias FileID = ID
+alias CollectionID = ID

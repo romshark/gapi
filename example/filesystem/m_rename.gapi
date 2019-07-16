@@ -1,0 +1,8 @@
+schema filesystem
+
+mutation rename(objectId ID, newName String) ResRename
+
+union ResRename {
+	ErrUnauth
+	ErrNotFound
+}

@@ -1,0 +1,3 @@
+schema filesystem
+
+mutation closeAllSessions(userId UserID) ?ErrUnauth

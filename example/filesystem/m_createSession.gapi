@@ -1,0 +1,11 @@
+schema filesystem
+
+mutation createSession(
+	name String,
+	password String,
+) ResCreateSession
+
+union ResCreateSession {
+	Session
+	ErrUnauth
+}

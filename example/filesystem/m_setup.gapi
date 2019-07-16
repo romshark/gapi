@@ -1,0 +1,13 @@
+schema filesystem
+
+mutation setup(
+	setupCode String,
+	adminName String,
+	adminPassword String,
+) ResSetup
+
+union ResSetup {
+	User
+	ErrUnauth
+	ErrInvalidInput
+}

@@ -1,0 +1,3 @@
+schema filesystem
+
+mutation closeSession(sessionId String) ?ErrUnauth

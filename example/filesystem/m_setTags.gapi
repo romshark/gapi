@@ -1,0 +1,3 @@
+schema filesystem
+
+mutation setTags(objectId ID, newTags []String) Object

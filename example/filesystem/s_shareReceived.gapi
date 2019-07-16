@@ -1,0 +1,9 @@
+schema filesystem
+
+subscription shareReceived ShareReceived
+
+resolver ShareReceived {
+	object  Object
+	from    User
+	message ?String
+}

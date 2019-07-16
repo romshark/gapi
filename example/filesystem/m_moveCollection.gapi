@@ -1,0 +1,13 @@
+schema filesystem
+
+mutation moveCollection(
+	id CollectionID,
+	destination Destination,
+) ResMoveCollection
+
+union ResMoveCollection {
+	Collection
+	ErrUnauth
+	ErrNotFound
+	ErrDestinationNotFound
+}

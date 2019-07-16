@@ -1,0 +1,13 @@
+schema filesystem
+
+mutation createFile(
+	destination Destination,
+	name String,
+) ResCreateFile
+
+union ResCreateFile {
+	File
+	ErrUnauth
+	ErrInvalidInput
+	ErrNameReserved
+}

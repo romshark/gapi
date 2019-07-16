@@ -1,0 +1,12 @@
+schema filesystem
+
+mutation createUser(
+	name String,
+	password String,
+) ResCreateUser
+
+union ResCreateUser {
+	User
+	ErrUnauth
+	ErrNameReserved
+}
