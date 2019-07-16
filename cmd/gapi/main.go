@@ -25,17 +25,17 @@ func main() {
 	}
 
 	// Initialize compiler
-	compiler, err := compiler.NewCompiler()
+	compiler, err := compiler.NewCompiler(string(fileContents))
 	if err != nil {
 		log.Fatalf("compiler init: %s", err)
 	}
 
 	// Compile
-	ast, err := compiler.Compile(string(fileContents))
-	if err != nil {
+	if err := compiler.Compile(); err != nil {
 		log.Fatalf("compiler: %s", err)
 	}
 
+	ast := compiler.AST()
 	log.Print("SUCCESS: ", ast)
 	log.Print("SCHEMA NAME: ", ast.SchemaName)
 }
