@@ -9,9 +9,9 @@ Schema <- SpOpt DclSc (SpOpt (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / Dc
 DclSc <- KSC SpLn Wrd
 DclAl <- KAL SpLn Wrd SpLn OEQ SpLn Wrd
 DclEn <- KEN SpLn Wrd SpLnOpt BlkEn
-DclSt <- KST SpLn TpName SpLnOpt BlkSt
-DclRv <- KRV SpLn TpName SpLnOpt BlkRv
-DclTr <- KTR SpLn TpName SpLnOpt BlkRv
+DclSt <- KST SpLn Wrd SpLnOpt BlkSt
+DclRv <- KRV SpLn Wrd SpLnOpt BlkRv
+DclTr <- KTR SpLn Wrd SpLnOpt BlkRv
 DclUn <- KUN SpLn Wrd SpLnOpt BlkUn
 DclQr <- KQR SpLn Wrd SpLnOpt Args? SpLnOpt Tp
 DclMt <- KMT SpLn Wrd SpLnOpt Args? SpLnOpt Tp
@@ -25,11 +25,9 @@ PropRv <- Wrd SpLn Args? Tp
 
 Args <- PRN SpOpt (Wrd Tp ',')+ SpOpt PRNE
 
-Tp <- TpName / TpNullable / TpList
+Tp <- Wrd / TpNullable / TpList
 TpNullable <- '?' Tp
 TpList <- '[]' Tp
-
-TpName <- [A-Z][a-zA-Z0-9]*
 
 Wrd <- [a-zA-Z0-9_]+
 
