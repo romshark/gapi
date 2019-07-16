@@ -59,9 +59,9 @@ func (c ErrCode) String() string {
 	case ErrAliasRecurs:
 		return "AliasRecurs"
 	case ErrEnumValIllegalIdent:
-		return "EnumValueIllegalIdent"
+		return "EnumValIllegalIdent"
 	case ErrEnumValRedecl:
-		return "EnumValueRedecl"
+		return "EnumValRedecl"
 	case ErrUnionRedund:
 		return "UnionRedund"
 	case ErrUnionSelfref:
