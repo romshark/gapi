@@ -38,6 +38,9 @@ const (
 
 	// ErrUnionMissingOpts indicates a union type with too little option types
 	ErrUnionMissingOpts
+
+	// ErrUnionIncludesNone indicates a union type including the None type
+	ErrUnionIncludesNone
 )
 
 // String stringifies the error code
@@ -65,6 +68,8 @@ func (c ErrCode) String() string {
 		return "UnionSelfref"
 	case ErrUnionMissingOpts:
 		return "UnionMissingOpts"
+	case ErrUnionIncludesNone:
+		return "UnionIncludesNone"
 	}
 	return ""
 }

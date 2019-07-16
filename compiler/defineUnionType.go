@@ -89,7 +89,7 @@ func (c *Compiler) defineUnionType(node *node32) error {
 	}
 
 	c.deferJob(func() error {
-		// Ensure all referenced types are defined
+		// Ensure all referenced types are defined and legal
 		for name := range newType.Types {
 			reg := c.ast.FindTypeByName("", name)
 			if reg == nil {
@@ -111,6 +111,18 @@ func (c *Compiler) defineUnionType(node *node32) error {
 					ErrUnionSelfref,
 					fmt.Sprintf(
 						"union type %s references itself at %d:%d",
+						newUnionTypeName,
+						node.begin,
+						node.end,
+					),
+				})
+				continue
+			}
+			if _, isNone := reg.(TypeStdNone); isNone {
+				c.err(cErr{
+					ErrUnionIncludesNone,
+					fmt.Sprintf(
+						"union type %s includes the None primitive at %d:%d",
 						newUnionTypeName,
 						node.begin,
 						node.end,
