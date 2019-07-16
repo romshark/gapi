@@ -494,5 +494,13 @@ func TestDeclUnionTypeErrs(t *testing.T) {
 				compiler.ErrTypeIllegalIdent,
 			},
 		},
+		"IncludesNone": ErrCase{
+			Src: `schema test
+			union U {
+				Int32
+				None
+			}`,
+			Errs: []ErrCode{compiler.ErrUnionIncludesNone},
+		},
 	})
 }
