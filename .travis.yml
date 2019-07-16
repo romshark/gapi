@@ -30,10 +30,10 @@ script:
   - golangci-lint run ./...
 
   # golint
-  - golint -set_exit_status $(go list ./...)
+  - golint ./...
 
   # Build cmd/gapi
-  - go build -o gapi cmd/gapi
+  - go build -o gapi ./cmd/gapi
 
   # Run all the tests with the race detector enabled
   - overalls -project=github.com/romshark/gapi -covermode=atomic -debug -- -race -v -coverpkg=./...
