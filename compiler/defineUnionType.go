@@ -91,7 +91,7 @@ func (c *Compiler) defineUnionType(node *node32) error {
 	c.deferJob(func() error {
 		// Ensure all referenced types are defined
 		for name := range newType.Types {
-			reg := c.ast.typeByName(name)
+			reg := c.ast.FindTypeByName("", name)
 			if reg == nil {
 				c.err(cErr{
 					ErrTypeUndef,

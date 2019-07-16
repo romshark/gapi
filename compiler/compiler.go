@@ -1,7 +1,9 @@
 package compiler
 
 import (
+	"fmt"
 	"log"
+	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -72,6 +74,7 @@ func getSrc(source string, token *node32) string {
 type Compiler struct {
 	parser       GAPIParser
 	errors       []Error
+	errorsLock   *sync.Mutex
 	deferredJobs []job
 	ast          *AST
 }
@@ -79,6 +82,7 @@ type Compiler struct {
 // NewCompiler creates a new compiler instance
 func NewCompiler(source string) (*Compiler, error) {
 	c := &Compiler{
+		errorsLock: &sync.Mutex{},
 		parser: GAPIParser{
 			Buffer: source,
 		},
@@ -103,7 +107,9 @@ func (c *Compiler) err(err Error) {
 	if err.Code() == 0 {
 		panic("invalid error code (0)")
 	}
+	c.errorsLock.Lock()
 	c.errors = append(c.errors, err)
+	c.errorsLock.Unlock()
 }
 
 // resetState resets the compiler
@@ -142,7 +148,12 @@ func (c *Compiler) Compile() error {
 	// Get parse-tree
 	root := c.parser.AST()
 	c.ast = &AST{
-		Types: make(map[string]Type),
+		Types:          make([]Type, 0),
+		AliasTypes:     make([]Type, 0),
+		EnumTypes:      make([]Type, 0),
+		UnionTypes:     make([]Type, 0),
+		QueryEndpoints: make([]QueryEndpoint, 0),
+		Mutations:      make([]Mutation, 0),
 	}
 
 	// Extract schema name
@@ -203,6 +214,37 @@ func (c *Compiler) Compile() error {
 			return errors.Wrap(fatalErr, "fatal compiler error")
 		}
 	}
+
+	wg := &sync.WaitGroup{}
+
+	// Sort everything by name (ascending)
+	wg.Add(4)
+	go func() { sortTypesByName(c.ast.Types); wg.Done() }()
+	go func() { sortTypesByName(c.ast.AliasTypes); wg.Done() }()
+	go func() { sortTypesByName(c.ast.EnumTypes); wg.Done() }()
+	go func() { sortTypesByName(c.ast.UnionTypes); wg.Done() }()
+	//TODO: sort struct types
+	//TODO: sort trait types
+	//TODO: sort resolver types
+	//TODO: sort resolver types
+	//TODO: sort query endpoints
+	//TODO: sort mutations
+	wg.Wait()
+
+	wg.Add(1)
+	go func() {
+		// Find all recursive alias type cycles
+		defer wg.Done()
+		cycles := c.ast.findAliasTypeCycles()
+		for _, cycle := range cycles {
+			c.err(cErr{
+				ErrAliasRecurs,
+				fmt.Sprintf("Recursive alias type cycle: %s", cycle.String()),
+			})
+		}
+	}()
+
+	wg.Wait()
 
 	if len(c.errors) > 0 {
 		return errors.Errorf("%d compiler errors", len(c.errors))

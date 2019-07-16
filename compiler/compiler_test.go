@@ -101,45 +101,41 @@ func TestDeclSchemaErrs(t *testing.T) {
 func TestDeclAliasTypes(t *testing.T) {
 	src := `schema test
 	
-	alias T1 = String
-	alias T2 = Uint32
-	alias T3 = T1
+	alias A1 = String
+	alias A2 = Uint32
+	alias A3 = A1
 	`
 
 	test(t, src, func(ast AST) {
-		require.Len(t, ast.Types, 3)
 		require.Len(t, ast.QueryEndpoints, 0)
 		require.Len(t, ast.Mutations, 0)
-		require.Contains(t, ast.Types, "T1")
-		require.Contains(t, ast.Types, "T2")
-		require.Contains(t, ast.Types, "T3")
 
-		t1 := ast.Types["T1"]
-		t2 := ast.Types["T2"]
-		t3 := ast.Types["T3"]
+		require.Len(t, ast.Types, 3)
+		a1 := ast.Types[0]
+		a2 := ast.Types[1]
+		a3 := ast.Types[2]
 
-		require.Equal(t, "T1", t1.Name())
-		require.Equal(t, compiler.TypeCategoryAlias, t1.Category())
-		require.IsType(t, &compiler.TypeAlias{}, t1)
-		require.Equal(
-			t,
-			compiler.TypeStdString{},
-			t1.(*compiler.TypeAlias).AliasedType,
-		)
+		type Expectation struct {
+			Name        string
+			Type        compiler.Type
+			AliasedType compiler.Type
+		}
+		expected := []Expectation{
+			Expectation{"A1", a1, compiler.TypeStdString{}},
+			Expectation{"A2", a2, compiler.TypeStdUint32{}},
+			Expectation{"A3", a3, a1},
+		}
 
-		require.Equal(t, "T2", t2.Name())
-		require.Equal(t, compiler.TypeCategoryAlias, t2.Category())
-		require.IsType(t, &compiler.TypeAlias{}, t2)
-		require.Equal(
-			t,
-			compiler.TypeStdUint32{},
-			t2.(*compiler.TypeAlias).AliasedType,
-		)
-
-		require.Equal(t, "T3", t3.Name())
-		require.Equal(t, compiler.TypeCategoryAlias, t3.Category())
-		require.IsType(t, &compiler.TypeAlias{}, t3)
-		require.Equal(t, t1, t3.(*compiler.TypeAlias).AliasedType)
+		for _, expec := range expected {
+			require.Equal(t, expec.Name, expec.Type.Name())
+			require.Equal(t, compiler.TypeCategoryAlias, a1.Category())
+			require.IsType(t, &compiler.TypeAlias{}, a1)
+			require.Equal(
+				t,
+				expec.AliasedType,
+				expec.Type.(*compiler.TypeAlias).AliasedType,
+			)
+		}
 	})
 }
 
@@ -181,16 +177,42 @@ func TestDeclAliasTypeErrs(t *testing.T) {
 			alias A = Undefined`,
 			Errs: []ErrCode{compiler.ErrTypeUndef},
 		},
-		"DirectlyRecursiveAlias": ErrCase{
+		"DirectAliasCycle": ErrCase{
 			Src: `schema test
 			alias A = A`,
-			Errs: []ErrCode{compiler.ErrAliasRecur},
+			Errs: []ErrCode{compiler.ErrAliasRecurs},
 		},
-		"IndirectlyRecursiveAlias": ErrCase{
+		"IndirectAliasCycle1": ErrCase{
 			Src: `schema test
 			alias A = B
 			alias B = A`,
-			Errs: []ErrCode{compiler.ErrAliasRecur},
+			Errs: []ErrCode{compiler.ErrAliasRecurs},
+		},
+		"IndirectAliasCycle2": ErrCase{
+			Src: `schema test
+			alias G = H
+			alias H = String
+			alias F = C
+			alias A = B
+			alias B = C
+			alias C = D
+			alias D = A`,
+			Errs: []ErrCode{compiler.ErrAliasRecurs},
+		},
+		"MultipleIndirectAliasesCycles": ErrCase{
+			Src: `schema test
+			alias A = A
+			alias B = C
+			alias C = D
+			alias D = B
+			alias H = K
+			alias K = I
+			alias I = K`,
+			Errs: []ErrCode{
+				compiler.ErrAliasRecurs,
+				compiler.ErrAliasRecurs,
+				compiler.ErrAliasRecurs,
+			},
 		},
 	})
 }
@@ -216,23 +238,32 @@ func TestDeclEnumTypes(t *testing.T) {
 	test(t, src, func(ast AST) {
 		require.Len(t, ast.QueryEndpoints, 0)
 		require.Len(t, ast.Mutations, 0)
+		require.Len(t, ast.Types, 3)
 
-		expected := map[string][]string{
-			"E1": []string{"oneVal"},
-			"E2": []string{"foo", "bar"},
-			"E3": []string{"foo1", "bar2", "baz3"},
+		e1 := ast.EnumTypes[0]
+		e2 := ast.EnumTypes[1]
+		e3 := ast.EnumTypes[2]
+
+		type Expectation struct {
+			Name   string
+			Type   compiler.Type
+			Values []string
+		}
+		expected := []Expectation{
+			Expectation{"E1", e1, []string{"oneVal"}},
+			Expectation{"E2", e2, []string{"foo", "bar"}},
+			Expectation{"E3", e3, []string{"foo1", "bar2", "baz3"}},
 		}
 
-		require.Len(t, ast.Types, len(expected))
-		for name, vals := range expected {
-			require.Contains(t, ast.Types, name)
-			tp := ast.Types[name]
-			require.Equal(t, name, tp.Name())
-			require.Equal(t, compiler.TypeCategoryEnum, tp.Category())
-			require.IsType(t, &compiler.TypeEnum{}, tp)
-			tpe := tp.(*compiler.TypeEnum)
-			for _, val := range vals {
+		for _, expec := range expected {
+			require.Equal(t, expec.Name, expec.Type.Name())
+			require.NotNil(t, ast.FindTypeByName("", expec.Name))
+			require.Equal(t, compiler.TypeCategoryEnum, expec.Type.Category())
+			require.IsType(t, &compiler.TypeEnum{}, expec.Type)
+			tpe := expec.Type.(*compiler.TypeEnum)
+			for _, val := range expec.Values {
 				require.Contains(t, tpe.Values, val)
+				require.Equal(t, tpe.Values[val].Name, val)
 			}
 		}
 	})
@@ -338,35 +369,46 @@ func TestDeclUnionTypes(t *testing.T) {
 	test(t, src, func(ast AST) {
 		require.Len(t, ast.QueryEndpoints, 0)
 		require.Len(t, ast.Mutations, 0)
+		require.Len(t, ast.Types, 3)
 
-		expected := map[string][]compiler.Type{
-			"U1": []compiler.Type{
+		u1 := ast.UnionTypes[0]
+		u2 := ast.UnionTypes[1]
+		u3 := ast.UnionTypes[2]
+
+		type Expectation struct {
+			Name  string
+			Type  compiler.Type
+			Types []compiler.Type
+		}
+		expected := []Expectation{
+			Expectation{"U1", u1, []compiler.Type{
 				compiler.TypeStdString{},
 				compiler.TypeStdUint32{},
-			},
-			"U2": []compiler.Type{
+			}},
+			Expectation{"U2", u2, []compiler.Type{
 				compiler.TypeStdUint32{},
 				compiler.TypeStdFloat64{},
 				compiler.TypeStdString{},
-			},
-			"U3": []compiler.Type{
+			}},
+			Expectation{"U3", u3, []compiler.Type{
 				compiler.TypeStdString{},
 				compiler.TypeStdFloat64{},
 				compiler.TypeStdInt32{},
 				compiler.TypeStdInt64{},
-			},
+			}},
 		}
-
-		require.Len(t, ast.Types, len(expected))
-		for name, expectedReferencedTypes := range expected {
-			require.Contains(t, ast.Types, name)
-			tp := ast.Types[name]
-			require.Equal(t, name, tp.Name())
-			require.Equal(t, compiler.TypeCategoryUnion, tp.Category())
-			require.IsType(t, &compiler.TypeUnion{}, tp)
-			tpe := tp.(*compiler.TypeUnion)
-			for _, referencedType := range expectedReferencedTypes {
+		for _, expec := range expected {
+			require.Equal(t, expec.Name, expec.Type.Name())
+			require.Equal(t, compiler.TypeCategoryUnion, expec.Type.Category())
+			require.IsType(t, &compiler.TypeUnion{}, expec.Type)
+			tpe := expec.Type.(*compiler.TypeUnion)
+			for _, referencedType := range expec.Types {
 				require.Contains(t, tpe.Types, referencedType.Name())
+				require.Equal(
+					t,
+					referencedType,
+					tpe.Types[referencedType.Name()],
+				)
 			}
 		}
 	})

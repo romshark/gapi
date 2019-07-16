@@ -4,8 +4,11 @@ package compiler
 type TypeCategory string
 
 const (
-	// TypeCategoryScalarStd represents a standard scalar type
-	TypeCategoryScalarStd TypeCategory = "stdScalar"
+	// TypeCategoryPrimitive represents a standard scalar type
+	TypeCategoryPrimitive TypeCategory = "primitive"
+
+	// TypeCategoryUserDefined represents all user-defined types
+	TypeCategoryUserDefined TypeCategory = "user-defined"
 
 	// TypeCategoryAlias represents an alias type
 	TypeCategoryAlias TypeCategory = "alias"

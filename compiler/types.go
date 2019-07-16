@@ -85,7 +85,7 @@ func (t TypeStdNone) Src() Src { return Src{} }
 func (t TypeStdNone) Name() string { return "None" }
 
 // Category implements the Type interface
-func (t TypeStdNone) Category() TypeCategory { return TypeCategoryScalarStd }
+func (t TypeStdNone) Category() TypeCategory { return TypeCategoryPrimitive }
 
 /****************************************************************
 	Standard Bool
@@ -101,7 +101,7 @@ func (t TypeStdBool) Src() Src { return Src{} }
 func (t TypeStdBool) Name() string { return "Bool" }
 
 // Category implements the Type interface
-func (t TypeStdBool) Category() TypeCategory { return TypeCategoryScalarStd }
+func (t TypeStdBool) Category() TypeCategory { return TypeCategoryPrimitive }
 
 /****************************************************************
 	Standard Byte
@@ -117,7 +117,7 @@ func (t TypeStdByte) Src() Src { return Src{} }
 func (t TypeStdByte) Name() string { return "Byte" }
 
 // Category implements the Type interface
-func (t TypeStdByte) Category() TypeCategory { return TypeCategoryScalarStd }
+func (t TypeStdByte) Category() TypeCategory { return TypeCategoryPrimitive }
 
 /****************************************************************
 	Standard Int32
@@ -133,7 +133,7 @@ func (t TypeStdInt32) Src() Src { return Src{} }
 func (t TypeStdInt32) Name() string { return "Int32" }
 
 // Category implements the Type interface
-func (t TypeStdInt32) Category() TypeCategory { return TypeCategoryScalarStd }
+func (t TypeStdInt32) Category() TypeCategory { return TypeCategoryPrimitive }
 
 /****************************************************************
 	Standard Uint32
@@ -149,7 +149,7 @@ func (t TypeStdUint32) Src() Src { return Src{} }
 func (t TypeStdUint32) Name() string { return "Uint32" }
 
 // Category implements the Type interface
-func (t TypeStdUint32) Category() TypeCategory { return TypeCategoryScalarStd }
+func (t TypeStdUint32) Category() TypeCategory { return TypeCategoryPrimitive }
 
 /****************************************************************
 	Standard Int64
@@ -165,7 +165,7 @@ func (t TypeStdInt64) Src() Src { return Src{} }
 func (t TypeStdInt64) Name() string { return "Int64" }
 
 // Category implements the Type interface
-func (t TypeStdInt64) Category() TypeCategory { return TypeCategoryScalarStd }
+func (t TypeStdInt64) Category() TypeCategory { return TypeCategoryPrimitive }
 
 /****************************************************************
 	Standard Uint64
@@ -181,7 +181,7 @@ func (t TypeStdUint64) Src() Src { return Src{} }
 func (t TypeStdUint64) Name() string { return "Uint64" }
 
 // Category implements the Type interface
-func (t TypeStdUint64) Category() TypeCategory { return TypeCategoryScalarStd }
+func (t TypeStdUint64) Category() TypeCategory { return TypeCategoryPrimitive }
 
 /****************************************************************
 	Standard Float64
@@ -198,7 +198,7 @@ func (t TypeStdFloat64) Name() string { return "Float64" }
 
 // Category implements the Type interface
 func (t TypeStdFloat64) Category() TypeCategory {
-	return TypeCategoryScalarStd
+	return TypeCategoryPrimitive
 }
 
 /****************************************************************
@@ -215,7 +215,7 @@ func (t TypeStdString) Src() Src { return Src{} }
 func (t TypeStdString) Name() string { return "String" }
 
 // Category implements the Type interface
-func (t TypeStdString) Category() TypeCategory { return TypeCategoryScalarStd }
+func (t TypeStdString) Category() TypeCategory { return TypeCategoryPrimitive }
 
 /****************************************************************
 	Standard Time
@@ -231,7 +231,7 @@ func (t TypeStdTime) Src() Src { return Src{} }
 func (t TypeStdTime) Name() string { return "Time" }
 
 // Category implements the Type interface
-func (t TypeStdTime) Category() TypeCategory { return TypeCategoryScalarStd }
+func (t TypeStdTime) Category() TypeCategory { return TypeCategoryPrimitive }
 
 /****************************************************************
 	Struct

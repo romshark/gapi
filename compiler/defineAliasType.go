@@ -1,6 +1,8 @@
 package compiler
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (c *Compiler) defineAliasType(node *node32) error {
 	aliasTypeNameNode := node.up.next.next
@@ -38,18 +40,6 @@ func (c *Compiler) defineAliasType(node *node32) error {
 		return nil
 	}
 
-	if newAliasTypeName == aliasedTypeName {
-		c.err(cErr{
-			ErrAliasRecur,
-			fmt.Sprintf(
-				"recursive alias type %s at %d:%d (direct)",
-				newAliasTypeName,
-				node.begin,
-				node.end,
-			),
-		})
-	}
-
 	newType := &TypeAlias{
 		typeBaseInfo: typeBaseInfo{
 			src:  src(node),
@@ -65,7 +55,7 @@ func (c *Compiler) defineAliasType(node *node32) error {
 
 	c.deferJob(func() error {
 		// Ensure the aliased type exists after all types have been defined
-		aliasedType := c.ast.typeByName(aliasedTypeName)
+		aliasedType := c.ast.FindTypeByName("", aliasedTypeName)
 		if aliasedType == nil {
 			c.err(cErr{ErrTypeUndef, fmt.Sprintf(
 				"undefined type %s aliased by %s at %d:%d",
