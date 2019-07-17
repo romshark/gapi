@@ -706,6 +706,14 @@ func TestDeclStructTypeErrs(t *testing.T) {
 			struct S {}`,
 			Errs: []ErrCode{compiler.ErrStructNoFields},
 		},
+		"RedundantField": ErrCase{
+			Src: `schema test
+			struct S {
+				foo String
+				foo String
+			}`,
+			Errs: []ErrCode{compiler.ErrStructFieldRedecl},
+		},
 		"IllegalFieldIdentifier": ErrCase{
 			Src: `schema test
 			struct S {
