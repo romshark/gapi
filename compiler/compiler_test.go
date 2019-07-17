@@ -706,5 +706,38 @@ func TestDeclStructTypeErrs(t *testing.T) {
 			struct S {}`,
 			Errs: []ErrCode{compiler.ErrStructNoFields},
 		},
+		"IllegalFieldIdentifier": ErrCase{
+			Src: `schema test
+			struct S {
+				_foo String
+				_bar String
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrStructFieldIllegalIdent,
+				compiler.ErrStructFieldIllegalIdent,
+			},
+		},
+		"IllegalFieldIdentifier2": ErrCase{
+			Src: `schema test
+			struct S {
+				1foo String
+				2bar String
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrStructFieldIllegalIdent,
+				compiler.ErrStructFieldIllegalIdent,
+			},
+		},
+		"IllegalFieldIdentifier3": ErrCase{
+			Src: `schema test
+			struct S {
+				fo_o String
+				ba_r String
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrStructFieldIllegalIdent,
+				compiler.ErrStructFieldIllegalIdent,
+			},
+		},
 	})
 }
