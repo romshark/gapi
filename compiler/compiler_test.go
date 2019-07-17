@@ -673,3 +673,14 @@ func TestDeclStructTypes(t *testing.T) {
 		}
 	})
 }
+
+// TestDeclStructTypeErrs tests struct type declaration errors
+func TestDeclStructTypeErrs(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"NoFields": ErrCase{
+			Src: `schema test
+			struct S {}`,
+			Errs: []ErrCode{compiler.ErrStructNoFields},
+		},
+	})
+}

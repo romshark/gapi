@@ -17,7 +17,7 @@ DclQr <- KQR SpLn Wrd SpLnOpt Args? SpLnOpt Tp
 DclMt <- KMT SpLn Wrd SpLnOpt Args? SpLnOpt Tp
 DclSb <- KSB SpLn Wrd SpLnOpt Args? SpLnOpt Tp
 BlkEn <- BLK (SpOpt Wrd)* SpOpt BLKE
-BlkSt <- BLK (SpOpt StFld)+ SpOpt BLKE
+BlkSt <- BLK (SpOpt StFld)* SpOpt BLKE
 BlkRv <- BLK SpOpt RvPrp+ SpOpt BLKE
 BlkUn <- BLK (SpOpt Wrd)+ SpOpt BLKE
 StFld <- Wrd SpLn Tp

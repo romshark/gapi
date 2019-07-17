@@ -28,9 +28,11 @@ func (c *Compiler) defineStructType(node *node32) error {
 		Fields: make([]*StructField, 0),
 	}
 
+	checkFields := true
+
 	// Parse fields
 	current = current.next.next.up.next.next
-	for {
+	for current != nil {
 		field := current
 		fieldNameNode := field.up
 		fieldTypeNode := fieldNameNode.next.next
@@ -49,6 +51,7 @@ func (c *Compiler) defineStructType(node *node32) error {
 					err,
 				),
 			})
+			checkFields = false
 			goto NEXT
 		}
 
@@ -66,6 +69,7 @@ func (c *Compiler) defineStructType(node *node32) error {
 					field.End,
 				),
 			})
+			checkFields = false
 			goto NEXT
 		}
 
@@ -99,6 +103,18 @@ func (c *Compiler) defineStructType(node *node32) error {
 			break
 		}
 		current = next
+	}
+
+	if checkFields && len(newType.Fields) < 1 {
+		c.err(cErr{
+			ErrStructNoFields,
+			fmt.Sprintf(
+				"struct %s is missing fields at %d:%d",
+				newStructTypeName,
+				node.begin,
+				node.end,
+			),
+		})
 	}
 
 	// Try to define the type
