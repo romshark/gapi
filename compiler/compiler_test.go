@@ -1,6 +1,7 @@
 package compiler_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/romshark/gapi/compiler"
@@ -71,7 +72,13 @@ func testErrs(t *testing.T, cases map[string]ErrCase) {
 				}
 			}
 
-			require.Equal(t, expectedCodes, actualCodes)
+			actualErrMsgs := make([]string, len(actualErrs))
+			for i, err := range actualErrs {
+				actualErrMsgs[i] = err.Code().String() + ": " + err.Message()
+			}
+			errMsgs := "Actual errors:\n" + strings.Join(actualErrMsgs, ";\n")
+
+			require.Equal(t, expectedCodes, actualCodes, errMsgs)
 		})
 	}
 }
