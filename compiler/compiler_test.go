@@ -677,6 +677,30 @@ func TestDeclStructTypes(t *testing.T) {
 // TestDeclStructTypeErrs tests struct type declaration errors
 func TestDeclStructTypeErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
+		"IllegalTypeName": ErrCase{
+			Src: `schema test
+			struct illegalName {
+				foo String
+				bar String
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalTypeName2": ErrCase{
+			Src: `schema test
+			struct _IllegalName {
+				foo String
+				bar String
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalTypeName3": ErrCase{
+			Src: `schema test
+			struct Illegal_Name {
+				foo String
+				bar String
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
 		"NoFields": ErrCase{
 			Src: `schema test
 			struct S {}`,
