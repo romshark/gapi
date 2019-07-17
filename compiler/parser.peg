@@ -4,7 +4,7 @@ type GAPIParser Peg {
 
 }
 
-Schema <- SpOpt DclSc (SpOpt (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / DclQr / DclMt / DclSb))+ SpOpt
+Schema <- SpOpt DclSc (SpOpt (DclAl / DclEn / DclSt / DclTr / DclRv / DclUn / DclQr / DclMt / DclSb))* SpOpt
 
 DclSc <- KSC SpLn Wrd
 DclAl <- KAL SpLn Wrd SpLn OEQ SpLn Wrd
@@ -16,18 +16,16 @@ DclUn <- KUN SpLn Wrd SpLnOpt BlkUn
 DclQr <- KQR SpLn Wrd SpLnOpt Args? SpLnOpt Tp
 DclMt <- KMT SpLn Wrd SpLnOpt Args? SpLnOpt Tp
 DclSb <- KSB SpLn Wrd SpLnOpt Args? SpLnOpt Tp
-BlkEn <- BLK (SpOpt Wrd)+ SpOpt BLKE
-BlkSt <- BLK SpOpt PropSt+ SpOpt BLKE
-BlkRv <- BLK SpOpt PropRv+ SpOpt BLKE
+BlkEn <- BLK (SpOpt Wrd)* SpOpt BLKE
+BlkSt <- BLK (SpOpt StFld)+ SpOpt BLKE
+BlkRv <- BLK SpOpt RvPrp+ SpOpt BLKE
 BlkUn <- BLK (SpOpt Wrd)+ SpOpt BLKE
-PropSt <- Wrd SpLn Tp
-PropRv <- Wrd SpLn Args? Tp
+StFld <- Wrd SpLn Tp
+RvPrp <- Wrd SpLn Args? Tp
 
 Args <- PRN SpOpt (Wrd Tp ',')+ SpOpt PRNE
 
-Tp <- Wrd / TpNullable / TpList
-TpNullable <- '?' Tp
-TpList <- '[]' Tp
+Tp <- (ONU OLI / ONU / OLI)* Wrd
 
 Wrd <- [a-zA-Z0-9_]+
 
@@ -37,6 +35,8 @@ SpLnOpt <- (' ' / '\t')*
 SpVr <- ('\n' / '\r\n')+
 
 OEQ <- '='
+ONU <- '?'
+OLI <- '[]'
 
 KSC <- 'schema'
 KAL <- 'alias'

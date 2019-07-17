@@ -10,6 +10,7 @@ type AST struct {
 	AliasTypes     []Type
 	EnumTypes      []Type
 	UnionTypes     []Type
+	StructTypes    []Type
 	QueryEndpoints []QueryEndpoint
 	Mutations      []Mutation
 	SchemaName     string
@@ -33,6 +34,9 @@ func (ast *AST) Clone() *AST {
 	unionTypes := make([]Type, len(ast.UnionTypes))
 	copy(unionTypes, ast.UnionTypes)
 
+	structTypes := make([]Type, len(ast.StructTypes))
+	copy(structTypes, ast.StructTypes)
+
 	queryEndpoints := make([]QueryEndpoint, len(ast.QueryEndpoints))
 	copy(queryEndpoints, ast.QueryEndpoints)
 
@@ -44,6 +48,7 @@ func (ast *AST) Clone() *AST {
 		AliasTypes:     aliasTypes,
 		EnumTypes:      enumTypes,
 		UnionTypes:     unionTypes,
+		StructTypes:    structTypes,
 		QueryEndpoints: queryEndpoints,
 		Mutations:      mutations,
 		SchemaName:     ast.SchemaName,
@@ -130,6 +135,8 @@ func (ast *AST) defineType(newType Type) Error {
 		ast.EnumTypes = append(ast.EnumTypes, newType)
 	case TypeCategoryUnion:
 		ast.UnionTypes = append(ast.UnionTypes, newType)
+	case TypeCategoryStruct:
+		ast.StructTypes = append(ast.StructTypes, newType)
 	}
 
 	return nil

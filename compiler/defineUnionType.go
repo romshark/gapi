@@ -20,7 +20,7 @@ func (c *Compiler) defineUnionType(node *node32) error {
 	}
 
 	newType := &TypeUnion{
-		typeBaseInfo: typeBaseInfo{
+		terminalType: terminalType{
 			src:  src(node),
 			name: newUnionTypeName,
 		},

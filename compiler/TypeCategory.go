@@ -4,6 +4,12 @@ package compiler
 type TypeCategory string
 
 const (
+	// TypeCategoryOptional represents a primitive optional container type
+	TypeCategoryOptional TypeCategory = "optional"
+
+	// TypeCategoryList represents a primitive list container type
+	TypeCategoryList TypeCategory = "list"
+
 	// TypeCategoryPrimitive represents a standard scalar type
 	TypeCategoryPrimitive TypeCategory = "primitive"
 

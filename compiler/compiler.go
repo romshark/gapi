@@ -183,7 +183,7 @@ func (c *Compiler) Compile() error {
 			log.Print("Resolver type declaration")
 		case ruleDclSt:
 			// Struct type declaration
-			log.Print("Struct type declaration")
+			handler = c.defineStructType
 		case ruleDclTr:
 			// Trait type declaration
 			log.Print("Trait type declaration")
@@ -218,12 +218,12 @@ func (c *Compiler) Compile() error {
 	wg := &sync.WaitGroup{}
 
 	// Sort everything by name (ascending)
-	wg.Add(4)
+	wg.Add(5)
 	go func() { sortTypesByName(c.ast.Types); wg.Done() }()
 	go func() { sortTypesByName(c.ast.AliasTypes); wg.Done() }()
 	go func() { sortTypesByName(c.ast.EnumTypes); wg.Done() }()
 	go func() { sortTypesByName(c.ast.UnionTypes); wg.Done() }()
-	//TODO: sort struct types
+	go func() { sortTypesByName(c.ast.StructTypes); wg.Done() }()
 	//TODO: sort trait types
 	//TODO: sort resolver types
 	//TODO: sort resolver types
@@ -243,6 +243,7 @@ func (c *Compiler) Compile() error {
 			})
 		}
 	}()
+	//TODO: find all recursive structs
 
 	wg.Wait()
 

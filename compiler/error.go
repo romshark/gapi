@@ -21,8 +21,14 @@ const (
 	// ErrTypeIllegalIdent indicates an illegal type identifier
 	ErrTypeIllegalIdent
 
+	// ErrTypeOptChain indicates an illegal chain of optionals
+	ErrTypeOptChain
+
 	// ErrAliasRecurs indicates a recursive alias type
 	ErrAliasRecurs
+
+	// ErrEnumNoVal indicates an empty enumeration missing values
+	ErrEnumNoVal
 
 	// ErrEnumValIllegalIdent indicates an illegal enum value identifier
 	ErrEnumValIllegalIdent
@@ -41,6 +47,12 @@ const (
 
 	// ErrUnionIncludesNone indicates a union type including the None type
 	ErrUnionIncludesNone
+
+	// ErrStructFieldIllegalIdent indicates an illegal struct field identifier
+	ErrStructFieldIllegalIdent
+
+	// ErrStructFieldRedecl indicates a redeclared struct field
+	ErrStructFieldRedecl
 )
 
 // String stringifies the error code
@@ -56,8 +68,12 @@ func (c ErrCode) String() string {
 		return "TypeRedecl"
 	case ErrTypeIllegalIdent:
 		return "TypeIllegalIdent"
+	case ErrTypeOptChain:
+		return "TypeOptChain"
 	case ErrAliasRecurs:
 		return "AliasRecurs"
+	case ErrEnumNoVal:
+		return "EnumNoVal"
 	case ErrEnumValIllegalIdent:
 		return "EnumValIllegalIdent"
 	case ErrEnumValRedecl:
@@ -70,6 +86,10 @@ func (c ErrCode) String() string {
 		return "UnionMissingOpts"
 	case ErrUnionIncludesNone:
 		return "UnionIncludesNone"
+	case ErrStructFieldIllegalIdent:
+		return "StructFieldIllegalIdent"
+	case ErrStructFieldRedecl:
+		return "StructFieldRedecl"
 	}
 	return ""
 }

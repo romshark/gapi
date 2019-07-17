@@ -1,6 +1,8 @@
 package compiler
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (c *Compiler) defineEnumType(node *node32) error {
 	current := node.up.next.next
@@ -19,16 +21,18 @@ func (c *Compiler) defineEnumType(node *node32) error {
 	}
 
 	newType := &TypeEnum{
-		typeBaseInfo: typeBaseInfo{
+		terminalType: terminalType{
 			src:  src(node),
 			name: newEnumTypeName,
 		},
 		Values: make(map[string]EnumValue),
 	}
 
+	checkVals := true
+
 	// Parse values
 	current = current.next.next.up.next.next
-	for {
+	for current != nil {
 		valueName := c.parser.Buffer[current.begin:current.end]
 
 		if err := verifyEnumValue(valueName); err != nil {
@@ -41,6 +45,7 @@ func (c *Compiler) defineEnumType(node *node32) error {
 					err,
 				),
 			})
+			checkVals = false
 			goto NEXT
 		}
 
@@ -58,6 +63,7 @@ func (c *Compiler) defineEnumType(node *node32) error {
 					defined.End,
 				),
 			})
+			checkVals = false
 			goto NEXT
 		}
 
@@ -76,6 +82,19 @@ func (c *Compiler) defineEnumType(node *node32) error {
 			break
 		}
 		current = next
+	}
+
+	if checkVals && len(newType.Values) < 1 {
+		c.err(cErr{
+			ErrEnumNoVal,
+			fmt.Sprintf(
+				"enum %s is missing values at %d:%d",
+				newEnumTypeName,
+				node.begin,
+				node.end,
+			),
+		})
+		return nil
 	}
 
 	// Try to define the type

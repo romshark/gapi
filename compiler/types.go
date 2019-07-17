@@ -5,20 +5,22 @@ type Type interface {
 	Name() string
 	Src() Src
 	Category() TypeCategory
+	String() string
+
+	// TerminalType returns the terminal type or nil if the current
+	// type is already the terminal type
+	TerminalType() Type
 }
 
-type typeBaseInfo struct {
+type terminalType struct {
 	src  Src
 	name string
 }
 
-func (i typeBaseInfo) Src() Src {
-	return i.src
-}
-
-func (i typeBaseInfo) Name() string {
-	return i.name
-}
+func (i terminalType) Src() Src           { return i.src }
+func (i terminalType) Name() string       { return i.name }
+func (i terminalType) String() string     { return i.name }
+func (i terminalType) TerminalType() Type { return nil }
 
 /****************************************************************
 	Alias
@@ -26,7 +28,7 @@ func (i typeBaseInfo) Name() string {
 
 // TypeAlias represents an alias type implementation
 type TypeAlias struct {
-	typeBaseInfo
+	terminalType
 	AliasedType Type
 }
 
@@ -41,7 +43,7 @@ func (t *TypeAlias) Category() TypeCategory {
 
 // TypeUnion represents an alias type implementation
 type TypeUnion struct {
-	typeBaseInfo
+	terminalType
 	Types map[string]Type
 }
 
@@ -62,7 +64,7 @@ type EnumValue struct {
 
 // TypeEnum represents a standard scalar type implementation
 type TypeEnum struct {
-	typeBaseInfo
+	terminalType
 	Values map[string]EnumValue
 }
 
@@ -70,6 +72,56 @@ type TypeEnum struct {
 func (t *TypeEnum) Category() TypeCategory {
 	return TypeCategoryEnum
 }
+
+/****************************************************************
+	Optional
+****************************************************************/
+
+// TypeOptional represents an optional type implementation
+type TypeOptional struct {
+	StoreType Type
+	Terminal  Type
+}
+
+// Src implements the Type interface
+func (t *TypeOptional) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t *TypeOptional) Name() string { return "?" + t.StoreType.Name() }
+
+// Category implements the Type interface
+func (t *TypeOptional) Category() TypeCategory { return TypeCategoryOptional }
+
+// String implements the Type interface
+func (t *TypeOptional) String() string { return stringifyType(t) }
+
+// TerminalType implements the Type interface
+func (t *TypeOptional) TerminalType() Type { return t.Terminal }
+
+/****************************************************************
+	List
+****************************************************************/
+
+// TypeList represents a list type implementation
+type TypeList struct {
+	StoreType Type
+	Terminal  Type
+}
+
+// Src implements the Type interface
+func (t *TypeList) Src() Src { return Src{} }
+
+// Name implements the Type interface
+func (t *TypeList) Name() string { return "[]" + t.StoreType.Name() }
+
+// Category implements the Type interface
+func (t *TypeList) Category() TypeCategory { return TypeCategoryList }
+
+// String implements the Type interface
+func (t *TypeList) String() string { return stringifyType(t) }
+
+// TerminalType implements the Type interface
+func (t *TypeList) TerminalType() Type { return t.Terminal }
 
 /****************************************************************
 	Standard Bool
@@ -87,6 +139,12 @@ func (t TypeStdNone) Name() string { return "None" }
 // Category implements the Type interface
 func (t TypeStdNone) Category() TypeCategory { return TypeCategoryPrimitive }
 
+// String implements the Type interface
+func (t TypeStdNone) String() string { return "None" }
+
+// TerminalType implements the Type interface
+func (t TypeStdNone) TerminalType() Type { return nil }
+
 /****************************************************************
 	Standard Bool
 ****************************************************************/
@@ -102,6 +160,12 @@ func (t TypeStdBool) Name() string { return "Bool" }
 
 // Category implements the Type interface
 func (t TypeStdBool) Category() TypeCategory { return TypeCategoryPrimitive }
+
+// String implements the Type interface
+func (t TypeStdBool) String() string { return "Bool" }
+
+// TerminalType implements the Type interface
+func (t TypeStdBool) TerminalType() Type { return nil }
 
 /****************************************************************
 	Standard Byte
@@ -119,6 +183,12 @@ func (t TypeStdByte) Name() string { return "Byte" }
 // Category implements the Type interface
 func (t TypeStdByte) Category() TypeCategory { return TypeCategoryPrimitive }
 
+// String implements the Type interface
+func (t TypeStdByte) String() string { return "Byte" }
+
+// TerminalType implements the Type interface
+func (t TypeStdByte) TerminalType() Type { return nil }
+
 /****************************************************************
 	Standard Int32
 ****************************************************************/
@@ -134,6 +204,12 @@ func (t TypeStdInt32) Name() string { return "Int32" }
 
 // Category implements the Type interface
 func (t TypeStdInt32) Category() TypeCategory { return TypeCategoryPrimitive }
+
+// String implements the Type interface
+func (t TypeStdInt32) String() string { return "Int32" }
+
+// TerminalType implements the Type interface
+func (t TypeStdInt32) TerminalType() Type { return nil }
 
 /****************************************************************
 	Standard Uint32
@@ -151,6 +227,12 @@ func (t TypeStdUint32) Name() string { return "Uint32" }
 // Category implements the Type interface
 func (t TypeStdUint32) Category() TypeCategory { return TypeCategoryPrimitive }
 
+// String implements the Type interface
+func (t TypeStdUint32) String() string { return "Uint32" }
+
+// TerminalType implements the Type interface
+func (t TypeStdUint32) TerminalType() Type { return nil }
+
 /****************************************************************
 	Standard Int64
 ****************************************************************/
@@ -167,6 +249,12 @@ func (t TypeStdInt64) Name() string { return "Int64" }
 // Category implements the Type interface
 func (t TypeStdInt64) Category() TypeCategory { return TypeCategoryPrimitive }
 
+// String implements the Type interface
+func (t TypeStdInt64) String() string { return "Int64" }
+
+// TerminalType implements the Type interface
+func (t TypeStdInt64) TerminalType() Type { return nil }
+
 /****************************************************************
 	Standard Uint64
 ****************************************************************/
@@ -182,6 +270,12 @@ func (t TypeStdUint64) Name() string { return "Uint64" }
 
 // Category implements the Type interface
 func (t TypeStdUint64) Category() TypeCategory { return TypeCategoryPrimitive }
+
+// String implements the Type interface
+func (t TypeStdUint64) String() string { return "Uint64" }
+
+// TerminalType implements the Type interface
+func (t TypeStdUint64) TerminalType() Type { return nil }
 
 /****************************************************************
 	Standard Float64
@@ -201,6 +295,12 @@ func (t TypeStdFloat64) Category() TypeCategory {
 	return TypeCategoryPrimitive
 }
 
+// String implements the Type interface
+func (t TypeStdFloat64) String() string { return "Float64" }
+
+// TerminalType implements the Type interface
+func (t TypeStdFloat64) TerminalType() Type { return nil }
+
 /****************************************************************
 	Standard String
 ****************************************************************/
@@ -216,6 +316,12 @@ func (t TypeStdString) Name() string { return "String" }
 
 // Category implements the Type interface
 func (t TypeStdString) Category() TypeCategory { return TypeCategoryPrimitive }
+
+// String implements the Type interface
+func (t TypeStdString) String() string { return "String" }
+
+// TerminalType implements the Type interface
+func (t TypeStdString) TerminalType() Type { return nil }
 
 /****************************************************************
 	Standard Time
@@ -233,6 +339,12 @@ func (t TypeStdTime) Name() string { return "Time" }
 // Category implements the Type interface
 func (t TypeStdTime) Category() TypeCategory { return TypeCategoryPrimitive }
 
+// String implements the Type interface
+func (t TypeStdTime) String() string { return "Time" }
+
+// TerminalType implements the Type interface
+func (t TypeStdTime) TerminalType() Type { return nil }
+
 /****************************************************************
 	Struct
 ****************************************************************/
@@ -246,13 +358,23 @@ type StructField struct {
 
 // TypeStruct represents a standard scalar type implementation
 type TypeStruct struct {
-	typeBaseInfo
-	Fields []StructField
+	terminalType
+	Fields []*StructField
 }
 
 // Category implements the Type interface
 func (t *TypeStruct) Category() TypeCategory {
 	return TypeCategoryStruct
+}
+
+// FieldByName returns a field given its name
+func (t *TypeStruct) FieldByName(name string) *StructField {
+	for _, field := range t.Fields {
+		if field.Name == name {
+			return field
+		}
+	}
+	return nil
 }
 
 /****************************************************************
@@ -275,7 +397,7 @@ type ResolverProperty struct {
 
 // TypeResolver represents a standard scalar type implementation
 type TypeResolver struct {
-	typeBaseInfo
+	terminalType
 	Properties []ResolverProperty
 }
 
@@ -290,7 +412,7 @@ func (t *TypeResolver) Category() TypeCategory {
 
 // TypeTrait represents a standard scalar type implementation
 type TypeTrait struct {
-	typeBaseInfo
+	terminalType
 	Pure       bool
 	Properties []ResolverProperty
 }

@@ -41,7 +41,7 @@ func (c *Compiler) defineAliasType(node *node32) error {
 	}
 
 	newType := &TypeAlias{
-		typeBaseInfo: typeBaseInfo{
+		terminalType: terminalType{
 			src:  src(node),
 			name: newAliasTypeName,
 		},

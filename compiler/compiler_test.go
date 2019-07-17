@@ -307,7 +307,7 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 		"NoValues": ErrCase{
 			Src: `schema test
 			enum E {}`,
-			Errs: []ErrCode{compiler.ErrSyntax},
+			Errs: []ErrCode{compiler.ErrEnumNoVal},
 		},
 		"IllegalValueIdentifier": ErrCase{
 			Src: `schema test
@@ -502,5 +502,174 @@ func TestDeclUnionTypeErrs(t *testing.T) {
 			}`,
 			Errs: []ErrCode{compiler.ErrUnionIncludesNone},
 		},
+	})
+}
+
+// TestDeclStructTypes tests struct type declaration
+func TestDeclStructTypes(t *testing.T) {
+	src := `schema test
+	struct S1 {
+		x String
+	}
+	struct S2 {
+		x Uint32
+		y Float64
+	}
+	struct S3 {
+		optional ?String
+		list []Float64
+		matrix [][]Int64
+		matrix3D [][][]Int64
+		optionalList ?[]Int32
+		listOfOptionals []?Int32
+		optionalListOfOptionals ?[]?Int32
+		optionalListOfOptionalListsOfOptionals ?[]?[]?String
+	}
+	`
+
+	test(t, src, func(ast AST) {
+		require.Len(t, ast.QueryEndpoints, 0)
+		require.Len(t, ast.Mutations, 0)
+		require.Len(t, ast.Types, 3)
+
+		s1 := ast.StructTypes[0]
+		s2 := ast.StructTypes[1]
+		s3 := ast.StructTypes[2]
+
+		type Expectation struct {
+			Name   string
+			Type   compiler.Type
+			Fields []compiler.StructField
+		}
+		expected := []Expectation{
+			Expectation{"S1", s1, []compiler.StructField{
+				compiler.StructField{
+					Name: "x",
+					Type: compiler.TypeStdString{},
+				},
+			}},
+			Expectation{"S2", s2, []compiler.StructField{
+				compiler.StructField{
+					Name: "x",
+					Type: compiler.TypeStdUint32{},
+				},
+				compiler.StructField{
+					Name: "y",
+					Type: compiler.TypeStdFloat64{},
+				},
+			}},
+			Expectation{"S3", s3, []compiler.StructField{
+				compiler.StructField{
+					Name: "optional",
+					Type: &compiler.TypeOptional{
+						Terminal:  compiler.TypeStdString{},
+						StoreType: compiler.TypeStdString{},
+					},
+				},
+				compiler.StructField{
+					Name: "list",
+					Type: &compiler.TypeList{
+						Terminal:  compiler.TypeStdFloat64{},
+						StoreType: compiler.TypeStdFloat64{},
+					},
+				},
+				compiler.StructField{
+					Name: "matrix",
+					Type: &compiler.TypeList{
+						Terminal: compiler.TypeStdInt64{},
+						StoreType: &compiler.TypeList{
+							Terminal:  compiler.TypeStdInt64{},
+							StoreType: compiler.TypeStdInt64{},
+						},
+					},
+				},
+				compiler.StructField{
+					Name: "matrix3D",
+					Type: &compiler.TypeList{
+						Terminal: compiler.TypeStdInt64{},
+						StoreType: &compiler.TypeList{
+							Terminal: compiler.TypeStdInt64{},
+							StoreType: &compiler.TypeList{
+								Terminal:  compiler.TypeStdInt64{},
+								StoreType: compiler.TypeStdInt64{},
+							},
+						},
+					},
+				},
+				compiler.StructField{
+					Name: "optionalList",
+					Type: &compiler.TypeOptional{
+						Terminal: compiler.TypeStdInt32{},
+						StoreType: &compiler.TypeList{
+							Terminal:  compiler.TypeStdInt32{},
+							StoreType: compiler.TypeStdInt32{},
+						},
+					},
+				},
+				compiler.StructField{
+					Name: "listOfOptionals",
+					Type: &compiler.TypeList{
+						Terminal: compiler.TypeStdInt32{},
+						StoreType: &compiler.TypeOptional{
+							Terminal:  compiler.TypeStdInt32{},
+							StoreType: compiler.TypeStdInt32{},
+						},
+					},
+				},
+				compiler.StructField{
+					Name: "optionalListOfOptionals",
+					Type: &compiler.TypeOptional{
+						Terminal: compiler.TypeStdInt32{},
+						StoreType: &compiler.TypeList{
+							Terminal: compiler.TypeStdInt32{},
+							StoreType: &compiler.TypeOptional{
+								Terminal:  compiler.TypeStdInt32{},
+								StoreType: compiler.TypeStdInt32{},
+							},
+						},
+					},
+				},
+				compiler.StructField{
+					Name: "optionalListOfOptionalListsOfOptionals",
+					Type: &compiler.TypeOptional{
+						Terminal: compiler.TypeStdString{},
+						StoreType: &compiler.TypeList{
+							Terminal: compiler.TypeStdString{},
+							StoreType: &compiler.TypeOptional{
+								Terminal: compiler.TypeStdString{},
+								StoreType: &compiler.TypeList{
+									Terminal: compiler.TypeStdString{},
+									StoreType: &compiler.TypeOptional{
+										Terminal:  compiler.TypeStdString{},
+										StoreType: compiler.TypeStdString{},
+									},
+								},
+							},
+						},
+					},
+				},
+			}},
+		}
+		for _, expec := range expected {
+			require.Equal(t, expec.Name, expec.Type.Name())
+			require.Equal(t, compiler.TypeCategoryStruct, expec.Type.Category())
+			require.IsType(t, &compiler.TypeStruct{}, expec.Type)
+			tpe := expec.Type.(*compiler.TypeStruct)
+			for i, field := range expec.Fields {
+				actualField := tpe.Fields[i]
+				require.Equal(t, field.Name, actualField.Name)
+				require.Equal(
+					t,
+					field.Type,
+					actualField.Type,
+					"unexpected type %s for field %s of struct type %s "+
+						"(expected: %s)",
+					field.Type.String(),
+					actualField.Name,
+					expec.Name,
+					field.Type.String(),
+				)
+			}
+		}
 	})
 }

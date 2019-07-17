@@ -104,3 +104,32 @@ func verifyEnumValue(name string) error {
 
 	return nil
 }
+
+func verifyStructFieldIdent(name string) error {
+	if len(name) < 1 {
+		return errors.New("missing field identifier")
+	}
+
+	// [a-z]
+	if !isLowLetter(name[0]) {
+		// Non-capitalized first letter
+		return errors.New(
+			"illegal struct field identifier (must begin with " +
+				"a lower case latin character (a-z))",
+		)
+	}
+
+	for i := 1; i < len(name); i++ {
+		r := name[i]
+		// [a-zA-Z0-9]
+		if !isLetter(r) && !isDigit(r) {
+			return errors.Errorf(
+				"illegal struct field identifier "+
+					"(contains illegal character '%s')",
+				string(r),
+			)
+		}
+	}
+
+	return nil
+}
