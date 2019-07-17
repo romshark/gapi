@@ -79,9 +79,11 @@ func (c *Compiler) defineStructType(node *node32) error {
 				Begin: current.begin,
 				End:   current.end,
 			},
-			Name: fieldName,
-			Type: nil, // Deferred
+			Struct: newType,
+			Name:   fieldName,
+			Type:   nil, // Deferred
 		}
+		newField.GraphID = c.defineGraphNode(newField)
 		newType.Fields = append(newType.Fields, newField)
 
 		// Parse the field type in deferred mode
@@ -118,7 +120,7 @@ func (c *Compiler) defineStructType(node *node32) error {
 	}
 
 	// Try to define the type
-	if err := c.ast.defineType(newType); err != nil {
+	if err := c.defineType(newType); err != nil {
 		c.err(err)
 	}
 

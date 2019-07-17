@@ -352,8 +352,25 @@ func (t TypeStdTime) TerminalType() Type { return nil }
 // StructField represents a struct field
 type StructField struct {
 	Src
-	Name string
-	Type Type
+	Struct  *TypeStruct
+	GraphID GraphNodeID
+	Name    string
+	Type    Type
+}
+
+// GraphNodeID returns the unique graph node identifier of the struct field
+func (sf *StructField) GraphNodeID() GraphNodeID {
+	return sf.GraphID
+}
+
+// Parent returns the parent struct type of the struct field
+func (sf *StructField) Parent() Type {
+	return sf.Struct
+}
+
+// GraphNodeName returns the graph node name
+func (sf *StructField) GraphNodeName() string {
+	return sf.Struct.name + "." + sf.Name
 }
 
 // TypeStruct represents a standard scalar type implementation

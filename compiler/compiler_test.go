@@ -544,37 +544,43 @@ func TestDeclStructTypes(t *testing.T) {
 		expected := []Expectation{
 			Expectation{"S1", s1, []compiler.StructField{
 				compiler.StructField{
-					Name: "x",
-					Type: compiler.TypeStdString{},
+					Name:    "x",
+					GraphID: compiler.GraphNodeID(1),
+					Type:    compiler.TypeStdString{},
 				},
 			}},
 			Expectation{"S2", s2, []compiler.StructField{
 				compiler.StructField{
-					Name: "x",
-					Type: compiler.TypeStdUint32{},
+					Name:    "x",
+					GraphID: compiler.GraphNodeID(2),
+					Type:    compiler.TypeStdUint32{},
 				},
 				compiler.StructField{
-					Name: "y",
-					Type: compiler.TypeStdFloat64{},
+					Name:    "y",
+					GraphID: compiler.GraphNodeID(3),
+					Type:    compiler.TypeStdFloat64{},
 				},
 			}},
 			Expectation{"S3", s3, []compiler.StructField{
 				compiler.StructField{
-					Name: "optional",
+					Name:    "optional",
+					GraphID: compiler.GraphNodeID(4),
 					Type: &compiler.TypeOptional{
 						Terminal:  compiler.TypeStdString{},
 						StoreType: compiler.TypeStdString{},
 					},
 				},
 				compiler.StructField{
-					Name: "list",
+					Name:    "list",
+					GraphID: compiler.GraphNodeID(5),
 					Type: &compiler.TypeList{
 						Terminal:  compiler.TypeStdFloat64{},
 						StoreType: compiler.TypeStdFloat64{},
 					},
 				},
 				compiler.StructField{
-					Name: "matrix",
+					Name:    "matrix",
+					GraphID: compiler.GraphNodeID(6),
 					Type: &compiler.TypeList{
 						Terminal: compiler.TypeStdInt64{},
 						StoreType: &compiler.TypeList{
@@ -584,7 +590,8 @@ func TestDeclStructTypes(t *testing.T) {
 					},
 				},
 				compiler.StructField{
-					Name: "matrix3D",
+					Name:    "matrix3D",
+					GraphID: compiler.GraphNodeID(7),
 					Type: &compiler.TypeList{
 						Terminal: compiler.TypeStdInt64{},
 						StoreType: &compiler.TypeList{
@@ -597,7 +604,8 @@ func TestDeclStructTypes(t *testing.T) {
 					},
 				},
 				compiler.StructField{
-					Name: "optionalList",
+					Name:    "optionalList",
+					GraphID: compiler.GraphNodeID(8),
 					Type: &compiler.TypeOptional{
 						Terminal: compiler.TypeStdInt32{},
 						StoreType: &compiler.TypeList{
@@ -607,7 +615,8 @@ func TestDeclStructTypes(t *testing.T) {
 					},
 				},
 				compiler.StructField{
-					Name: "listOfOptionals",
+					Name:    "listOfOptionals",
+					GraphID: compiler.GraphNodeID(9),
 					Type: &compiler.TypeList{
 						Terminal: compiler.TypeStdInt32{},
 						StoreType: &compiler.TypeOptional{
@@ -617,7 +626,8 @@ func TestDeclStructTypes(t *testing.T) {
 					},
 				},
 				compiler.StructField{
-					Name: "optionalListOfOptionals",
+					Name:    "optionalListOfOptionals",
+					GraphID: compiler.GraphNodeID(10),
 					Type: &compiler.TypeOptional{
 						Terminal: compiler.TypeStdInt32{},
 						StoreType: &compiler.TypeList{
@@ -630,7 +640,8 @@ func TestDeclStructTypes(t *testing.T) {
 					},
 				},
 				compiler.StructField{
-					Name: "optionalListOfOptionalListsOfOptionals",
+					Name:    "optionalListOfOptionalListsOfOptionals",
+					GraphID: compiler.GraphNodeID(11),
 					Type: &compiler.TypeOptional{
 						Terminal: compiler.TypeStdString{},
 						StoreType: &compiler.TypeList{
@@ -650,13 +661,16 @@ func TestDeclStructTypes(t *testing.T) {
 				},
 			}},
 		}
+		graphNodes := make(map[compiler.GraphNodeID]*compiler.StructField)
 		for _, expec := range expected {
 			require.Equal(t, expec.Name, expec.Type.Name())
 			require.Equal(t, compiler.TypeCategoryStruct, expec.Type.Category())
 			require.IsType(t, &compiler.TypeStruct{}, expec.Type)
-			tpe := expec.Type.(*compiler.TypeStruct)
+			structType := expec.Type.(*compiler.TypeStruct)
+
+			// Make sure fields match the expectations
 			for i, field := range expec.Fields {
-				actualField := tpe.Fields[i]
+				actualField := structType.Fields[i]
 				require.Equal(t, field.Name, actualField.Name)
 				require.Equal(
 					t,
@@ -669,7 +683,22 @@ func TestDeclStructTypes(t *testing.T) {
 					expec.Name,
 					field.Type.String(),
 				)
+				require.Equal(t, field.GraphID, actualField.GraphID)
+				require.Equal(t, structType, expec.Type)
+
+				// Make sure graph node IDs are unique
+				require.NotContains(t, graphNodes, actualField.GraphID)
+				graphNodes[actualField.GraphID] = actualField
 			}
+		}
+
+		// Make sure the graph nodes are registered correctly
+		require.Len(t, ast.GraphNodes, len(graphNodes))
+		for id, field := range graphNodes {
+			node := ast.FindGraphNodeByID(id)
+			require.NotNil(t, node, "graph node (%d) not found", id)
+			require.Equal(t, id, node.GraphNodeID())
+			require.Equal(t, field.Struct, node.Parent())
 		}
 	})
 }

@@ -72,11 +72,12 @@ func getSrc(source string, token *node32) string {
 
 // Compiler represents a GAPI compiler
 type Compiler struct {
-	parser       GAPIParser
-	errors       []Error
-	errorsLock   *sync.Mutex
-	deferredJobs []job
-	ast          *AST
+	parser            GAPIParser
+	errors            []Error
+	errorsLock        *sync.Mutex
+	deferredJobs      []job
+	ast               *AST
+	lastIssuedGraphID GraphNodeID
 }
 
 // NewCompiler creates a new compiler instance

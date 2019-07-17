@@ -1,11 +1,18 @@
 package compiler
 
-import (
-	"fmt"
-)
+// GraphNodeID represents a unique graph node identifier
+type GraphNodeID uint64
+
+// GraphNode represents a graph node
+type GraphNode interface {
+	GraphNodeID() GraphNodeID
+	Parent() Type
+	GraphNodeName() string
+}
 
 // AST represents the abstract GAPI syntax tree
 type AST struct {
+	SchemaName     string
 	Types          []Type
 	AliasTypes     []Type
 	EnumTypes      []Type
@@ -13,7 +20,7 @@ type AST struct {
 	StructTypes    []Type
 	QueryEndpoints []QueryEndpoint
 	Mutations      []Mutation
-	SchemaName     string
+	GraphNodes     []GraphNode
 }
 
 // Clone returns a copy of the abstract syntax tree
@@ -43,7 +50,11 @@ func (ast *AST) Clone() *AST {
 	mutations := make([]Mutation, len(ast.Mutations))
 	copy(mutations, ast.Mutations)
 
+	graphNodes := make([]GraphNode, len(ast.GraphNodes))
+	copy(graphNodes, ast.GraphNodes)
+
 	return &AST{
+		SchemaName:     ast.SchemaName,
 		Types:          types,
 		AliasTypes:     aliasTypes,
 		EnumTypes:      enumTypes,
@@ -51,7 +62,7 @@ func (ast *AST) Clone() *AST {
 		StructTypes:    structTypes,
 		QueryEndpoints: queryEndpoints,
 		Mutations:      mutations,
-		SchemaName:     ast.SchemaName,
+		GraphNodes:     graphNodes,
 	}
 }
 
@@ -90,54 +101,12 @@ func (ast *AST) FindTypeByName(category TypeCategory, name string) Type {
 	return nil
 }
 
-// defineType returns an error if the type name is already reserved
-func (ast *AST) defineType(newType Type) Error {
-	// Check for collisions with reserved primitive types
-	srcNode := newType.Src()
-	name := newType.Name()
-	if stdTypeByName(name) != nil {
-		return cErr{
-			ErrTypeRedecl,
-			fmt.Sprintf(
-				"Redeclaration of type %s at %d:%d (reserved primitive type)",
-				name,
-				srcNode.Begin,
-				srcNode.End,
-			),
+// FindGraphNodeByID returns a graph node given its unique identifier
+func (ast *AST) FindGraphNodeByID(id GraphNodeID) GraphNode {
+	for _, nd := range ast.GraphNodes {
+		if nd.GraphNodeID() == id {
+			return nd
 		}
 	}
-
-	// Check for collisions with other user-defined types
-	if reservedBy := ast.FindTypeByName("", name); reservedBy != nil {
-		reservedBySrcNode := reservedBy.Src()
-		return cErr{
-			ErrTypeRedecl,
-			fmt.Sprintf("Redeclaration of type %s at %d:%d "+
-				"(previous declaration: %d:%d (%s))",
-				name,
-				srcNode.Begin,
-				srcNode.End,
-				reservedBySrcNode.Begin,
-				reservedBySrcNode.End,
-				reservedBy.Category(),
-			),
-		}
-	}
-
-	// Define
-	ast.Types = append(ast.Types, newType)
-
-	// Define in sub-category
-	switch newType.Category() {
-	case TypeCategoryAlias:
-		ast.AliasTypes = append(ast.AliasTypes, newType)
-	case TypeCategoryEnum:
-		ast.EnumTypes = append(ast.EnumTypes, newType)
-	case TypeCategoryUnion:
-		ast.UnionTypes = append(ast.UnionTypes, newType)
-	case TypeCategoryStruct:
-		ast.StructTypes = append(ast.StructTypes, newType)
-	}
-
 	return nil
 }

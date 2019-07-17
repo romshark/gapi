@@ -137,7 +137,7 @@ func (c *Compiler) defineUnionType(node *node32) error {
 	})
 
 	// Try to define the type
-	if err := c.ast.defineType(newType); err != nil {
+	if err := c.defineType(newType); err != nil {
 		c.err(err)
 	}
 
