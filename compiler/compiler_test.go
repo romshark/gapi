@@ -26,17 +26,7 @@ func test(
 	ast := c.AST()
 	require.NotNil(t, ast)
 
-	// Ensure type ID uniqueness
-	typeIDs := intset.NewIntSet()
-	for _, tp := range ast.Types {
-		id := tp.TypeID()
-		require.NotEqual(t, compiler.TypeIDUserTypeOffset, id)
-		require.False(t, typeIDs.Has(int(id)))
-		typeIDs.Insert(int(id))
-
-		// Ensure correct type ID mapping
-		require.Equal(t, tp, ast.FindTypeByID(id))
-	}
+	verifyAST(t, ast)
 
 	// Inspect AST
 	astInspector(ast)
@@ -96,6 +86,31 @@ func testErrs(t *testing.T, cases map[string]ErrCase) {
 			require.Equal(t, expectedCodes, actualCodes, errMsgs)
 		})
 	}
+}
+
+func verifyAST(t *testing.T, ast AST) {
+	// Ensure type ID uniqueness
+	typeIDs := intset.NewIntSet()
+	for _, tp := range ast.Types {
+		id := tp.TypeID()
+		require.NotEqual(t, compiler.TypeIDUserTypeOffset, id)
+		require.False(t, typeIDs.Has(int(id)))
+		typeIDs.Insert(int(id))
+
+		// Ensure correct type ID mapping
+		require.Equal(t, tp, ast.FindTypeByID(id))
+	}
+
+	// Ensure graph node ID uniqueness
+	graphNodeIDs := intset.NewIntSet()
+	for _, str := range ast.StructTypes {
+		for _, fld := range str.(*compiler.TypeStruct).Fields {
+			intID := int(fld.GraphNodeID())
+			require.False(t, graphNodeIDs.Has(intID))
+			graphNodeIDs.Insert(intID)
+		}
+	}
+	//TODO: check graph node IDs of all properties of all resolver types
 }
 
 // TestDeclSchemaErrs tests schema declaration errors
