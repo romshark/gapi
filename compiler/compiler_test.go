@@ -549,8 +549,8 @@ func TestDeclStructTypes(t *testing.T) {
 		x String
 	}
 	struct S2 {
-		x Uint32
-		y Float64
+		x []S2
+		y ?S2
 	}
 	struct S3 {
 		optional ?String
@@ -590,12 +590,18 @@ func TestDeclStructTypes(t *testing.T) {
 				compiler.StructField{
 					Name:    "x",
 					GraphID: compiler.GraphNodeID(2),
-					Type:    compiler.TypeStdUint32{},
+					Type: &compiler.TypeList{
+						Terminal:  s2,
+						StoreType: s2,
+					},
 				},
 				compiler.StructField{
 					Name:    "y",
 					GraphID: compiler.GraphNodeID(3),
-					Type:    compiler.TypeStdFloat64{},
+					Type: &compiler.TypeOptional{
+						Terminal:  s2,
+						StoreType: s2,
+					},
 				},
 			}},
 			Expectation{"S3", s3, []compiler.StructField{
