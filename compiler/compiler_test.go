@@ -35,8 +35,7 @@ func test(
 		typeIDs.Insert(int(id))
 
 		// Ensure correct type ID mapping
-		require.Contains(t, ast.TypeByID, id)
-		require.Equal(t, tp, ast.TypeByID[id])
+		require.Equal(t, tp, ast.FindTypeByID(id))
 	}
 
 	// Inspect AST
@@ -797,6 +796,80 @@ func TestDeclStructTypeErrs(t *testing.T) {
 			Errs: []ErrCode{
 				compiler.ErrStructFieldIllegalIdent,
 				compiler.ErrStructFieldIllegalIdent,
+			},
+		},
+		"RecursDirect": ErrCase{
+			Src: `schema test
+			struct S {
+				s S
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrStructRecurs, // S.s -> S
+			},
+		},
+		"RecursIndirect": ErrCase{
+			Src: `schema test
+			struct X {
+				s S
+			}
+			struct S {
+				x X
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrStructRecurs, // X.s -> S.x -> X
+			},
+		},
+		"RecursIndirect2": ErrCase{
+			Src: `schema test
+			struct Y {
+				s S
+			}
+			struct X {
+				y Y
+			}
+			struct S {
+				x X
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrStructRecurs, // Y.s -> S.x -> X.y -> Y
+			},
+		},
+		"RecursIndirect3": ErrCase{
+			Src: `schema test
+			struct Y {
+				s S
+				z S
+			}
+			struct X {
+				y Y
+				s S
+			}
+			struct S {
+				x X
+				y Y
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrStructRecurs, // Y.s -> S.x -> X.y -> Y
+			},
+		},
+		"RecursMultiple": ErrCase{
+			Src: `schema test
+			struct A {
+				a A
+			}
+			struct B {
+				b B
+			}
+			struct X {
+				y Y
+			}
+			struct Y {
+				x X
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrStructRecurs, // A.a -> A
+				compiler.ErrStructRecurs, // B.b -> B
+				compiler.ErrStructRecurs, // X.y -> Y.x -> X
 			},
 		},
 	})
