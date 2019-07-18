@@ -56,6 +56,9 @@ const (
 
 	// ErrStructNoFields indicates an empty struct type missing fields
 	ErrStructNoFields
+
+	// ErrStructRecurs indicates a recursive struct type
+	ErrStructRecurs
 )
 
 // String stringifies the error code
@@ -95,6 +98,8 @@ func (c ErrCode) String() string {
 		return "StructFieldRedecl"
 	case ErrStructNoFields:
 		return "StructNoFields"
+	case ErrStructRecurs:
+		return "StructRecurs"
 	}
 	return ""
 }

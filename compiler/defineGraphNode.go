@@ -7,6 +7,7 @@ func (c *Compiler) defineGraphNode(newNode GraphNode) GraphNodeID {
 	newID := c.lastIssuedGraphID
 
 	c.ast.GraphNodes = append(c.ast.GraphNodes, newNode)
+	c.graphNodeByID[newID] = newNode
 
 	return newID
 }

@@ -400,14 +400,10 @@ type StructField struct {
 }
 
 // GraphNodeID returns the unique graph node identifier of the struct field
-func (sf *StructField) GraphNodeID() GraphNodeID {
-	return sf.GraphID
-}
+func (sf *StructField) GraphNodeID() GraphNodeID { return sf.GraphID }
 
 // Parent returns the parent struct type of the struct field
-func (sf *StructField) Parent() Type {
-	return sf.Struct
-}
+func (sf *StructField) Parent() Type { return sf.Struct }
 
 // GraphNodeName returns the graph node name
 func (sf *StructField) GraphNodeName() string {
@@ -421,9 +417,7 @@ type TypeStruct struct {
 }
 
 // Category implements the Type interface
-func (t *TypeStruct) Category() TypeCategory {
-	return TypeCategoryStruct
-}
+func (t *TypeStruct) Category() TypeCategory { return TypeCategoryStruct }
 
 // FieldByName returns a field given its name
 func (t *TypeStruct) FieldByName(name string) *StructField {
@@ -448,9 +442,22 @@ type Variable struct {
 
 // ResolverProperty represents a resolver property
 type ResolverProperty struct {
+	Resolver  *TypeResolver
 	Name      string
+	GraphID   GraphNodeID
 	Type      Type
 	Variables []Variable
+}
+
+// GraphNodeID returns the unique graph node identifier of the resolver prop
+func (rp *ResolverProperty) GraphNodeID() GraphNodeID { return rp.GraphID }
+
+// Parent returns the parent resolver type of the resolver prop
+func (rp *ResolverProperty) Parent() Type { return rp.Resolver }
+
+// GraphNodeName returns the graph node name
+func (rp *ResolverProperty) GraphNodeName() string {
+	return rp.Resolver.name + "." + rp.Name
 }
 
 // TypeResolver represents a standard scalar type implementation
@@ -460,9 +467,7 @@ type TypeResolver struct {
 }
 
 // Category implements the Type interface
-func (t *TypeResolver) Category() TypeCategory {
-	return TypeCategoryResolver
-}
+func (t *TypeResolver) Category() TypeCategory { return TypeCategoryResolver }
 
 /****************************************************************
 	Trait

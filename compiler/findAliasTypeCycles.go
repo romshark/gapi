@@ -34,21 +34,21 @@ func (c aliasTypeCycle) String() string {
 
 // findAliasTypeCycles returns all recursive alias type cycles
 // or nil if there are none
-func (ast *AST) findAliasTypeCycles() (cycles []aliasTypeCycle) {
+func (c *Compiler) findAliasTypeCycles() (cycles []aliasTypeCycle) {
 	// Keeps track of all nodes being part of a cycle
 	// so they don't need to be checked repeatedly
 	cycleReg := intset.NewIntSet()
 
 	// Remember the nodes to be checked
 	toBeChecked := intset.NewIntSet()
-	for _, n := range ast.AliasTypes {
+	for _, n := range c.ast.AliasTypes {
 		toBeChecked.Insert(int(n.TypeID()))
 	}
 
 	// Check all nodes to be checked
 	for {
 		// Get any node that's still to be checked
-		node := ast.TypeByID[TypeID(toBeChecked.Take())]
+		node := c.typeByID[TypeID(toBeChecked.Take())]
 		if node == nil {
 			break
 		}

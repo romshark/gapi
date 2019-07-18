@@ -21,7 +21,6 @@ type AST struct {
 	QueryEndpoints []QueryEndpoint
 	Mutations      []Mutation
 	GraphNodes     []GraphNode
-	TypeByID       map[TypeID]Type
 }
 
 // Clone returns a copy of the abstract syntax tree
@@ -54,11 +53,6 @@ func (ast *AST) Clone() *AST {
 	graphNodes := make([]GraphNode, len(ast.GraphNodes))
 	copy(graphNodes, ast.GraphNodes)
 
-	typeByID := make(map[TypeID]Type, len(ast.TypeByID))
-	for k, v := range ast.TypeByID {
-		typeByID[k] = v
-	}
-
 	return &AST{
 		SchemaName:     ast.SchemaName,
 		Types:          types,
@@ -69,7 +63,6 @@ func (ast *AST) Clone() *AST {
 		QueryEndpoints: queryEndpoints,
 		Mutations:      mutations,
 		GraphNodes:     graphNodes,
-		TypeByID:       typeByID,
 	}
 }
 
@@ -113,6 +106,17 @@ func (ast *AST) FindGraphNodeByID(id GraphNodeID) GraphNode {
 	for _, nd := range ast.GraphNodes {
 		if nd.GraphNodeID() == id {
 			return nd
+		}
+	}
+	return nil
+}
+
+// FindTypeByID returns a type given its unique identifier or nil
+// if no type is identified by the given identifier
+func (ast *AST) FindTypeByID(id TypeID) Type {
+	for _, tp := range ast.Types {
+		if tp.TypeID() == id {
+			return tp
 		}
 	}
 	return nil

@@ -41,7 +41,7 @@ func (c *Compiler) defineType(newType Type) (TypeID, Error) {
 
 	// Define a new type
 	c.ast.Types = append(c.ast.Types, newType)
-	c.ast.TypeByID[c.lastIssuedTypeID] = newType
+	c.typeByID[c.lastIssuedTypeID] = newType
 
 	// Define in sub-category
 	switch newType.Category() {

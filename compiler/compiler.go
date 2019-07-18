@@ -79,6 +79,8 @@ type Compiler struct {
 	ast               *AST
 	lastIssuedGraphID GraphNodeID
 	lastIssuedTypeID  TypeID
+	typeByID          map[TypeID]Type
+	graphNodeByID     map[GraphNodeID]GraphNode
 }
 
 // NewCompiler creates a new compiler instance
@@ -89,6 +91,8 @@ func NewCompiler(source string) (*Compiler, error) {
 			Buffer: source,
 		},
 		lastIssuedTypeID: TypeIDUserTypeOffset,
+		typeByID:         make(map[TypeID]Type),
+		graphNodeByID:    make(map[GraphNodeID]GraphNode),
 	}
 
 	// Initialize parser
@@ -157,7 +161,6 @@ func (c *Compiler) Compile() error {
 		UnionTypes:     make([]Type, 0),
 		QueryEndpoints: make([]QueryEndpoint, 0),
 		Mutations:      make([]Mutation, 0),
-		TypeByID:       make(map[TypeID]Type),
 	}
 
 	// Extract schema name
@@ -235,11 +238,11 @@ func (c *Compiler) Compile() error {
 	//TODO: sort mutations
 	wg.Wait()
 
-	wg.Add(1)
+	wg.Add(2)
 	go func() {
 		// Find all recursive alias type cycles
 		defer wg.Done()
-		cycles := c.ast.findAliasTypeCycles()
+		cycles := c.findAliasTypeCycles()
 		for _, cycle := range cycles {
 			c.err(cErr{
 				ErrAliasRecurs,
@@ -247,8 +250,17 @@ func (c *Compiler) Compile() error {
 			})
 		}
 	}()
-	//TODO: find all recursive structs
-
+	go func() {
+		// Find all recursive struct type cycles
+		defer wg.Done()
+		cycles := c.findStructTypeCycles()
+		for _, cycle := range cycles {
+			c.err(cErr{
+				ErrStructRecurs,
+				fmt.Sprintf("Recursive struct type cycle: %s", cycle.String()),
+			})
+		}
+	}()
 	wg.Wait()
 
 	if len(c.errors) > 0 {
