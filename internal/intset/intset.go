@@ -10,6 +10,9 @@ type IntSet struct {
 // NewIntSet creates a new sparse integer set instance
 func NewIntSet() IntSet { return IntSet{&intsets.Sparse{}} }
 
+// Len returns the number of integers in the set
+func (t IntSet) Len() int { return t.set.Len() }
+
 // Insert inserts v into the set and reports whether the set grew
 func (t IntSet) Insert(v int) bool { return t.set.Insert(v) }
 

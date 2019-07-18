@@ -157,6 +157,7 @@ func (c *Compiler) Compile() error {
 		UnionTypes:     make([]Type, 0),
 		QueryEndpoints: make([]QueryEndpoint, 0),
 		Mutations:      make([]Mutation, 0),
+		TypeByID:       make(map[TypeID]Type),
 	}
 
 	// Extract schema name

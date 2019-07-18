@@ -33,6 +33,10 @@ func test(
 		require.NotEqual(t, compiler.TypeIDUserTypeOffset, id)
 		require.False(t, typeIDs.Has(int(id)))
 		typeIDs.Insert(int(id))
+
+		// Ensure correct type ID mapping
+		require.Contains(t, ast.TypeByID, id)
+		require.Equal(t, tp, ast.TypeByID[id])
 	}
 
 	// Inspect AST

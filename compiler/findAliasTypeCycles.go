@@ -1,6 +1,10 @@
 package compiler
 
-import "sort"
+import (
+	"sort"
+
+	"github.com/romshark/gapi/internal/intset"
+)
 
 type aliasTypeCycle struct {
 	nodes []Type
@@ -33,37 +37,37 @@ func (c aliasTypeCycle) String() string {
 func (ast *AST) findAliasTypeCycles() (cycles []aliasTypeCycle) {
 	// Keeps track of all nodes being part of a cycle
 	// so they don't need to be checked repeatedly
-	cycleReg := make(map[Type]struct{})
+	cycleReg := intset.NewIntSet()
 
 	// Remember the nodes to be checked
-	toBeChecked := make(map[Type]struct{}, len(ast.AliasTypes))
+	toBeChecked := intset.NewIntSet()
 	for _, n := range ast.AliasTypes {
-		toBeChecked[n] = struct{}{}
+		toBeChecked.Insert(int(n.TypeID()))
 	}
 
 	// Check all nodes to be checked
-	for len(toBeChecked) > 0 {
+	for {
 		// Get any node that's still to be checked
-		var node Type
-		for node = range toBeChecked {
+		node := ast.TypeByID[TypeID(toBeChecked.Take())]
+		if node == nil {
 			break
 		}
-		delete(toBeChecked, node)
 
 		// chain keeps track of the order of nodes in the current chain
 		chain := []Type{node}
 
 		// chainReg keeps track of all nodes in the current chain
-		chainReg := map[Type]struct{}{node: struct{}{}}
+		chainReg := intset.NewIntSet()
+		chainReg.Insert(int(node.TypeID()))
 
 		// Traverse the path until there's no more aliased type
 		next := node.(*TypeAlias).AliasedType
 		for next != nil && next.Category() == TypeCategoryAlias {
-			delete(toBeChecked, next)
-			if _, inCycleReg := cycleReg[next]; inCycleReg {
+			toBeChecked.Remove(int(next.TypeID()))
+			if cycleReg.Has(int(next.TypeID())) {
 				break
 			}
-			if _, recursive := chainReg[next]; recursive {
+			if chainReg.Has(int(next.TypeID())) {
 				// Cycle detected, backtrack to the cycle start node
 				for rev := len(chain) - 1; rev >= 0; rev-- {
 					if chain[rev] == next {
@@ -76,7 +80,7 @@ func (ast *AST) findAliasTypeCycles() (cycles []aliasTypeCycle) {
 				// Mark all nodes of the cycle as cyclic
 				// so they don't have to be checked later
 				for _, n := range cycle.nodes {
-					cycleReg[n] = struct{}{}
+					cycleReg.Insert(int(n.TypeID()))
 				}
 				cycles = append(cycles, cycle)
 				break
@@ -84,7 +88,7 @@ func (ast *AST) findAliasTypeCycles() (cycles []aliasTypeCycle) {
 
 			// Continue to traverse the path and update the chain
 			chain = append(chain, next)
-			chainReg[next] = struct{}{}
+			chainReg.Insert(int(next.TypeID()))
 
 			next = next.(*TypeAlias).AliasedType
 		}
