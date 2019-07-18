@@ -36,12 +36,21 @@
   revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
   version = "v1.3.0"
 
+[[projects]]
+  branch = "master"
+  digest = "1:ca7bb82418ee4893eb02082f34412f8aa6e7ef6cbe5df3a00678e14394eb2319"
+  name = "golang.org/x/tools"
+  packages = ["container/intsets"]
+  pruneopts = "UT"
+  revision = "128ec6dfca091cc7d4fe6d18d97911f37c95a590"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
     "github.com/pkg/errors",
     "github.com/stretchr/testify/require",
+    "golang.org/x/tools/container/intsets",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

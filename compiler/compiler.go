@@ -78,6 +78,7 @@ type Compiler struct {
 	deferredJobs      []job
 	ast               *AST
 	lastIssuedGraphID GraphNodeID
+	lastIssuedTypeID  TypeID
 }
 
 // NewCompiler creates a new compiler instance
@@ -87,6 +88,7 @@ func NewCompiler(source string) (*Compiler, error) {
 		parser: GAPIParser{
 			Buffer: source,
 		},
+		lastIssuedTypeID: TypeIDUserTypeOffset,
 	}
 
 	// Initialize parser

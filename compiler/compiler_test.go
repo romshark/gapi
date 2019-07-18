@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/romshark/gapi/compiler"
+	"github.com/romshark/gapi/internal/intset"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,13 +18,24 @@ func test(
 	astInspector func(AST),
 ) {
 	// Initialize compiler
-	compiler, err := compiler.NewCompiler(source)
+	c, err := compiler.NewCompiler(source)
 	require.NoError(t, err)
 
 	// Compile
-	require.NoError(t, compiler.Compile())
-	ast := compiler.AST()
+	require.NoError(t, c.Compile())
+	ast := c.AST()
 	require.NotNil(t, ast)
+
+	// Ensure type ID uniqueness
+	typeIDs := intset.NewIntSet()
+	for _, tp := range ast.Types {
+		id := tp.TypeID()
+		require.NotEqual(t, compiler.TypeIDUserTypeOffset, id)
+		require.False(t, typeIDs.Has(int(id)))
+		typeIDs.Insert(int(id))
+	}
+
+	// Inspect AST
 	astInspector(ast)
 }
 

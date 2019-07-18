@@ -48,10 +48,12 @@ func (c *Compiler) defineAliasType(node *node32) error {
 	}
 
 	// Try to define the type
-	if err := c.defineType(newType); err != nil {
+	typeID, err := c.defineType(newType)
+	if err != nil {
 		c.err(err)
 		return nil
 	}
+	newType.id = typeID
 
 	c.deferJob(func() error {
 		// Ensure the aliased type exists after all types have been defined

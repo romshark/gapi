@@ -120,9 +120,11 @@ func (c *Compiler) defineStructType(node *node32) error {
 	}
 
 	// Try to define the type
-	if err := c.defineType(newType); err != nil {
+	typeID, err := c.defineType(newType)
+	if err != nil {
 		c.err(err)
 	}
+	newType.id = typeID
 
 	return nil
 }

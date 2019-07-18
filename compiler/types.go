@@ -10,17 +10,22 @@ type Type interface {
 	// TerminalType returns the terminal type or nil if the current
 	// type is already the terminal type
 	TerminalType() Type
+
+	// TypeID returns the type's unique identifier
+	TypeID() TypeID
 }
 
 type terminalType struct {
 	src  Src
 	name string
+	id   TypeID
 }
 
 func (i terminalType) Src() Src           { return i.src }
 func (i terminalType) Name() string       { return i.name }
 func (i terminalType) String() string     { return i.name }
 func (i terminalType) TerminalType() Type { return nil }
+func (i terminalType) TypeID() TypeID     { return i.id }
 
 /****************************************************************
 	Alias
@@ -98,6 +103,9 @@ func (t *TypeOptional) String() string { return stringifyType(t) }
 // TerminalType implements the Type interface
 func (t *TypeOptional) TerminalType() Type { return t.Terminal }
 
+// TypeID returns the type's unique identifier
+func (t *TypeOptional) TypeID() TypeID { return TypeIDOptional }
+
 /****************************************************************
 	List
 ****************************************************************/
@@ -123,6 +131,9 @@ func (t *TypeList) String() string { return stringifyType(t) }
 // TerminalType implements the Type interface
 func (t *TypeList) TerminalType() Type { return t.Terminal }
 
+// TypeID returns the type's unique identifier
+func (t *TypeList) TypeID() TypeID { return TypeIDList }
+
 /****************************************************************
 	Standard Bool
 ****************************************************************/
@@ -144,6 +155,9 @@ func (t TypeStdNone) String() string { return "None" }
 
 // TerminalType implements the Type interface
 func (t TypeStdNone) TerminalType() Type { return nil }
+
+// TypeID returns the type's unique identifier
+func (t TypeStdNone) TypeID() TypeID { return TypeIDPrimitiveNone }
 
 /****************************************************************
 	Standard Bool
@@ -167,6 +181,9 @@ func (t TypeStdBool) String() string { return "Bool" }
 // TerminalType implements the Type interface
 func (t TypeStdBool) TerminalType() Type { return nil }
 
+// TypeID returns the type's unique identifier
+func (t TypeStdBool) TypeID() TypeID { return TypeIDPrimitiveBool }
+
 /****************************************************************
 	Standard Byte
 ****************************************************************/
@@ -188,6 +205,9 @@ func (t TypeStdByte) String() string { return "Byte" }
 
 // TerminalType implements the Type interface
 func (t TypeStdByte) TerminalType() Type { return nil }
+
+// TypeID returns the type's unique identifier
+func (t TypeStdByte) TypeID() TypeID { return TypeIDPrimitiveByte }
 
 /****************************************************************
 	Standard Int32
@@ -211,6 +231,9 @@ func (t TypeStdInt32) String() string { return "Int32" }
 // TerminalType implements the Type interface
 func (t TypeStdInt32) TerminalType() Type { return nil }
 
+// TypeID returns the type's unique identifier
+func (t TypeStdInt32) TypeID() TypeID { return TypeIDPrimitiveInt32 }
+
 /****************************************************************
 	Standard Uint32
 ****************************************************************/
@@ -232,6 +255,9 @@ func (t TypeStdUint32) String() string { return "Uint32" }
 
 // TerminalType implements the Type interface
 func (t TypeStdUint32) TerminalType() Type { return nil }
+
+// TypeID returns the type's unique identifier
+func (t TypeStdUint32) TypeID() TypeID { return TypeIDPrimitiveUint32 }
 
 /****************************************************************
 	Standard Int64
@@ -255,6 +281,9 @@ func (t TypeStdInt64) String() string { return "Int64" }
 // TerminalType implements the Type interface
 func (t TypeStdInt64) TerminalType() Type { return nil }
 
+// TypeID returns the type's unique identifier
+func (t TypeStdInt64) TypeID() TypeID { return TypeIDPrimitiveInt64 }
+
 /****************************************************************
 	Standard Uint64
 ****************************************************************/
@@ -276,6 +305,9 @@ func (t TypeStdUint64) String() string { return "Uint64" }
 
 // TerminalType implements the Type interface
 func (t TypeStdUint64) TerminalType() Type { return nil }
+
+// TypeID returns the type's unique identifier
+func (t TypeStdUint64) TypeID() TypeID { return TypeIDPrimitiveUint64 }
 
 /****************************************************************
 	Standard Float64
@@ -301,6 +333,9 @@ func (t TypeStdFloat64) String() string { return "Float64" }
 // TerminalType implements the Type interface
 func (t TypeStdFloat64) TerminalType() Type { return nil }
 
+// TypeID returns the type's unique identifier
+func (t TypeStdFloat64) TypeID() TypeID { return TypeIDPrimitiveFloat64 }
+
 /****************************************************************
 	Standard String
 ****************************************************************/
@@ -323,6 +358,9 @@ func (t TypeStdString) String() string { return "String" }
 // TerminalType implements the Type interface
 func (t TypeStdString) TerminalType() Type { return nil }
 
+// TypeID returns the type's unique identifier
+func (t TypeStdString) TypeID() TypeID { return TypeIDPrimitiveString }
+
 /****************************************************************
 	Standard Time
 ****************************************************************/
@@ -344,6 +382,9 @@ func (t TypeStdTime) String() string { return "Time" }
 
 // TerminalType implements the Type interface
 func (t TypeStdTime) TerminalType() Type { return nil }
+
+// TypeID returns the type's unique identifier
+func (t TypeStdTime) TypeID() TypeID { return TypeIDPrimitiveTime }
 
 /****************************************************************
 	Struct
