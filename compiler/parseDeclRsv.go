@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (c *Compiler) parseRsvDecl(node *node32) error {
+func (c *Compiler) parseDeclRsv(node *node32) error {
 	node = skipUntil(node.up, ruleWrd)
 	newResolverTypeName := c.getSrc(node)
 

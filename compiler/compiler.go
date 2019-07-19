@@ -190,7 +190,7 @@ func (c *Compiler) Compile() error {
 			handler = c.parseDeclEnm
 		case ruleDclRv:
 			// Resolver type declaration
-			handler = c.parseRsvDecl
+			handler = c.parseDeclRsv
 		case ruleDclSt:
 			// Struct type declaration
 			handler = c.parseDeclStr
