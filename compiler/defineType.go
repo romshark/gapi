@@ -53,6 +53,8 @@ func (c *Compiler) defineType(newType Type) (TypeID, Error) {
 		c.ast.UnionTypes = append(c.ast.UnionTypes, newType)
 	case TypeCategoryStruct:
 		c.ast.StructTypes = append(c.ast.StructTypes, newType)
+	case TypeCategoryResolver:
+		c.ast.ResolverTypes = append(c.ast.ResolverTypes, newType)
 	}
 
 	return c.lastIssuedTypeID, nil

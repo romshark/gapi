@@ -1,7 +1,10 @@
 package compiler
 
 // GraphNodeID represents a unique graph node identifier
-type GraphNodeID uint64
+type GraphNodeID int
+
+// ParamID represents a unique parameter identifier
+type ParamID int
 
 // GraphNode represents a graph node
 type GraphNode interface {
@@ -18,6 +21,7 @@ type AST struct {
 	EnumTypes      []Type
 	UnionTypes     []Type
 	StructTypes    []Type
+	ResolverTypes  []Type
 	QueryEndpoints []QueryEndpoint
 	Mutations      []Mutation
 	GraphNodes     []GraphNode
@@ -44,6 +48,9 @@ func (ast *AST) Clone() *AST {
 	structTypes := make([]Type, len(ast.StructTypes))
 	copy(structTypes, ast.StructTypes)
 
+	resolverTypes := make([]Type, len(ast.ResolverTypes))
+	copy(resolverTypes, ast.ResolverTypes)
+
 	queryEndpoints := make([]QueryEndpoint, len(ast.QueryEndpoints))
 	copy(queryEndpoints, ast.QueryEndpoints)
 
@@ -60,6 +67,7 @@ func (ast *AST) Clone() *AST {
 		EnumTypes:      enumTypes,
 		UnionTypes:     unionTypes,
 		StructTypes:    structTypes,
+		ResolverTypes:  resolverTypes,
 		QueryEndpoints: queryEndpoints,
 		Mutations:      mutations,
 		GraphNodes:     graphNodes,
@@ -119,5 +127,23 @@ func (ast *AST) FindTypeByID(id TypeID) Type {
 			return tp
 		}
 	}
+	return nil
+}
+
+// FindParameterByID returns a parameter given its unique identifier or nil
+// if no parameter is identified by the given identifier
+func (ast *AST) FindParameterByID(id ParamID) *Parameter {
+	for _, rsv := range ast.ResolverTypes {
+		for _, prop := range rsv.(*TypeResolver).Properties {
+			for _, param := range prop.Parameters {
+				if param.ID == id {
+					return param
+				}
+			}
+		}
+	}
+	//TODO: search in queries
+	//TODO: search in mutations
+	//TODO: search in subscriptions
 	return nil
 }

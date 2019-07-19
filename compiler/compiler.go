@@ -25,7 +25,7 @@ func src(node *node32) Src {
 type QueryEndpoint struct {
 	Src
 	Name string
-	Vars []Variable
+	Vars []*Parameter
 	Type Type
 }
 
@@ -33,7 +33,7 @@ type QueryEndpoint struct {
 type Mutation struct {
 	Src
 	Name string
-	Vars []Variable
+	Vars []*Parameter
 	Type Type
 }
 
@@ -66,8 +66,8 @@ func stdTypeByName(name string) Type {
 
 type job func() error
 
-func getSrc(source string, token *node32) string {
-	return source[token.begin:token.end]
+func (c *Compiler) getSrc(token *node32) string {
+	return c.parser.Buffer[token.begin:token.end]
 }
 
 // Compiler represents a GAPI compiler
@@ -79,8 +79,10 @@ type Compiler struct {
 	ast               *AST
 	lastIssuedGraphID GraphNodeID
 	lastIssuedTypeID  TypeID
+	lastIssuedParamID ParamID
 	typeByID          map[TypeID]Type
 	graphNodeByID     map[GraphNodeID]GraphNode
+	paramByID         map[ParamID]*Parameter
 }
 
 // NewCompiler creates a new compiler instance
@@ -93,6 +95,7 @@ func NewCompiler(source string) (*Compiler, error) {
 		lastIssuedTypeID: TypeIDUserTypeOffset,
 		typeByID:         make(map[TypeID]Type),
 		graphNodeByID:    make(map[GraphNodeID]GraphNode),
+		paramByID:        make(map[ParamID]*Parameter),
 	}
 
 	// Initialize parser
@@ -169,7 +172,7 @@ func (c *Compiler) Compile() error {
 		// Ignore space before schema declaration
 		current = current.next
 	}
-	c.ast.SchemaName = getSrc(c.parser.Buffer, current.up.next.next)
+	c.ast.SchemaName = c.getSrc(current.up.next.next)
 
 	if err := verifySchemaName(c.ast.SchemaName); err != nil {
 		c.err(cErr{ErrSchemaIllegalIdent, err.Error()})
@@ -187,7 +190,7 @@ func (c *Compiler) Compile() error {
 			handler = c.defineEnumType
 		case ruleDclRv:
 			// Resolver type declaration
-			log.Print("Resolver type declaration")
+			handler = c.parseResolverDeclaration
 		case ruleDclSt:
 			// Struct type declaration
 			handler = c.defineStructType

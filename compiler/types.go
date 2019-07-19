@@ -433,41 +433,65 @@ func (t *TypeStruct) FieldByName(name string) *StructField {
 	Resolver
 ****************************************************************/
 
-// Variable represents a variable
-type Variable struct {
+// Parameter represents either a resolver property-, a query-, a mutation-
+// or a subscription parameter
+type Parameter struct {
 	Src
-	Name string
-	Type Type
+	Target interface{}
+	Name   string
+	ID     ParamID
+	Type   Type
 }
 
 // ResolverProperty represents a resolver property
 type ResolverProperty struct {
-	Resolver  *TypeResolver
-	Name      string
-	GraphID   GraphNodeID
-	Type      Type
-	Variables []Variable
+	Src
+	Resolver   *TypeResolver
+	Name       string
+	GraphID    GraphNodeID
+	Type       Type
+	Parameters []*Parameter
+}
+
+// ParamByName returns a property given its name
+func (t *ResolverProperty) ParamByName(name string) *Parameter {
+	for _, param := range t.Parameters {
+		if param.Name == name {
+			return param
+		}
+	}
+	return nil
 }
 
 // GraphNodeID returns the unique graph node identifier of the resolver prop
-func (rp *ResolverProperty) GraphNodeID() GraphNodeID { return rp.GraphID }
+func (t *ResolverProperty) GraphNodeID() GraphNodeID { return t.GraphID }
 
 // Parent returns the parent resolver type of the resolver prop
-func (rp *ResolverProperty) Parent() Type { return rp.Resolver }
+func (t *ResolverProperty) Parent() Type { return t.Resolver }
 
 // GraphNodeName returns the graph node name
-func (rp *ResolverProperty) GraphNodeName() string {
-	return rp.Resolver.name + "." + rp.Name
+func (t *ResolverProperty) GraphNodeName() string {
+	return t.Resolver.name + "." + t.Name
 }
 
-// TypeResolver represents a standard scalar type implementation
+// TypeResolver represents a resolver type
 type TypeResolver struct {
 	terminalType
-	Properties []ResolverProperty
+	Properties []*ResolverProperty
 }
 
 // Category implements the Type interface
 func (t *TypeResolver) Category() TypeCategory { return TypeCategoryResolver }
+
+// PropertyByName returns a property given its name
+func (t *TypeResolver) PropertyByName(name string) *ResolverProperty {
+	for _, prop := range t.Properties {
+		if prop.Name == name {
+			return prop
+		}
+	}
+	return nil
+}
 
 /****************************************************************
 	Trait

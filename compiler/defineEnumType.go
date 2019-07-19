@@ -6,7 +6,7 @@ import (
 
 func (c *Compiler) defineEnumType(node *node32) error {
 	current := node.up.next.next
-	newEnumTypeName := getSrc(c.parser.Buffer, node.up.next.next)
+	newEnumTypeName := c.getSrc(node.up.next.next)
 
 	if err := verifyTypeName(newEnumTypeName); err != nil {
 		c.err(cErr{

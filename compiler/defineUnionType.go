@@ -4,7 +4,7 @@ import "fmt"
 
 func (c *Compiler) defineUnionType(node *node32) error {
 	current := node.up.next.next
-	newUnionTypeName := getSrc(c.parser.Buffer, current)
+	newUnionTypeName := c.getSrc(current)
 
 	if err := verifyTypeName(newUnionTypeName); err != nil {
 		c.err(cErr{

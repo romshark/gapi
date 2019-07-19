@@ -59,6 +59,23 @@ const (
 
 	// ErrStructRecurs indicates a recursive struct type
 	ErrStructRecurs
+
+	// ErrResolverPropIllegalIdent indicates an illegal resolver property
+	// identifier
+	ErrResolverPropIllegalIdent
+
+	// ErrResolverPropRedecl indicates a redeclared resolver property
+	ErrResolverPropRedecl
+
+	// ErrResolverNoProps indicates an empty resolver type missing properties
+	ErrResolverNoProps
+
+	// ErrParamIllegalIdent indicates an illegal parameter identifier
+	ErrParamIllegalIdent
+
+	// ErrResolverPropParamRedecl indicates a redeclared resolver property
+	// parameter
+	ErrResolverPropParamRedecl
 )
 
 // String stringifies the error code
@@ -100,6 +117,16 @@ func (c ErrCode) String() string {
 		return "StructNoFields"
 	case ErrStructRecurs:
 		return "StructRecurs"
+	case ErrResolverPropIllegalIdent:
+		return "ResolverPropIllegalIdent"
+	case ErrResolverPropRedecl:
+		return "ResolverPropRedecl"
+	case ErrResolverNoProps:
+		return "ResolverNoProps"
+	case ErrParamIllegalIdent:
+		return "ParamIllegalIdent"
+	case ErrResolverPropParamRedecl:
+		return "ResolverPropParamRedecl"
 	}
 	return ""
 }

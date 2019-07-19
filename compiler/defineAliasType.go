@@ -6,15 +6,9 @@ import (
 
 func (c *Compiler) defineAliasType(node *node32) error {
 	aliasTypeNameNode := node.up.next.next
-	newAliasTypeName := getSrc(
-		c.parser.Buffer,
-		aliasTypeNameNode,
-	)
+	newAliasTypeName := c.getSrc(aliasTypeNameNode)
 	aliasedTypeNameNode := node.up.next.next.next.next.next.next
-	aliasedTypeName := getSrc(
-		c.parser.Buffer,
-		aliasedTypeNameNode,
-	)
+	aliasedTypeName := c.getSrc(aliasedTypeNameNode)
 
 	if err := verifyTypeName(newAliasTypeName); err != nil {
 		c.err(cErr{

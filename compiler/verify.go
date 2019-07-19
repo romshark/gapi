@@ -133,3 +133,61 @@ func verifyStructFieldIdent(name string) error {
 
 	return nil
 }
+
+func verifyResolverPropIdent(name string) error {
+	if len(name) < 1 {
+		return errors.New("missing resolver property identifier")
+	}
+
+	// [a-z]
+	if !isLowLetter(name[0]) {
+		// Non-capitalized first letter
+		return errors.New(
+			"illegal resolver property identifier (must begin with " +
+				"a lower case latin character (a-z))",
+		)
+	}
+
+	for i := 1; i < len(name); i++ {
+		r := name[i]
+		// [a-zA-Z0-9]
+		if !isLetter(r) && !isDigit(r) {
+			return errors.Errorf(
+				"illegal resolver property identifier "+
+					"(contains illegal character '%s')",
+				string(r),
+			)
+		}
+	}
+
+	return nil
+}
+
+func verifyParameterIdent(name string) error {
+	if len(name) < 1 {
+		return errors.New("missing parameter identifier")
+	}
+
+	// [a-z]
+	if !isLowLetter(name[0]) {
+		// Non-capitalized first letter
+		return errors.New(
+			"illegal parameter identifier (must begin with " +
+				"a lower case latin character (a-z))",
+		)
+	}
+
+	for i := 1; i < len(name); i++ {
+		r := name[i]
+		// [a-zA-Z0-9]
+		if !isLetter(r) && !isDigit(r) {
+			return errors.Errorf(
+				"illegal parameter identifier "+
+					"(contains illegal character '%s')",
+				string(r),
+			)
+		}
+	}
+
+	return nil
+}

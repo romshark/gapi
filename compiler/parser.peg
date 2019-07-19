@@ -13,17 +13,19 @@ DclSt <- KST SpLn Wrd SpLnOpt BlkSt
 DclRv <- KRV SpLn Wrd SpLnOpt BlkRv
 DclTr <- KTR SpLn Wrd SpLnOpt BlkRv
 DclUn <- KUN SpLn Wrd SpLnOpt BlkUn
-DclQr <- KQR SpLn Wrd SpLnOpt Args? SpLnOpt Tp
-DclMt <- KMT SpLn Wrd SpLnOpt Args? SpLnOpt Tp
-DclSb <- KSB SpLn Wrd SpLnOpt Args? SpLnOpt Tp
+DclQr <- KQR SpLn Wrd SpLnOpt Prms? SpLnOpt Tp
+DclMt <- KMT SpLn Wrd SpLnOpt Prms? SpLnOpt Tp
+DclSb <- KSB SpLn Wrd SpLnOpt Prms? SpLnOpt Tp
 BlkEn <- BLK (SpOpt Wrd)* SpOpt BLKE
 BlkSt <- BLK (SpOpt StFld)* SpOpt BLKE
-BlkRv <- BLK SpOpt RvPrp+ SpOpt BLKE
+BlkRv <- BLK (SpOpt RvPrp)* SpOpt BLKE
 BlkUn <- BLK (SpOpt Wrd)+ SpOpt BLKE
 StFld <- Wrd SpLn Tp
-RvPrp <- Wrd SpLn Args? Tp
+RvPrp <- Wrd SpOpt (Prms SpOpt)? Tp
 
-Args <- PRN SpOpt (Wrd Tp ',')+ SpOpt PRNE
+Prms <- PRN SpOpt PrmsBd? SpOpt PRNE
+PrmsBd <- Prm OCM SpOpt PrmsBd / Prm OCM?
+Prm <- Wrd SpLn Tp
 
 Tp <- (ONU OLI / ONU / OLI)* Wrd
 
@@ -37,6 +39,7 @@ SpVr <- ('\n' / '\r\n')+
 OEQ <- '='
 ONU <- '?'
 OLI <- '[]'
+OCM <- ','
 
 KSC <- 'schema'
 KAL <- 'alias'

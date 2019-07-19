@@ -30,3 +30,15 @@ func stringifyType(t Type) (name string) {
 	}
 	return
 }
+
+// skipUntil skips all tokens beginning at the start node until the expected
+// rule is reached and returns the matching node
+func skipUntil(start *node32, expectedRule pegRule) *node32 {
+	for current := start; current != nil; {
+		if current.pegRule == expectedRule {
+			return current
+		}
+		current = current.next
+	}
+	return nil
+}

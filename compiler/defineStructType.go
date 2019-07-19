@@ -6,7 +6,7 @@ import (
 
 func (c *Compiler) defineStructType(node *node32) error {
 	current := node.up.next.next
-	newStructTypeName := getSrc(c.parser.Buffer, node.up.next.next)
+	newStructTypeName := c.getSrc(node.up.next.next)
 
 	if err := verifyTypeName(newStructTypeName); err != nil {
 		c.err(cErr{
