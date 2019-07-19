@@ -28,8 +28,6 @@ func (c *Compiler) parseResolverDeclaration(node *node32) error {
 		Properties: make([]*ResolverProperty, 0),
 	}
 
-	checkProps := true
-
 	// Parse properties
 	node = skipUntil(node, ruleBlkRv)
 	node = skipUntil(node.up, ruleRvPrp)
