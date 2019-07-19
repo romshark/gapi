@@ -49,9 +49,9 @@ func (c *Compiler) parseResolverDeclaration(node *node32) error {
 	}
 
 	// Try to define the type
-	typeID, typeDefinitionErr := c.defineType(newResolver)
-	if err != nil {
-		c.err(typeDefinitionErr)
+	typeID, typeDefErr := c.defineType(newResolver)
+	if typeDefErr != nil {
+		c.err(typeDefErr)
 	}
 	newResolver.id = typeID
 
