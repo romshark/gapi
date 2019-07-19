@@ -5,15 +5,15 @@ import (
 )
 
 func (c *Compiler) parseDeclRsv(node *node32) error {
-	node = skipUntil(node.up, ruleWrd)
-	newResolverTypeName := c.getSrc(node)
+	nd := skipUntil(node.up, ruleWrd)
+	newResolverTypeName := c.getSrc(nd)
 
 	if err := verifyTypeName(newResolverTypeName); err != nil {
 		c.err(cErr{
 			ErrTypeIllegalIdent,
 			fmt.Sprintf("illegal resolver type identifier %d:%d: %s",
-				node.begin,
-				node.end,
+				nd.begin,
+				nd.end,
 				err,
 			),
 		})
@@ -29,9 +29,9 @@ func (c *Compiler) parseDeclRsv(node *node32) error {
 	}
 
 	// Parse properties
-	node = skipUntil(node, ruleBlkRv)
-	node = skipUntil(node.up, ruleRvPrp)
-	checkProps, err := c.parseRsvProps(newResolver, node)
+	nd = skipUntil(nd, ruleBlkRv)
+	nd = skipUntil(nd.up, ruleRvPrp)
+	checkProps, err := c.parseRsvProps(newResolver, nd)
 	if err != nil {
 		return err
 	}
