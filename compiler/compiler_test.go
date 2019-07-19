@@ -89,8 +89,11 @@ func testErrs(t *testing.T, cases map[string]ErrCase) {
 }
 
 func verifyAST(t *testing.T, ast AST) {
-	// Ensure type ID uniqueness
 	typeIDs := intset.NewIntSet()
+	graphNodeIDs := intset.NewIntSet()
+	paramIDs := intset.NewIntSet()
+
+	// Ensure type ID uniqueness
 	for _, tp := range ast.Types {
 		id := tp.TypeID()
 		require.NotEqual(t, compiler.TypeIDUserTypeOffset, id)
@@ -102,7 +105,6 @@ func verifyAST(t *testing.T, ast AST) {
 	}
 
 	// Ensure graph node ID uniqueness
-	graphNodeIDs := intset.NewIntSet()
 	for _, str := range ast.StructTypes {
 		for _, fld := range str.(*compiler.TypeStruct).Fields {
 			intID := int(fld.GraphNodeID())
@@ -110,7 +112,20 @@ func verifyAST(t *testing.T, ast AST) {
 			graphNodeIDs.Insert(intID)
 		}
 	}
-	//TODO: check graph node IDs of all properties of all resolver types
+	for _, rsv := range ast.ResolverTypes {
+		for _, prop := range rsv.(*compiler.TypeResolver).Properties {
+			intID := int(prop.GraphNodeID())
+			require.False(t, graphNodeIDs.Has(intID))
+			graphNodeIDs.Insert(intID)
+
+			// Ensure parameter ID uniqueness
+			for _, param := range prop.Parameters {
+				intID := int(param.ID)
+				require.False(t, paramIDs.Has(intID))
+				paramIDs.Insert(intID)
+			}
+		}
+	}
 }
 
 // TestDeclSchemaErrs tests schema declaration errors
@@ -582,14 +597,14 @@ func TestDeclStructTypes(t *testing.T) {
 			Expectation{"S1", s1, []compiler.StructField{
 				compiler.StructField{
 					Name:    "x",
-					GraphID: compiler.GraphNodeID(1),
+					GraphID: 1,
 					Type:    compiler.TypeStdString{},
 				},
 			}},
 			Expectation{"S2", s2, []compiler.StructField{
 				compiler.StructField{
 					Name:    "x",
-					GraphID: compiler.GraphNodeID(2),
+					GraphID: 2,
 					Type: &compiler.TypeList{
 						Terminal:  s2,
 						StoreType: s2,
@@ -597,7 +612,7 @@ func TestDeclStructTypes(t *testing.T) {
 				},
 				compiler.StructField{
 					Name:    "y",
-					GraphID: compiler.GraphNodeID(3),
+					GraphID: 3,
 					Type: &compiler.TypeOptional{
 						Terminal:  s2,
 						StoreType: s2,
@@ -607,7 +622,7 @@ func TestDeclStructTypes(t *testing.T) {
 			Expectation{"S3", s3, []compiler.StructField{
 				compiler.StructField{
 					Name:    "optional",
-					GraphID: compiler.GraphNodeID(4),
+					GraphID: 4,
 					Type: &compiler.TypeOptional{
 						Terminal:  compiler.TypeStdString{},
 						StoreType: compiler.TypeStdString{},
@@ -615,7 +630,7 @@ func TestDeclStructTypes(t *testing.T) {
 				},
 				compiler.StructField{
 					Name:    "list",
-					GraphID: compiler.GraphNodeID(5),
+					GraphID: 5,
 					Type: &compiler.TypeList{
 						Terminal:  compiler.TypeStdFloat64{},
 						StoreType: compiler.TypeStdFloat64{},
@@ -623,7 +638,7 @@ func TestDeclStructTypes(t *testing.T) {
 				},
 				compiler.StructField{
 					Name:    "matrix",
-					GraphID: compiler.GraphNodeID(6),
+					GraphID: 6,
 					Type: &compiler.TypeList{
 						Terminal: compiler.TypeStdInt64{},
 						StoreType: &compiler.TypeList{
@@ -634,7 +649,7 @@ func TestDeclStructTypes(t *testing.T) {
 				},
 				compiler.StructField{
 					Name:    "matrix3D",
-					GraphID: compiler.GraphNodeID(7),
+					GraphID: 7,
 					Type: &compiler.TypeList{
 						Terminal: compiler.TypeStdInt64{},
 						StoreType: &compiler.TypeList{
@@ -648,7 +663,7 @@ func TestDeclStructTypes(t *testing.T) {
 				},
 				compiler.StructField{
 					Name:    "optionalList",
-					GraphID: compiler.GraphNodeID(8),
+					GraphID: 8,
 					Type: &compiler.TypeOptional{
 						Terminal: compiler.TypeStdInt32{},
 						StoreType: &compiler.TypeList{
@@ -659,7 +674,7 @@ func TestDeclStructTypes(t *testing.T) {
 				},
 				compiler.StructField{
 					Name:    "listOfOptionals",
-					GraphID: compiler.GraphNodeID(9),
+					GraphID: 9,
 					Type: &compiler.TypeList{
 						Terminal: compiler.TypeStdInt32{},
 						StoreType: &compiler.TypeOptional{
@@ -670,7 +685,7 @@ func TestDeclStructTypes(t *testing.T) {
 				},
 				compiler.StructField{
 					Name:    "optionalListOfOptionals",
-					GraphID: compiler.GraphNodeID(10),
+					GraphID: 10,
 					Type: &compiler.TypeOptional{
 						Terminal: compiler.TypeStdInt32{},
 						StoreType: &compiler.TypeList{
@@ -684,7 +699,7 @@ func TestDeclStructTypes(t *testing.T) {
 				},
 				compiler.StructField{
 					Name:    "optionalListOfOptionalListsOfOptionals",
-					GraphID: compiler.GraphNodeID(11),
+					GraphID: 11,
 					Type: &compiler.TypeOptional{
 						Terminal: compiler.TypeStdString{},
 						StoreType: &compiler.TypeList{
@@ -893,5 +908,327 @@ func TestDeclStructTypeErrs(t *testing.T) {
 				compiler.ErrStructRecurs, // X.y -> Y.x -> X
 			},
 		},
+	})
+}
+
+// TestDeclResolverTypes tests resolver type declaration
+func TestDeclResolverTypes(t *testing.T) {
+	src := `schema test
+	resolver R1 {
+		x String
+	}
+	resolver R2 {
+		r R1
+		x R2
+		y []R2
+		z ?R3
+	}
+	resolver R3 {
+		optional ?String
+		list []Float64
+		matrix [][]Int64
+		matrix3D [][][]Int64
+		optionalList ?[]Int32
+		listOfOptionals []?Int32
+		optionalListOfOptionals ?[]?Int32
+		optionalListOfOptionalListsOfOptionals ?[]?[]?String
+	}
+	resolver R4 {
+		x(x Int32) Int32
+		y(x Int32, y ?String, z ?[]Bool) String
+	}
+	`
+
+	test(t, src, func(ast AST) {
+		require.Len(t, ast.QueryEndpoints, 0)
+		require.Len(t, ast.Mutations, 0)
+		require.Len(t, ast.Types, 4)
+
+		r1 := ast.ResolverTypes[0]
+		r2 := ast.ResolverTypes[1]
+		r3 := ast.ResolverTypes[2]
+		r4 := ast.ResolverTypes[3]
+
+		type Expectation struct {
+			Name  string
+			Type  compiler.Type
+			Props []compiler.ResolverProperty
+		}
+		expected := []Expectation{
+			Expectation{"R1", r1, []compiler.ResolverProperty{
+				compiler.ResolverProperty{
+					Name:    "x",
+					GraphID: 1,
+					Type:    compiler.TypeStdString{},
+				},
+			}},
+			Expectation{"R2", r2, []compiler.ResolverProperty{
+				compiler.ResolverProperty{
+					Name:    "r",
+					GraphID: 2,
+					Type:    r1,
+				},
+				compiler.ResolverProperty{
+					Name:    "x",
+					GraphID: 3,
+					Type:    r2,
+				},
+				compiler.ResolverProperty{
+					Name:    "y",
+					GraphID: 4,
+					Type: &compiler.TypeList{
+						Terminal:  r2,
+						StoreType: r2,
+					},
+				},
+				compiler.ResolverProperty{
+					Name:    "z",
+					GraphID: 5,
+					Type: &compiler.TypeOptional{
+						Terminal:  r3,
+						StoreType: r3,
+					},
+				},
+			}},
+			Expectation{"R3", r3, []compiler.ResolverProperty{
+				compiler.ResolverProperty{
+					Name:    "optional",
+					GraphID: 6,
+					Type: &compiler.TypeOptional{
+						Terminal:  compiler.TypeStdString{},
+						StoreType: compiler.TypeStdString{},
+					},
+				},
+				compiler.ResolverProperty{
+					Name:    "list",
+					GraphID: 7,
+					Type: &compiler.TypeList{
+						Terminal:  compiler.TypeStdFloat64{},
+						StoreType: compiler.TypeStdFloat64{},
+					},
+				},
+				compiler.ResolverProperty{
+					Name:    "matrix",
+					GraphID: 8,
+					Type: &compiler.TypeList{
+						Terminal: compiler.TypeStdInt64{},
+						StoreType: &compiler.TypeList{
+							Terminal:  compiler.TypeStdInt64{},
+							StoreType: compiler.TypeStdInt64{},
+						},
+					},
+				},
+				compiler.ResolverProperty{
+					Name:    "matrix3D",
+					GraphID: 9,
+					Type: &compiler.TypeList{
+						Terminal: compiler.TypeStdInt64{},
+						StoreType: &compiler.TypeList{
+							Terminal: compiler.TypeStdInt64{},
+							StoreType: &compiler.TypeList{
+								Terminal:  compiler.TypeStdInt64{},
+								StoreType: compiler.TypeStdInt64{},
+							},
+						},
+					},
+				},
+				compiler.ResolverProperty{
+					Name:    "optionalList",
+					GraphID: 10,
+					Type: &compiler.TypeOptional{
+						Terminal: compiler.TypeStdInt32{},
+						StoreType: &compiler.TypeList{
+							Terminal:  compiler.TypeStdInt32{},
+							StoreType: compiler.TypeStdInt32{},
+						},
+					},
+				},
+				compiler.ResolverProperty{
+					Name:    "listOfOptionals",
+					GraphID: 11,
+					Type: &compiler.TypeList{
+						Terminal: compiler.TypeStdInt32{},
+						StoreType: &compiler.TypeOptional{
+							Terminal:  compiler.TypeStdInt32{},
+							StoreType: compiler.TypeStdInt32{},
+						},
+					},
+				},
+				compiler.ResolverProperty{
+					Name:    "optionalListOfOptionals",
+					GraphID: 12,
+					Type: &compiler.TypeOptional{
+						Terminal: compiler.TypeStdInt32{},
+						StoreType: &compiler.TypeList{
+							Terminal: compiler.TypeStdInt32{},
+							StoreType: &compiler.TypeOptional{
+								Terminal:  compiler.TypeStdInt32{},
+								StoreType: compiler.TypeStdInt32{},
+							},
+						},
+					},
+				},
+				compiler.ResolverProperty{
+					Name:    "optionalListOfOptionalListsOfOptionals",
+					GraphID: 13,
+					Type: &compiler.TypeOptional{
+						Terminal: compiler.TypeStdString{},
+						StoreType: &compiler.TypeList{
+							Terminal: compiler.TypeStdString{},
+							StoreType: &compiler.TypeOptional{
+								Terminal: compiler.TypeStdString{},
+								StoreType: &compiler.TypeList{
+									Terminal: compiler.TypeStdString{},
+									StoreType: &compiler.TypeOptional{
+										Terminal:  compiler.TypeStdString{},
+										StoreType: compiler.TypeStdString{},
+									},
+								},
+							},
+						},
+					},
+				},
+			}},
+			Expectation{"R4", r4, []compiler.ResolverProperty{
+				compiler.ResolverProperty{
+					Name:    "x",
+					GraphID: 14,
+					Type:    compiler.TypeStdInt32{},
+					Parameters: []*compiler.Parameter{
+						&compiler.Parameter{
+							Name: "x",
+							ID:   1,
+							Type: compiler.TypeStdInt32{},
+						},
+					},
+				},
+				compiler.ResolverProperty{
+					Name:    "y",
+					GraphID: 15,
+					Type:    compiler.TypeStdString{},
+					Parameters: []*compiler.Parameter{
+						&compiler.Parameter{
+							Name: "x",
+							ID:   2,
+							Type: compiler.TypeStdInt32{},
+						},
+						&compiler.Parameter{
+							Name: "y",
+							ID:   3,
+							Type: &compiler.TypeOptional{
+								Terminal:  compiler.TypeStdString{},
+								StoreType: compiler.TypeStdString{},
+							},
+						},
+						&compiler.Parameter{
+							Name: "z",
+							ID:   4,
+							Type: &compiler.TypeOptional{
+								Terminal: compiler.TypeStdBool{},
+								StoreType: &compiler.TypeList{
+									Terminal:  compiler.TypeStdBool{},
+									StoreType: compiler.TypeStdBool{},
+								},
+							},
+						},
+					},
+				},
+			}},
+		}
+		graphNodes := make(map[compiler.GraphNodeID]*compiler.ResolverProperty)
+		parameters := make(map[compiler.ParamID]*compiler.Parameter)
+		for _, expec := range expected {
+			require.Equal(t, expec.Name, expec.Type.Name())
+			require.Equal(
+				t,
+				compiler.TypeCategoryResolver,
+				expec.Type.Category(),
+			)
+			require.IsType(t, &compiler.TypeResolver{}, expec.Type)
+			resolverType := expec.Type.(*compiler.TypeResolver)
+
+			// Make sure properties match expectations
+			require.Len(t, resolverType.Properties, len(expec.Props))
+			for i, prop := range expec.Props {
+				actualProp := resolverType.Properties[i]
+				require.Equal(t, prop.Name, actualProp.Name)
+				require.Equal(
+					t,
+					prop.Type,
+					actualProp.Type,
+					"unexpected type %s for property %s of resolver type %s "+
+						"(expected: %s)",
+					actualProp.Type,
+					actualProp.Name,
+					expec.Name,
+					prop.Type,
+				)
+				require.Equal(
+					t,
+					prop.GraphID,
+					actualProp.GraphID,
+					"unexpected graph ID %d for property %s "+
+						"of resolver type %s (expected: %d)",
+					actualProp.GraphID,
+					actualProp.Name,
+					expec.Name,
+					prop.GraphID,
+				)
+				require.Equal(t, resolverType, expec.Type)
+
+				// Make sure graph node IDs are unique
+				require.NotContains(t, graphNodes, actualProp.GraphID)
+				graphNodes[actualProp.GraphID] = actualProp
+
+				// Make sure property parameters match expectations
+				require.Len(t, actualProp.Parameters, len(prop.Parameters))
+				for j, param := range prop.Parameters {
+					actualParam := actualProp.Parameters[j]
+					require.Equal(t, param.Name, actualParam.Name)
+					require.Equal(t, param.ID, actualParam.ID)
+					require.Equal(
+						t,
+						param.Type,
+						actualParam.Type,
+						"unexpected type %s for parameter %s "+
+							"of property %s of resolver type %s",
+						actualParam.Type,
+						param.Name,
+						actualProp.Name,
+						expec.Name,
+					)
+					require.IsType(
+						t,
+						&compiler.ResolverProperty{},
+						actualParam.Target,
+					)
+					require.Equal(
+						t,
+						actualProp,
+						actualParam.Target.(*compiler.ResolverProperty),
+					)
+					parameters[actualParam.ID] = actualParam
+				}
+			}
+		}
+
+		// Make sure the graph nodes are registered correctly
+		require.Len(t, ast.GraphNodes, len(graphNodes))
+		for id, prop := range graphNodes {
+
+			node := ast.FindGraphNodeByID(id)
+			require.NotNil(t, node, "graph node (%d) not found in AST", id)
+			require.Equal(t, id, node.GraphNodeID())
+			require.Equal(t, prop.Resolver, node.Parent())
+		}
+
+		// Make sure parameters are registered correctly
+		for id, p := range parameters {
+			param := ast.FindParameterByID(id)
+			require.NotNil(t, param, "parameter (%d) not found in AST", id)
+			require.Equal(t, id, param.ID)
+			require.IsType(t, &compiler.ResolverProperty{}, param.Target)
+			require.Equal(t, p.Target, param.Target)
+		}
 	})
 }
