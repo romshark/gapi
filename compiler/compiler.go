@@ -184,22 +184,22 @@ func (c *Compiler) Compile() error {
 		switch current.pegRule {
 		case ruleDclAl:
 			// Alias type declaration
-			handler = c.defineAliasType
+			handler = c.parseDeclAls
 		case ruleDclEn:
 			// Enum type declaration
-			handler = c.defineEnumType
+			handler = c.parseDeclEnm
 		case ruleDclRv:
 			// Resolver type declaration
-			handler = c.parseResolverDeclaration
+			handler = c.parseRsvDecl
 		case ruleDclSt:
 			// Struct type declaration
-			handler = c.defineStructType
+			handler = c.parseDeclStr
 		case ruleDclTr:
 			// Trait type declaration
 			log.Print("Trait type declaration")
 		case ruleDclUn:
 			// Union type declaration
-			handler = c.defineUnionType
+			handler = c.parseDeclUni
 		case ruleDclQr:
 			// Query declaration
 			log.Print("Query declaration")

@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (c *Compiler) defineAliasType(node *node32) error {
+func (c *Compiler) parseDeclAls(node *node32) error {
 	aliasTypeNameNode := node.up.next.next
 	newAliasTypeName := c.getSrc(aliasTypeNameNode)
 	aliasedTypeNameNode := node.up.next.next.next.next.next.next

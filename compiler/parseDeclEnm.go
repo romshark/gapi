@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (c *Compiler) defineEnumType(node *node32) error {
+func (c *Compiler) parseDeclEnm(node *node32) error {
 	current := node.up.next.next
 	newEnumTypeName := c.getSrc(node.up.next.next)
 

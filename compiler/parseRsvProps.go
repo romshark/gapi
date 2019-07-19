@@ -2,9 +2,9 @@ package compiler
 
 import "fmt"
 
-// parseResolverProperties parses the properties of a resolver declaration
+// parseRsvProps parses the properties of a resolver declaration
 // reports returns true if the properties are valid, otherwise returns false
-func (c *Compiler) parseResolverProperties(
+func (c *Compiler) parseRsvProps(
 	resolver *TypeResolver,
 	node *node32,
 ) (valid bool, err error) {
@@ -63,7 +63,7 @@ func (c *Compiler) parseResolverProperties(
 		resolver.Properties = append(resolver.Properties, newProp)
 
 		// Parse property parameters
-		if err = c.parseResolverPropertyParameters(
+		if err = c.parseRsvPropParams(
 			newProp,
 			skipUntil(node.next, rulePrms),
 		); err != nil {

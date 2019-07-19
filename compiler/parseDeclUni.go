@@ -2,7 +2,7 @@ package compiler
 
 import "fmt"
 
-func (c *Compiler) defineUnionType(node *node32) error {
+func (c *Compiler) parseDeclUni(node *node32) error {
 	current := node.up.next.next
 	newUnionTypeName := c.getSrc(current)
 

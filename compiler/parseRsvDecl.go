@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (c *Compiler) parseResolverDeclaration(node *node32) error {
+func (c *Compiler) parseRsvDecl(node *node32) error {
 	node = skipUntil(node.up, ruleWrd)
 	newResolverTypeName := c.getSrc(node)
 
@@ -31,7 +31,7 @@ func (c *Compiler) parseResolverDeclaration(node *node32) error {
 	// Parse properties
 	node = skipUntil(node, ruleBlkRv)
 	node = skipUntil(node.up, ruleRvPrp)
-	checkProps, err := c.parseResolverProperties(newResolver, node)
+	checkProps, err := c.parseRsvProps(newResolver, node)
 	if err != nil {
 		return err
 	}

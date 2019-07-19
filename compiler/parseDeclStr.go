@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (c *Compiler) defineStructType(node *node32) error {
+func (c *Compiler) parseDeclStr(node *node32) error {
 	current := node.up.next.next
 	newStructTypeName := c.getSrc(node.up.next.next)
 

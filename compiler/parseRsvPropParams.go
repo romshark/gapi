@@ -2,9 +2,9 @@ package compiler
 
 import "fmt"
 
-// parseResolverPropertyParameters parses the parameters of a resolver property
+// parseRsvPropParams parses the parameters of a resolver property
 // if there are any
-func (c *Compiler) parseResolverPropertyParameters(
+func (c *Compiler) parseRsvPropParams(
 	prop *ResolverProperty,
 	first *node32,
 ) error {
