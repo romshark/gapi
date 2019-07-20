@@ -42,6 +42,23 @@ func (c *Compiler) defineParameter(newParam *Parameter) {
 		}
 	}
 
+	// Ensure the parameter is of a pure (data-only) type
+	c.deferJob(func() error {
+		if !newParam.Type.IsPure() {
+			c.err(cErr{
+				ErrParamImpure,
+				fmt.Sprintf(
+					"Parameter %s has impure type %s at %d:%d",
+					newParam.Name,
+					newParam.Type,
+					newParam.Begin,
+					newParam.End,
+				),
+			})
+		}
+		return nil
+	})
+
 	// Register a new parameter
 	c.lastIssuedParamID += ParamID(1)
 	newParam.ID = c.lastIssuedParamID

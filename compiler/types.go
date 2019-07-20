@@ -13,6 +13,9 @@ type Type interface {
 
 	// TypeID returns the type's unique identifier
 	TypeID() TypeID
+
+	// IsPure returns true if the type represents a data-only (pure) type
+	IsPure() bool
 }
 
 type terminalType struct {
@@ -42,6 +45,9 @@ func (t *TypeAlias) Category() TypeCategory {
 	return TypeCategoryAlias
 }
 
+// IsPure returns true if the aliased type is pure
+func (t *TypeAlias) IsPure() bool { return t.AliasedType.IsPure() }
+
 /****************************************************************
 	Union
 ****************************************************************/
@@ -55,6 +61,16 @@ type TypeUnion struct {
 // Category implements the Type interface
 func (t *TypeUnion) Category() TypeCategory {
 	return TypeCategoryUnion
+}
+
+// IsPure returns true if all option types are pure
+func (t *TypeUnion) IsPure() bool {
+	for _, optionType := range t.Types {
+		if !optionType.IsPure() {
+			return false
+		}
+	}
+	return true
 }
 
 /****************************************************************
@@ -77,6 +93,9 @@ type TypeEnum struct {
 func (t *TypeEnum) Category() TypeCategory {
 	return TypeCategoryEnum
 }
+
+// IsPure always returns true for enumeration types
+func (t *TypeEnum) IsPure() bool { return true }
 
 /****************************************************************
 	Optional
@@ -106,6 +125,9 @@ func (t *TypeOptional) TerminalType() Type { return t.Terminal }
 // TypeID returns the type's unique identifier
 func (t *TypeOptional) TypeID() TypeID { return TypeIDOptional }
 
+// IsPure returns true if the terminal type is pure
+func (t *TypeOptional) IsPure() bool { return t.Terminal.IsPure() }
+
 /****************************************************************
 	List
 ****************************************************************/
@@ -134,6 +156,9 @@ func (t *TypeList) TerminalType() Type { return t.Terminal }
 // TypeID returns the type's unique identifier
 func (t *TypeList) TypeID() TypeID { return TypeIDList }
 
+// IsPure returns true if the terminal type is pure
+func (t *TypeList) IsPure() bool { return t.Terminal.IsPure() }
+
 /****************************************************************
 	Standard Bool
 ****************************************************************/
@@ -158,6 +183,9 @@ func (t TypeStdNone) TerminalType() Type { return nil }
 
 // TypeID returns the type's unique identifier
 func (t TypeStdNone) TypeID() TypeID { return TypeIDPrimitiveNone }
+
+// IsPure always returns false for None primitives
+func (t TypeStdNone) IsPure() bool { return false }
 
 /****************************************************************
 	Standard Bool
@@ -184,6 +212,9 @@ func (t TypeStdBool) TerminalType() Type { return nil }
 // TypeID returns the type's unique identifier
 func (t TypeStdBool) TypeID() TypeID { return TypeIDPrimitiveBool }
 
+// IsPure always returns true for Bool primitives
+func (t TypeStdBool) IsPure() bool { return true }
+
 /****************************************************************
 	Standard Byte
 ****************************************************************/
@@ -208,6 +239,9 @@ func (t TypeStdByte) TerminalType() Type { return nil }
 
 // TypeID returns the type's unique identifier
 func (t TypeStdByte) TypeID() TypeID { return TypeIDPrimitiveByte }
+
+// IsPure always returns true for Byte primitives
+func (t TypeStdByte) IsPure() bool { return true }
 
 /****************************************************************
 	Standard Int32
@@ -234,6 +268,9 @@ func (t TypeStdInt32) TerminalType() Type { return nil }
 // TypeID returns the type's unique identifier
 func (t TypeStdInt32) TypeID() TypeID { return TypeIDPrimitiveInt32 }
 
+// IsPure always returns true for Int32 primitives
+func (t TypeStdInt32) IsPure() bool { return true }
+
 /****************************************************************
 	Standard Uint32
 ****************************************************************/
@@ -258,6 +295,9 @@ func (t TypeStdUint32) TerminalType() Type { return nil }
 
 // TypeID returns the type's unique identifier
 func (t TypeStdUint32) TypeID() TypeID { return TypeIDPrimitiveUint32 }
+
+// IsPure always returns true for Uint32 primitives
+func (t TypeStdUint32) IsPure() bool { return true }
 
 /****************************************************************
 	Standard Int64
@@ -284,6 +324,9 @@ func (t TypeStdInt64) TerminalType() Type { return nil }
 // TypeID returns the type's unique identifier
 func (t TypeStdInt64) TypeID() TypeID { return TypeIDPrimitiveInt64 }
 
+// IsPure always returns true for Int64 primitives
+func (t TypeStdInt64) IsPure() bool { return true }
+
 /****************************************************************
 	Standard Uint64
 ****************************************************************/
@@ -308,6 +351,9 @@ func (t TypeStdUint64) TerminalType() Type { return nil }
 
 // TypeID returns the type's unique identifier
 func (t TypeStdUint64) TypeID() TypeID { return TypeIDPrimitiveUint64 }
+
+// IsPure always returns true for Uint64 primitives
+func (t TypeStdUint64) IsPure() bool { return true }
 
 /****************************************************************
 	Standard Float64
@@ -336,6 +382,9 @@ func (t TypeStdFloat64) TerminalType() Type { return nil }
 // TypeID returns the type's unique identifier
 func (t TypeStdFloat64) TypeID() TypeID { return TypeIDPrimitiveFloat64 }
 
+// IsPure always returns true for Float64 primitives
+func (t TypeStdFloat64) IsPure() bool { return true }
+
 /****************************************************************
 	Standard String
 ****************************************************************/
@@ -360,6 +409,9 @@ func (t TypeStdString) TerminalType() Type { return nil }
 
 // TypeID returns the type's unique identifier
 func (t TypeStdString) TypeID() TypeID { return TypeIDPrimitiveString }
+
+// IsPure always returns true for String primitives
+func (t TypeStdString) IsPure() bool { return true }
 
 /****************************************************************
 	Standard Time
@@ -386,6 +438,9 @@ func (t TypeStdTime) TerminalType() Type { return nil }
 // TypeID returns the type's unique identifier
 func (t TypeStdTime) TypeID() TypeID { return TypeIDPrimitiveTime }
 
+// IsPure always returns true for Time primitives
+func (t TypeStdTime) IsPure() bool { return true }
+
 /****************************************************************
 	Struct
 ****************************************************************/
@@ -408,6 +463,9 @@ func (t *TypeStruct) FieldByName(name string) *StructField {
 	}
 	return nil
 }
+
+// IsPure always returns true for struct types
+func (t *TypeStruct) IsPure() bool { return true }
 
 /****************************************************************
 	Resolver
@@ -441,6 +499,9 @@ func (t *TypeResolver) PropertyByName(name string) *ResolverProperty {
 	}
 	return nil
 }
+
+// IsPure always returns false for resolver types
+func (t *TypeResolver) IsPure() bool { return false }
 
 /****************************************************************
 	Trait

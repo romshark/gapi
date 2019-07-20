@@ -88,6 +88,9 @@ const (
 	// ErrParamIllegalIdent indicates an illegal parameter identifier
 	ErrParamIllegalIdent
 
+	// ErrParamImpure indicates a parameter of a non-data (impure) type
+	ErrParamImpure
+
 	// ErrResolverPropParamRedecl indicates a redeclared resolver property
 	// parameter
 	ErrResolverPropParamRedecl
@@ -146,6 +149,8 @@ func (c ErrCode) String() string {
 		return "ResolverNoProps"
 	case ErrParamIllegalIdent:
 		return "ParamIllegalIdent"
+	case ErrParamImpure:
+		return "ParamImpure"
 	case ErrResolverPropParamRedecl:
 		return "ResolverPropParamRedecl"
 	}
