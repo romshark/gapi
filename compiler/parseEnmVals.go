@@ -3,7 +3,7 @@ package compiler
 import "fmt"
 
 // parseEnmVals parses the values of an enumeration type declaration
-// reports returns true if the values are valid, otherwise returns false
+// returns true if the values are valid, otherwise returns false
 func (c *Compiler) parseEnmVals(
 	enumType *TypeEnum,
 	first *node32,

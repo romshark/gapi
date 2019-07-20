@@ -5,7 +5,7 @@ import (
 )
 
 // parseStrFlds parses the fields of a struct declaration
-// reports returns true if the fields are valid, otherwise returns false
+// returns true if the fields are valid, otherwise returns false
 func (c *Compiler) parseStrFlds(
 	structType *TypeStruct,
 	first *node32,

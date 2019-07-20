@@ -3,7 +3,7 @@ package compiler
 import "fmt"
 
 // parseRsvProps parses the properties of a resolver declaration
-// reports returns true if the properties are valid, otherwise returns false
+// returns true if the properties are valid, otherwise returns false
 func (c *Compiler) parseRsvProps(
 	resolver *TypeResolver,
 	node *node32,
