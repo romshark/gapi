@@ -3,16 +3,16 @@ package compiler
 import "fmt"
 
 func (c *Compiler) parseDeclUni(node *node32) error {
-	current := node.up.next.next
-	newUnionTypeName := c.getSrc(current)
+	nd := skipUntil(node.up, ruleWrd)
+	newUnionTypeName := c.getSrc(nd)
 
 	if err := verifyTypeName(newUnionTypeName); err != nil {
 		c.err(cErr{
 			ErrTypeIllegalIdent,
 			fmt.Sprintf(
 				"invalid union type identifier %d:%d: %s",
-				current.begin,
-				current.end,
+				nd.begin,
+				nd.end,
 				err,
 			),
 		})
@@ -28,51 +28,11 @@ func (c *Compiler) parseDeclUni(node *node32) error {
 	}
 
 	// Parse types
-	current = current.next.next.up.next.next
-	checkOpts := true
-	for {
-		referencedTypeName := c.parser.Buffer[current.begin:current.end]
-
-		if err := verifyTypeName(referencedTypeName); err != nil {
-			c.err(cErr{
-				ErrTypeIllegalIdent,
-				fmt.Sprintf(
-					"invalid union option-type identifier at %d:%d: %s",
-					current.begin,
-					current.end,
-					err,
-				),
-			})
-			checkOpts = false
-			goto NEXT
-		}
-
-		// Check for duplicate values
-		if _, isDefined := newType.Types[referencedTypeName]; isDefined {
-			c.err(cErr{
-				ErrUnionRedund,
-				fmt.Sprintf(
-					"multiple references to the same type (%s) "+
-						"in union type %s at %d:%d ",
-					referencedTypeName,
-					newUnionTypeName,
-					node.begin,
-					node.end,
-				),
-			})
-			checkOpts = false
-			goto NEXT
-		}
-
-		// Mark type for deferred checking
-		newType.Types[referencedTypeName] = nil
-
-	NEXT:
-		next := current.next.next
-		if next == nil || next.pegRule == ruleBLKE {
-			break
-		}
-		current = next
+	nd = skipUntil(nd.next, ruleBlkUn)
+	nd = skipUntil(nd.up, ruleWrd)
+	checkOpts, err := c.parseUniTps(newType, nd)
+	if err != nil {
+		return err
 	}
 
 	if checkOpts && len(newType.Types) < 2 {
@@ -137,9 +97,9 @@ func (c *Compiler) parseDeclUni(node *node32) error {
 	})
 
 	// Try to define the type
-	typeID, err := c.defineType(newType)
-	if err != nil {
-		c.err(err)
+	typeID, typeDefErr := c.defineType(newType)
+	if typeDefErr != nil {
+		c.err(typeDefErr)
 	}
 	newType.id = typeID
 
