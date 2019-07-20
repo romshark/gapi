@@ -1541,3 +1541,24 @@ func TestDeclQueries(t *testing.T) {
 		}
 	})
 }
+
+// TestDeclQueryErrs tests query endpoint declaration errors
+func TestDeclQueryErrs(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"IllegalTypeName": ErrCase{
+			Src: `schema test
+			query IllegalName String`,
+			Errs: []ErrCode{compiler.ErrQryEndpointIllegalIdent},
+		},
+		"IllegalTypeName2": ErrCase{
+			Src: `schema test
+			query _illegalName String`,
+			Errs: []ErrCode{compiler.ErrQryEndpointIllegalIdent},
+		},
+		"IllegalTypeName3": ErrCase{
+			Src: `schema test
+			query illegal_Name String`,
+			Errs: []ErrCode{compiler.ErrQryEndpointIllegalIdent},
+		},
+	})
+}
