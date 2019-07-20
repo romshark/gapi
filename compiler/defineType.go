@@ -35,7 +35,7 @@ func (c *Compiler) defineType(newType Type) {
 	}
 
 	// Check for collisions with other user-defined types
-	if reservedBy := c.ast.FindTypeByName("", name); reservedBy != nil {
+	if reservedBy, isReserved := c.typeByName[name]; isReserved {
 		reservedBySrcNode := reservedBy.Source()
 		c.err(cErr{
 			ErrTypeRedecl,
