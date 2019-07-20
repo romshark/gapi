@@ -24,8 +24,8 @@ type AST struct {
 	UnionTypes     []Type
 	StructTypes    []Type
 	ResolverTypes  []Type
-	QueryEndpoints []QueryEndpoint
-	Mutations      []Mutation
+	QueryEndpoints []*QueryEndpoint
+	Mutations      []*Mutation
 	GraphNodes     []GraphNode
 }
 
@@ -53,10 +53,10 @@ func (ast *AST) Clone() *AST {
 	resolverTypes := make([]Type, len(ast.ResolverTypes))
 	copy(resolverTypes, ast.ResolverTypes)
 
-	queryEndpoints := make([]QueryEndpoint, len(ast.QueryEndpoints))
+	queryEndpoints := make([]*QueryEndpoint, len(ast.QueryEndpoints))
 	copy(queryEndpoints, ast.QueryEndpoints)
 
-	mutations := make([]Mutation, len(ast.Mutations))
+	mutations := make([]*Mutation, len(ast.Mutations))
 	copy(mutations, ast.Mutations)
 
 	graphNodes := make([]GraphNode, len(ast.GraphNodes))
@@ -144,7 +144,13 @@ func (ast *AST) FindParameterByID(id ParamID) *Parameter {
 			}
 		}
 	}
-	//TODO: search in queries
+	for _, qry := range ast.QueryEndpoints {
+		for _, param := range qry.Parameters {
+			if param.ID == id {
+				return param
+			}
+		}
+	}
 	//TODO: search in mutations
 	//TODO: search in subscriptions
 	return nil

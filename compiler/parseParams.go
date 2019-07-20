@@ -54,9 +54,9 @@ func (c *Compiler) parseParams(
 
 		// Reference the new parameter in its target graph node
 		switch target := target.(type) {
-		case *QueryEndpoint:
-			target.Parameters = append(target.Parameters, newParam)
 		case *ResolverProperty:
+			target.Parameters = append(target.Parameters, newParam)
+		case *QueryEndpoint:
 			target.Parameters = append(target.Parameters, newParam)
 		case *Mutation:
 			target.Parameters = append(target.Parameters, newParam)

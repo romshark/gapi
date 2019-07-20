@@ -68,18 +68,20 @@ func (c *Compiler) defineGraphNode(newNode GraphNode) {
 		return
 	}
 
-	// Assign unique identifier
+	// Assign unique identifier and register node
 	c.lastIssuedGraphID += GraphNodeID(1)
 	newID := c.lastIssuedGraphID
 	switch newNode := newNode.(type) {
 	case *StructField:
 		newNode.GraphID = newID
-	case *QueryEndpoint:
-		newNode.GraphID = newID
-	case *Mutation:
-		newNode.GraphID = newID
 	case *ResolverProperty:
 		newNode.GraphID = newID
+	case *QueryEndpoint:
+		newNode.GraphID = newID
+		c.ast.QueryEndpoints = append(c.ast.QueryEndpoints, newNode)
+	case *Mutation:
+		newNode.GraphID = newID
+		c.ast.Mutations = append(c.ast.Mutations, newNode)
 	}
 
 	c.ast.GraphNodes = append(c.ast.GraphNodes, newNode)

@@ -152,8 +152,8 @@ func (c *Compiler) Compile() error {
 		AliasTypes:     make([]Type, 0),
 		EnumTypes:      make([]Type, 0),
 		UnionTypes:     make([]Type, 0),
-		QueryEndpoints: make([]QueryEndpoint, 0),
-		Mutations:      make([]Mutation, 0),
+		QueryEndpoints: make([]*QueryEndpoint, 0),
+		Mutations:      make([]*Mutation, 0),
 	}
 
 	// Extract schema name
@@ -200,7 +200,7 @@ func (c *Compiler) Compile() error {
 			handler = c.parseDeclUni
 		case ruleDclQr:
 			// Query declaration
-			log.Print("Query declaration")
+			handler = c.parseDeclQry
 		case ruleDclMt:
 			// Mutation declaration
 			log.Print("Mutation declaration")
