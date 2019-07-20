@@ -1,6 +1,7 @@
 package compiler_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -147,6 +148,58 @@ func TestDeclSchemaErrs(t *testing.T) {
 			Errs: []ErrCode{compiler.ErrSchemaIllegalIdent},
 		},
 	})
+}
+
+// TestDeclTypeErrs tests type declaration errors (generic errors)
+func TestDeclTypeErrs(t *testing.T) {
+	testCases := map[string]ErrCase{
+		"IllegalName": ErrCase{
+			Src: `schema test
+			enum _illegalName { e }`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalName2": ErrCase{
+			Src: `schema test
+			enum illegal_Name { e }`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalName3": ErrCase{
+			Src: `schema test
+			enum Illegal_Name { e }`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"RedeclPrimitive": ErrCase{
+			Src: `schema test
+			enum String { e }`,
+			Errs: []ErrCode{compiler.ErrTypeRedecl},
+		},
+	}
+
+	// Test primitive type redeclaration
+	primitiveTypeNames := []string{
+		"None",
+		"Bool",
+		"Byte",
+		"Int32",
+		"Uint32",
+		"Int64",
+		"Uint64",
+		"Float64",
+		"String",
+		"Time",
+	}
+	for _, primTypeName := range primitiveTypeNames {
+		testCases[fmt.Sprintf("RedeclPrimitive(%s)", primTypeName)] = ErrCase{
+			Src: fmt.Sprintf(
+				`schema tst
+				enum %s { e }`,
+				primTypeName,
+			),
+			Errs: []ErrCode{compiler.ErrTypeRedecl},
+		}
+	}
+
+	testErrs(t, testCases)
 }
 
 // TestDeclAliasTypes tests alias type declaration
