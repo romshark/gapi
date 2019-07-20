@@ -90,10 +90,10 @@ func (ast *AST) FindTypeByName(category TypeCategory, name string) Type {
 		// Search in primitives only
 		return stdTypeByName(name)
 	case TypeCategoryUserDefined:
-		// Search in all categories including primitives
+		// Search in all user-defined types
 		return findUserDefined()
 	case "":
-		// Search in all user-defined types
+		// Search in all categories including primitives
 		if t := stdTypeByName(name); t != nil {
 			return t
 		}
