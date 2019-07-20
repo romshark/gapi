@@ -168,9 +168,10 @@ func TestDeclTypeErrs(t *testing.T) {
 			enum Illegal_Name { e }`,
 			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
 		},
-		"RedeclPrimitive": ErrCase{
+		"RedeclUserType": ErrCase{
 			Src: `schema test
-			enum String { e }`,
+			enum X { a b }
+			alias X = String`,
 			Errs: []ErrCode{compiler.ErrTypeRedecl},
 		},
 	}
