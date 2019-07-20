@@ -1435,7 +1435,6 @@ func TestDeclQueries(t *testing.T) {
 		require.Len(t, ast.ResolverTypes, 1)
 		tBar := ast.ResolverTypes[0]
 
-		type Expectation []compiler.QueryEndpoint
 		expected := []compiler.QueryEndpoint{
 			compiler.QueryEndpoint{
 				GraphID: 3,
