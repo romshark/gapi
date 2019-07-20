@@ -1402,3 +1402,143 @@ func TestDeclResolverTypeErrs(t *testing.T) {
 		},
 	})
 }
+
+// TestDeclQueries tests query declarations
+func TestDeclQueries(t *testing.T) {
+	src := `schema test
+	struct Foo {
+		foo String
+	}
+	resolver Bar {
+		bar String
+	}
+	query foo Foo
+	query bar Bar
+	query str String
+	query foo2(foo Foo) Foo
+	query bar2(bar Int32, baz Float64) Bar
+	query baz(
+		first Int32,
+		second Bool,
+		third Uint64,
+	) String
+	`
+
+	test(t, src, func(ast AST) {
+		require.Len(t, ast.Types, 2)
+		require.Len(t, ast.Mutations, 0)
+		require.Len(t, ast.QueryEndpoints, 6)
+
+		require.Len(t, ast.StructTypes, 1)
+		tFoo := ast.StructTypes[0]
+
+		require.Len(t, ast.ResolverTypes, 1)
+		tBar := ast.ResolverTypes[0]
+
+		type Expectation []compiler.QueryEndpoint
+		expected := []compiler.QueryEndpoint{
+			compiler.QueryEndpoint{
+				GraphID: 3,
+				Name:    "foo",
+				Type:    tFoo,
+			},
+			compiler.QueryEndpoint{
+				GraphID: 4,
+				Name:    "bar",
+				Type:    tBar,
+			},
+			compiler.QueryEndpoint{
+				GraphID: 5,
+				Name:    "str",
+				Type:    compiler.TypeStdString{},
+			},
+			compiler.QueryEndpoint{
+				GraphID: 6,
+				Name:    "foo2",
+				Type:    tFoo,
+				Parameters: []*compiler.Parameter{
+					&compiler.Parameter{
+						ID:   1,
+						Name: "foo",
+						Type: tFoo,
+					},
+				},
+			},
+			compiler.QueryEndpoint{
+				GraphID: 7,
+				Name:    "bar2",
+				Type:    tBar,
+				Parameters: []*compiler.Parameter{
+					&compiler.Parameter{
+						ID:   2,
+						Name: "bar",
+						Type: compiler.TypeStdInt32{},
+					},
+					&compiler.Parameter{
+						ID:   3,
+						Name: "baz",
+						Type: compiler.TypeStdFloat64{},
+					},
+				},
+			},
+			compiler.QueryEndpoint{
+				GraphID: 8,
+				Name:    "baz",
+				Type:    compiler.TypeStdString{},
+				Parameters: []*compiler.Parameter{
+					&compiler.Parameter{
+						ID:   4,
+						Name: "first",
+						Type: compiler.TypeStdInt32{},
+					},
+					&compiler.Parameter{
+						ID:   5,
+						Name: "second",
+						Type: compiler.TypeStdBool{},
+					},
+					&compiler.Parameter{
+						ID:   6,
+						Name: "third",
+						Type: compiler.TypeStdUint64{},
+					},
+				},
+			},
+		}
+		require.Len(t, ast.QueryEndpoints, len(expected))
+		for i1, expec := range expected {
+			require.IsType(t, compiler.QueryEndpoint{}, expec)
+
+			actual := ast.QueryEndpoints[i1]
+			require.Equal(t, expec.Name, actual.Name)
+			require.Equal(t, expec.GraphID, actual.GraphID)
+			require.Equal(t, expec.Type, actual.Type)
+
+			// Make sure the graph nodes are registered correctly
+			foundNode := ast.FindGraphNodeByID(expec.GraphID)
+			require.Equal(t, actual, foundNode)
+
+			// Make sure parameters match expectations
+			require.Len(t, actual.Parameters, len(expec.Parameters))
+			for i2, param := range expec.Parameters {
+				actualParam := actual.Parameters[i2]
+				require.Equal(t, param.Name, actualParam.Name)
+				require.Equal(t, param.ID, actualParam.ID)
+				require.Equal(t, param.Type, actualParam.Type)
+				require.IsType(
+					t,
+					&compiler.QueryEndpoint{},
+					actualParam.Target,
+				)
+				require.Equal(
+					t,
+					actual,
+					actualParam.Target.(*compiler.QueryEndpoint),
+				)
+
+				// Make sure parameters are registered correctly
+				regParam := ast.FindParameterByID(param.ID)
+				require.Equal(t, actualParam, regParam)
+			}
+		}
+	})
+}
