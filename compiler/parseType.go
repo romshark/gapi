@@ -57,7 +57,7 @@ LOOP:
 
 		case ruleWrd:
 			// Terminal type
-			terminalTypeName := c.parser.Buffer[current.begin:current.end]
+			terminalTypeName := c.getSrc(current)
 			terminalType := c.ast.FindTypeByName("", terminalTypeName)
 			if terminalType == nil {
 				return nil, cErr{
