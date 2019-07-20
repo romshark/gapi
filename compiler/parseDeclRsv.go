@@ -5,6 +5,7 @@ import (
 )
 
 func (c *Compiler) parseDeclRsv(node *node32) error {
+	// Read name
 	nd := skipUntil(node.up, ruleWrd)
 	newResolverTypeName := c.getSrc(nd)
 

@@ -5,29 +5,31 @@ import (
 )
 
 func (c *Compiler) parseDeclAls(node *node32) error {
-	aliasTypeNameNode := node.up.next.next
-	newAliasTypeName := c.getSrc(aliasTypeNameNode)
-	aliasedTypeNameNode := node.up.next.next.next.next.next.next
-	aliasedTypeName := c.getSrc(aliasedTypeNameNode)
+	// Read name
+	nd := skipUntil(node.up, ruleWrd)
+	newAliasTypeName := c.getSrc(nd)
 
 	if err := verifyTypeName(newAliasTypeName); err != nil {
 		c.err(cErr{
 			ErrTypeIllegalIdent,
 			fmt.Sprintf("illegal type identifier at %d:%d: %s",
-				aliasTypeNameNode.begin,
-				aliasTypeNameNode.end,
+				nd.begin,
+				nd.end,
 				err,
 			),
 		})
 		return nil
 	}
 
+	nd = skipUntil(nd.next, ruleWrd)
+	aliasedTypeName := c.getSrc(nd)
+
 	if err := verifyTypeName(aliasedTypeName); err != nil {
 		c.err(cErr{
 			ErrTypeIllegalIdent,
 			fmt.Sprintf("illegal type identifier at %d:%d: %s",
-				aliasedTypeNameNode.begin,
-				aliasedTypeNameNode.end,
+				nd.begin,
+				nd.end,
 				err,
 			),
 		})
