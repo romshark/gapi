@@ -1562,3 +1562,80 @@ func TestDeclQueryErrs(t *testing.T) {
 		},
 	})
 }
+
+// TestParamImpureType tests specifying parameters of non-pure types
+func TestParamImpureType(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"Resolver": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			query q(param R) String`,
+			Errs: []ErrCode{compiler.ErrParamImpure},
+		},
+		"ImpureUnion": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			union U {
+				R
+				Int32
+			}
+			query q(param U) String`,
+			Errs: []ErrCode{compiler.ErrParamImpure},
+		},
+		"ImpureAliasToResolver": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			alias A = R
+			query q(param A) String`,
+			Errs: []ErrCode{compiler.ErrParamImpure},
+		},
+		"ImpureUnionOfImpureAlias": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			alias A = R
+			union U {
+				Int32
+				A
+			}
+			query q(param U) String`,
+			Errs: []ErrCode{compiler.ErrParamImpure},
+		},
+		"ImpureOptional": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			query q(param ?R) String`,
+			Errs: []ErrCode{compiler.ErrParamImpure},
+		},
+		"ImpureList": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			query q(param []R) String`,
+			Errs: []ErrCode{compiler.ErrParamImpure},
+		},
+		"ImpureOptionalList": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			query q(param ?[]R) String`,
+			Errs: []ErrCode{compiler.ErrParamImpure},
+		},
+		"None": ErrCase{
+			Src: `schema test
+			query q(param None) String`,
+			Errs: []ErrCode{compiler.ErrParamImpure},
+		},
+	})
+}
