@@ -3,7 +3,7 @@ package compiler
 // Type represents an abstract type implementation
 type Type interface {
 	Name() string
-	Src() Src
+	Source() Src
 	Category() TypeCategory
 	String() string
 
@@ -21,7 +21,7 @@ type terminalType struct {
 	id   TypeID
 }
 
-func (i terminalType) Src() Src           { return i.src }
+func (i terminalType) Source() Src        { return i.src }
 func (i terminalType) Name() string       { return i.name }
 func (i terminalType) String() string     { return i.name }
 func (i terminalType) TerminalType() Type { return nil }
@@ -89,7 +89,7 @@ type TypeOptional struct {
 }
 
 // Src implements the Type interface
-func (t *TypeOptional) Src() Src { return Src{} }
+func (t *TypeOptional) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t *TypeOptional) Name() string { return "?" + t.StoreType.Name() }
@@ -117,7 +117,7 @@ type TypeList struct {
 }
 
 // Src implements the Type interface
-func (t *TypeList) Src() Src { return Src{} }
+func (t *TypeList) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t *TypeList) Name() string { return "[]" + t.StoreType.Name() }
@@ -142,7 +142,7 @@ func (t *TypeList) TypeID() TypeID { return TypeIDList }
 type TypeStdNone struct{}
 
 // Src implements the Type interface
-func (t TypeStdNone) Src() Src { return Src{} }
+func (t TypeStdNone) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t TypeStdNone) Name() string { return "None" }
@@ -167,7 +167,7 @@ func (t TypeStdNone) TypeID() TypeID { return TypeIDPrimitiveNone }
 type TypeStdBool struct{}
 
 // Src implements the Type interface
-func (t TypeStdBool) Src() Src { return Src{} }
+func (t TypeStdBool) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t TypeStdBool) Name() string { return "Bool" }
@@ -192,7 +192,7 @@ func (t TypeStdBool) TypeID() TypeID { return TypeIDPrimitiveBool }
 type TypeStdByte struct{}
 
 // Src implements the Type interface
-func (t TypeStdByte) Src() Src { return Src{} }
+func (t TypeStdByte) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t TypeStdByte) Name() string { return "Byte" }
@@ -217,7 +217,7 @@ func (t TypeStdByte) TypeID() TypeID { return TypeIDPrimitiveByte }
 type TypeStdInt32 struct{}
 
 // Src implements the Type interface
-func (t TypeStdInt32) Src() Src { return Src{} }
+func (t TypeStdInt32) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t TypeStdInt32) Name() string { return "Int32" }
@@ -242,7 +242,7 @@ func (t TypeStdInt32) TypeID() TypeID { return TypeIDPrimitiveInt32 }
 type TypeStdUint32 struct{}
 
 // Src implements the Type interface
-func (t TypeStdUint32) Src() Src { return Src{} }
+func (t TypeStdUint32) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t TypeStdUint32) Name() string { return "Uint32" }
@@ -267,7 +267,7 @@ func (t TypeStdUint32) TypeID() TypeID { return TypeIDPrimitiveUint32 }
 type TypeStdInt64 struct{}
 
 // Src implements the Type interface
-func (t TypeStdInt64) Src() Src { return Src{} }
+func (t TypeStdInt64) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t TypeStdInt64) Name() string { return "Int64" }
@@ -292,7 +292,7 @@ func (t TypeStdInt64) TypeID() TypeID { return TypeIDPrimitiveInt64 }
 type TypeStdUint64 struct{}
 
 // Src implements the Type interface
-func (t TypeStdUint64) Src() Src { return Src{} }
+func (t TypeStdUint64) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t TypeStdUint64) Name() string { return "Uint64" }
@@ -317,7 +317,7 @@ func (t TypeStdUint64) TypeID() TypeID { return TypeIDPrimitiveUint64 }
 type TypeStdFloat64 struct{}
 
 // Src implements the Type interface
-func (t TypeStdFloat64) Src() Src { return Src{} }
+func (t TypeStdFloat64) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t TypeStdFloat64) Name() string { return "Float64" }
@@ -344,7 +344,7 @@ func (t TypeStdFloat64) TypeID() TypeID { return TypeIDPrimitiveFloat64 }
 type TypeStdString struct{}
 
 // Src implements the Type interface
-func (t TypeStdString) Src() Src { return Src{} }
+func (t TypeStdString) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t TypeStdString) Name() string { return "String" }
@@ -369,7 +369,7 @@ func (t TypeStdString) TypeID() TypeID { return TypeIDPrimitiveString }
 type TypeStdTime struct{}
 
 // Src implements the Type interface
-func (t TypeStdTime) Src() Src { return Src{} }
+func (t TypeStdTime) Source() Src { return Src{} }
 
 // Name implements the Type interface
 func (t TypeStdTime) Name() string { return "Time" }
@@ -389,26 +389,6 @@ func (t TypeStdTime) TypeID() TypeID { return TypeIDPrimitiveTime }
 /****************************************************************
 	Struct
 ****************************************************************/
-
-// StructField represents a struct field
-type StructField struct {
-	Src
-	Struct  *TypeStruct
-	GraphID GraphNodeID
-	Name    string
-	Type    Type
-}
-
-// GraphNodeID returns the unique graph node identifier of the struct field
-func (sf *StructField) GraphNodeID() GraphNodeID { return sf.GraphID }
-
-// Parent returns the parent struct type of the struct field
-func (sf *StructField) Parent() Type { return sf.Struct }
-
-// GraphNodeName returns the graph node name
-func (sf *StructField) GraphNodeName() string {
-	return sf.Struct.name + "." + sf.Name
-}
 
 // TypeStruct represents a standard scalar type implementation
 type TypeStruct struct {
@@ -437,41 +417,10 @@ func (t *TypeStruct) FieldByName(name string) *StructField {
 // or a subscription parameter
 type Parameter struct {
 	Src
-	Target interface{}
+	Target GraphNode
 	Name   string
 	ID     ParamID
 	Type   Type
-}
-
-// ResolverProperty represents a resolver property
-type ResolverProperty struct {
-	Src
-	Resolver   *TypeResolver
-	Name       string
-	GraphID    GraphNodeID
-	Type       Type
-	Parameters []*Parameter
-}
-
-// ParamByName returns a property given its name
-func (t *ResolverProperty) ParamByName(name string) *Parameter {
-	for _, param := range t.Parameters {
-		if param.Name == name {
-			return param
-		}
-	}
-	return nil
-}
-
-// GraphNodeID returns the unique graph node identifier of the resolver prop
-func (t *ResolverProperty) GraphNodeID() GraphNodeID { return t.GraphID }
-
-// Parent returns the parent resolver type of the resolver prop
-func (t *ResolverProperty) Parent() Type { return t.Resolver }
-
-// GraphNodeName returns the graph node name
-func (t *ResolverProperty) GraphNodeName() string {
-	return t.Resolver.name + "." + t.Name
 }
 
 // TypeResolver represents a resolver type

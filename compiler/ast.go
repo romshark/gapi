@@ -8,8 +8,10 @@ type ParamID int
 
 // GraphNode represents a graph node
 type GraphNode interface {
+	Source() Src
 	GraphNodeID() GraphNodeID
 	Parent() Type
+	NodeName() string
 	GraphNodeName() string
 }
 

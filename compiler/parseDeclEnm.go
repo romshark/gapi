@@ -5,20 +5,9 @@ import (
 )
 
 func (c *Compiler) parseDeclEnm(node *node32) error {
+	// Read name
 	nd := skipUntil(node.up, ruleWrd)
 	newEnumTypeName := c.getSrc(nd)
-
-	if err := verifyTypeName(newEnumTypeName); err != nil {
-		c.err(cErr{
-			ErrTypeIllegalIdent,
-			fmt.Sprintf("illegal enum type identifier %d:%d: %s",
-				nd.begin,
-				nd.end,
-				err,
-			),
-		})
-		return nil
-	}
 
 	newType := &TypeEnum{
 		terminalType: terminalType{
@@ -50,11 +39,7 @@ func (c *Compiler) parseDeclEnm(node *node32) error {
 	}
 
 	// Try to define the type
-	typeID, typeDefErr := c.defineType(newType)
-	if typeDefErr != nil {
-		c.err(typeDefErr)
-	}
-	newType.id = typeID
+	c.defineType(newType)
 
 	return nil
 }

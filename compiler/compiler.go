@@ -21,22 +21,6 @@ func src(node *node32) Src {
 	}
 }
 
-// QueryEndpoint represents a query endpoint
-type QueryEndpoint struct {
-	Src
-	Name string
-	Vars []*Parameter
-	Type Type
-}
-
-// Mutation represents a mutation endpoint
-type Mutation struct {
-	Src
-	Name string
-	Vars []*Parameter
-	Type Type
-}
-
 func stdTypeByName(name string) Type {
 	switch name {
 	case "None":
@@ -80,6 +64,9 @@ type Compiler struct {
 	lastIssuedGraphID GraphNodeID
 	lastIssuedTypeID  TypeID
 	lastIssuedParamID ParamID
+	paramsByName      map[GraphNode]map[string]*Parameter
+	graphNodeByName   map[string]GraphNode
+	typeByName        map[string]Type
 	typeByID          map[TypeID]Type
 	graphNodeByID     map[GraphNodeID]GraphNode
 	paramByID         map[ParamID]*Parameter
@@ -93,6 +80,9 @@ func NewCompiler(source string) (*Compiler, error) {
 			Buffer: source,
 		},
 		lastIssuedTypeID: TypeIDUserTypeOffset,
+		paramsByName:     make(map[GraphNode]map[string]*Parameter),
+		graphNodeByName:  make(map[string]GraphNode),
+		typeByName:       make(map[string]Type),
 		typeByID:         make(map[TypeID]Type),
 		graphNodeByID:    make(map[GraphNodeID]GraphNode),
 		paramByID:        make(map[ParamID]*Parameter),
@@ -174,8 +164,16 @@ func (c *Compiler) Compile() error {
 	}
 	c.ast.SchemaName = c.getSrc(current.up.next.next)
 
-	if err := verifySchemaName(c.ast.SchemaName); err != nil {
-		c.err(cErr{ErrSchemaIllegalIdent, err.Error()})
+	if err := verifyLowerCamelCase(c.ast.SchemaName); err != nil {
+		c.err(cErr{
+			ErrSchemaIllegalIdent,
+			fmt.Sprintf(
+				"invalid schema identifier at %d:%d: %s",
+				current.begin,
+				current.end,
+				err,
+			),
+		})
 	}
 
 	// Read all declarations

@@ -18,46 +18,16 @@ func isLetter(r byte) bool {
 	return isLowLetter(r) || isUpLetter(r)
 }
 
-func verifySchemaName(name string) error {
+func verifyCapitalizedCamelCase(name string) error {
 	if len(name) < 1 {
-		return errors.New("missing schema identifier")
-	}
-
-	// [a-z]
-	if !isLowLetter(name[0]) {
-		// Non-capitalized first letter
-		return errors.New(
-			"illegal schema identifier (must begin with " +
-				"a lower case latin character (a-z))",
-		)
-	}
-
-	for i := 1; i < len(name); i++ {
-		r := name[i]
-		// [a-zA-Z0-9]
-		if !isLetter(r) && !isDigit(r) {
-			return errors.Errorf(
-				"illegal schema identifier "+
-					"(contains illegal character '%s')",
-				string(r),
-			)
-		}
-	}
-
-	return nil
-}
-
-func verifyTypeName(name string) error {
-	if len(name) < 1 {
-		return errors.New("missing type name")
+		return errors.New("empty")
 	}
 
 	// [A-Z]
 	if !isUpLetter(name[0]) {
 		// Non-capitalized first letter
 		return errors.New(
-			"illegal type identifier (must begin with " +
-				"a capitalized latin character (A-Z))",
+			"must begin with a capitalized latin character (A-Z)",
 		)
 	}
 
@@ -66,27 +36,26 @@ func verifyTypeName(name string) error {
 		// [a-zA-Z0-9]
 		if !isLetter(r) && !isDigit(r) {
 			return errors.Errorf(
-				"illegal type identifier "+
-					"(contains illegal character '%s')",
+				"contains illegal character '%s'",
 				string(r),
 			)
 		}
 	}
 
 	return nil
+
 }
 
-func verifyEnumValue(name string) error {
+func verifyLowerCamelCase(name string) error {
 	if len(name) < 1 {
-		return errors.New("missing value identifier")
+		return errors.New("empty")
 	}
 
 	// [a-z]
 	if !isLowLetter(name[0]) {
 		// Non-capitalized first letter
 		return errors.New(
-			"illegal enum value identifier (must begin with " +
-				"a lower case latin character (a-z))",
+			"must begin with a lower case latin character (a-z))",
 		)
 	}
 
@@ -95,95 +64,7 @@ func verifyEnumValue(name string) error {
 		// [a-zA-Z0-9]
 		if !isLetter(r) && !isDigit(r) {
 			return errors.Errorf(
-				"illegal enum value identifier "+
-					"(contains illegal character '%s')",
-				string(r),
-			)
-		}
-	}
-
-	return nil
-}
-
-func verifyStructFieldIdent(name string) error {
-	if len(name) < 1 {
-		return errors.New("missing field identifier")
-	}
-
-	// [a-z]
-	if !isLowLetter(name[0]) {
-		// Non-capitalized first letter
-		return errors.New(
-			"illegal struct field identifier (must begin with " +
-				"a lower case latin character (a-z))",
-		)
-	}
-
-	for i := 1; i < len(name); i++ {
-		r := name[i]
-		// [a-zA-Z0-9]
-		if !isLetter(r) && !isDigit(r) {
-			return errors.Errorf(
-				"illegal struct field identifier "+
-					"(contains illegal character '%s')",
-				string(r),
-			)
-		}
-	}
-
-	return nil
-}
-
-func verifyResolverPropIdent(name string) error {
-	if len(name) < 1 {
-		return errors.New("missing resolver property identifier")
-	}
-
-	// [a-z]
-	if !isLowLetter(name[0]) {
-		// Non-capitalized first letter
-		return errors.New(
-			"illegal resolver property identifier (must begin with " +
-				"a lower case latin character (a-z))",
-		)
-	}
-
-	for i := 1; i < len(name); i++ {
-		r := name[i]
-		// [a-zA-Z0-9]
-		if !isLetter(r) && !isDigit(r) {
-			return errors.Errorf(
-				"illegal resolver property identifier "+
-					"(contains illegal character '%s')",
-				string(r),
-			)
-		}
-	}
-
-	return nil
-}
-
-func verifyParameterIdent(name string) error {
-	if len(name) < 1 {
-		return errors.New("missing parameter identifier")
-	}
-
-	// [a-z]
-	if !isLowLetter(name[0]) {
-		// Non-capitalized first letter
-		return errors.New(
-			"illegal parameter identifier (must begin with " +
-				"a lower case latin character (a-z))",
-		)
-	}
-
-	for i := 1; i < len(name); i++ {
-		r := name[i]
-		// [a-zA-Z0-9]
-		if !isLetter(r) && !isDigit(r) {
-			return errors.Errorf(
-				"illegal parameter identifier "+
-					"(contains illegal character '%s')",
+				"contains illegal character '%s'",
 				string(r),
 			)
 		}

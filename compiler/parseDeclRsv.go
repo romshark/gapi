@@ -9,18 +9,6 @@ func (c *Compiler) parseDeclRsv(node *node32) error {
 	nd := skipUntil(node.up, ruleWrd)
 	newResolverTypeName := c.getSrc(nd)
 
-	if err := verifyTypeName(newResolverTypeName); err != nil {
-		c.err(cErr{
-			ErrTypeIllegalIdent,
-			fmt.Sprintf("illegal resolver type identifier %d:%d: %s",
-				nd.begin,
-				nd.end,
-				err,
-			),
-		})
-		return nil
-	}
-
 	newResolver := &TypeResolver{
 		terminalType: terminalType{
 			src:  src(node),
@@ -50,11 +38,7 @@ func (c *Compiler) parseDeclRsv(node *node32) error {
 	}
 
 	// Try to define the type
-	typeID, typeDefErr := c.defineType(newResolver)
-	if typeDefErr != nil {
-		c.err(typeDefErr)
-	}
-	newResolver.id = typeID
+	c.defineType(newResolver)
 
 	return nil
 }

@@ -17,6 +17,16 @@ const (
 	// ErrSchemaIllegalIdent indicates an illegal schema identifier
 	ErrSchemaIllegalIdent
 
+	// ErrQryEndpointIllegalIdent indicates an illegal query endpoint identifier
+	ErrQryEndpointIllegalIdent
+
+	// ErrMutEndpointIllegalIdent indicates an illegal mutation endpoint
+	// identifier
+	ErrMutEndpointIllegalIdent
+
+	// ErrGraphRootNodeRedecl indicates a redeclared graph root node
+	ErrGraphRootNodeRedecl
+
 	// ErrTypeUndef indicates an undefined referenced type
 	ErrTypeUndef
 
@@ -90,6 +100,12 @@ func (c ErrCode) String() string {
 		return "Syntax"
 	case ErrSchemaIllegalIdent:
 		return "SchemaIllegalIdent"
+	case ErrQryEndpointIllegalIdent:
+		return "QryEndpointIllegalIdent"
+	case ErrMutEndpointIllegalIdent:
+		return "MutEndpointIllegalIdent"
+	case ErrGraphRootNodeRedecl:
+		return "GraphRootNodeRedecl"
 	case ErrTypeUndef:
 		return "TypeUndef"
 	case ErrTypeRedecl:

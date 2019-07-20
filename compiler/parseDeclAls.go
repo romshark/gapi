@@ -9,22 +9,11 @@ func (c *Compiler) parseDeclAls(node *node32) error {
 	nd := skipUntil(node.up, ruleWrd)
 	newAliasTypeName := c.getSrc(nd)
 
-	if err := verifyTypeName(newAliasTypeName); err != nil {
-		c.err(cErr{
-			ErrTypeIllegalIdent,
-			fmt.Sprintf("illegal type identifier at %d:%d: %s",
-				nd.begin,
-				nd.end,
-				err,
-			),
-		})
-		return nil
-	}
-
+	// Read aliased type name
 	nd = skipUntil(nd.next, ruleWrd)
 	aliasedTypeName := c.getSrc(nd)
 
-	if err := verifyTypeName(aliasedTypeName); err != nil {
+	if err := verifyCapitalizedCamelCase(aliasedTypeName); err != nil {
 		c.err(cErr{
 			ErrTypeIllegalIdent,
 			fmt.Sprintf("illegal type identifier at %d:%d: %s",
@@ -44,16 +33,11 @@ func (c *Compiler) parseDeclAls(node *node32) error {
 	}
 
 	// Try to define the type
-	typeID, err := c.defineType(newType)
-	if err != nil {
-		c.err(err)
-		return nil
-	}
-	newType.id = typeID
+	c.defineType(newType)
 
 	c.deferJob(func() error {
 		// Ensure the aliased type exists after all types have been defined
-		aliasedType := c.ast.FindTypeByName("", aliasedTypeName)
+		aliasedType := c.findTypeByName(aliasedTypeName)
 		if aliasedType == nil {
 			c.err(cErr{ErrTypeUndef, fmt.Sprintf(
 				"undefined type %s aliased by %s at %d:%d",

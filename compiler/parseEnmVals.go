@@ -15,7 +15,7 @@ func (c *Compiler) parseEnmVals(
 	for nd != nil {
 		valueName := c.getSrc(nd)
 
-		if err := verifyEnumValue(valueName); err != nil {
+		if err := verifyLowerCamelCase(valueName); err != nil {
 			c.err(cErr{
 				ErrEnumValIllegalIdent,
 				fmt.Sprintf(

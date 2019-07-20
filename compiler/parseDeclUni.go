@@ -3,21 +3,9 @@ package compiler
 import "fmt"
 
 func (c *Compiler) parseDeclUni(node *node32) error {
+	// Read name
 	nd := skipUntil(node.up, ruleWrd)
 	newUnionTypeName := c.getSrc(nd)
-
-	if err := verifyTypeName(newUnionTypeName); err != nil {
-		c.err(cErr{
-			ErrTypeIllegalIdent,
-			fmt.Sprintf(
-				"invalid union type identifier %d:%d: %s",
-				nd.begin,
-				nd.end,
-				err,
-			),
-		})
-		return nil
-	}
 
 	newType := &TypeUnion{
 		terminalType: terminalType{
@@ -51,7 +39,7 @@ func (c *Compiler) parseDeclUni(node *node32) error {
 	c.deferJob(func() error {
 		// Ensure all referenced types are defined and legal
 		for name := range newType.Types {
-			reg := c.ast.FindTypeByName("", name)
+			reg := c.findTypeByName(name)
 			if reg == nil {
 				c.err(cErr{
 					ErrTypeUndef,
@@ -97,11 +85,7 @@ func (c *Compiler) parseDeclUni(node *node32) error {
 	})
 
 	// Try to define the type
-	typeID, typeDefErr := c.defineType(newType)
-	if typeDefErr != nil {
-		c.err(typeDefErr)
-	}
-	newType.id = typeID
+	c.defineType(newType)
 
 	return nil
 }

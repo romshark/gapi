@@ -17,7 +17,7 @@ func (c *Compiler) parseRsvProps(
 		var newProp *ResolverProperty
 
 		// Verify property identifier
-		if err := verifyResolverPropIdent(propName); err != nil {
+		if err := verifyLowerCamelCase(propName); err != nil {
 			c.err(cErr{
 				ErrResolverPropIllegalIdent,
 				fmt.Sprintf(
@@ -57,13 +57,14 @@ func (c *Compiler) parseRsvProps(
 			},
 			Resolver: resolver,
 			Name:     propName,
+			GraphID:  0,   // Set during definition
 			Type:     nil, // Deferred
 		}
-		newProp.GraphID = c.defineGraphNode(newProp)
+		c.defineGraphNode(newProp)
 		resolver.Properties = append(resolver.Properties, newProp)
 
 		// Parse property parameters
-		if err = c.parseRsvPropParams(
+		if err = c.parseParams(
 			newProp,
 			skipUntil(node.next, rulePrms),
 		); err != nil {

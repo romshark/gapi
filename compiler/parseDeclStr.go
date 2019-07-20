@@ -8,18 +8,6 @@ func (c *Compiler) parseDeclStr(node *node32) error {
 	nd := skipUntil(node.up, ruleWrd)
 	newStructTypeName := c.getSrc(nd)
 
-	if err := verifyTypeName(newStructTypeName); err != nil {
-		c.err(cErr{
-			ErrTypeIllegalIdent,
-			fmt.Sprintf("illegal struct type identifier %d:%d: %s",
-				nd.begin,
-				nd.end,
-				err,
-			),
-		})
-		return nil
-	}
-
 	newType := &TypeStruct{
 		terminalType: terminalType{
 			src:  src(node),
@@ -49,11 +37,7 @@ func (c *Compiler) parseDeclStr(node *node32) error {
 	}
 
 	// Try to define the type
-	typeID, typeDefErr := c.defineType(newType)
-	if typeDefErr != nil {
-		c.err(typeDefErr)
-	}
-	newType.id = typeID
+	c.defineType(newType)
 
 	return nil
 }

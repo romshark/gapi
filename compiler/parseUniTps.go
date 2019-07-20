@@ -15,7 +15,7 @@ func (c *Compiler) parseUniTps(
 	for nd != nil {
 		referencedTypeName := c.getSrc(nd)
 
-		if err := verifyTypeName(referencedTypeName); err != nil {
+		if err := verifyCapitalizedCamelCase(referencedTypeName); err != nil {
 			c.err(cErr{
 				ErrTypeIllegalIdent,
 				fmt.Sprintf(

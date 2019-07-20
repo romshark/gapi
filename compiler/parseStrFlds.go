@@ -22,7 +22,7 @@ func (c *Compiler) parseStrFlds(
 		fieldName := c.getSrc(nd)
 
 		// Verify field identifier
-		if err := verifyStructFieldIdent(fieldName); err != nil {
+		if err := verifyLowerCamelCase(fieldName); err != nil {
 			c.err(cErr{
 				ErrStructFieldIllegalIdent,
 				fmt.Sprintf(
@@ -60,11 +60,12 @@ func (c *Compiler) parseStrFlds(
 				Begin: nd.begin,
 				End:   nd.end,
 			},
-			Struct: structType,
-			Name:   fieldName,
-			Type:   nil, // Deferred
+			Struct:  structType,
+			Name:    fieldName,
+			GraphID: 0,   // Set during definition
+			Type:    nil, // Deferred
 		}
-		newField.GraphID = c.defineGraphNode(newField)
+		c.defineGraphNode(newField)
 		structType.Fields = append(structType.Fields, newField)
 
 		nd = skipUntil(nd.next, ruleTp)
