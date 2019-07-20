@@ -1232,3 +1232,119 @@ func TestDeclResolverTypes(t *testing.T) {
 		}
 	})
 }
+
+// TestDeclResolverTypeErrs tests resolver type declaration errors
+func TestDeclResolverTypeErrs(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"IllegalTypeName": ErrCase{
+			Src: `schema test
+			resolver illegalName {
+				foo String
+				bar String
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalTypeName2": ErrCase{
+			Src: `schema test
+			resolver _IllegalName {
+				foo String
+				bar String
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"IllegalTypeName3": ErrCase{
+			Src: `schema test
+			resolver Illegal_Name {
+				foo String
+				bar String
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeIllegalIdent},
+		},
+		"NoProps": ErrCase{
+			Src: `schema test
+			resolver S {}`,
+			Errs: []ErrCode{compiler.ErrResolverNoProps},
+		},
+		"RedundantProp": ErrCase{
+			Src: `schema test
+			resolver S {
+				foo String
+				foo String
+			}`,
+			Errs: []ErrCode{compiler.ErrResolverPropRedecl},
+		},
+		"IllegalPropIdentifier": ErrCase{
+			Src: `schema test
+			resolver S {
+				_foo String
+				_bar String
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrResolverPropIllegalIdent,
+				compiler.ErrResolverPropIllegalIdent,
+			},
+		},
+		"IllegalPropIdentifier2": ErrCase{
+			Src: `schema test
+			resolver S {
+				1foo String
+				2bar String
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrResolverPropIllegalIdent,
+				compiler.ErrResolverPropIllegalIdent,
+			},
+		},
+		"IllegalPropIdentifier3": ErrCase{
+			Src: `schema test
+			resolver S {
+				fo_o String
+				ba_r String
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrResolverPropIllegalIdent,
+				compiler.ErrResolverPropIllegalIdent,
+			},
+		},
+		"IllegalPropParamIdentifier": ErrCase{
+			Src: `schema test
+			resolver S {
+				foo(_foo String) String
+				bar(_bar String) String
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrParamIllegalIdent,
+				compiler.ErrParamIllegalIdent,
+			},
+		},
+		"IllegalPropParamIdentifier2": ErrCase{
+			Src: `schema test
+			resolver S {
+				foo(1foo String) String
+				bar(2bar String) String
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrParamIllegalIdent,
+				compiler.ErrParamIllegalIdent,
+			},
+		},
+		"IllegalPropParamIdentifier3": ErrCase{
+			Src: `schema test
+			resolver S {
+				foo(fo_o String) String
+				bar(ba_r String) String
+			}`,
+			Errs: []ErrCode{
+				compiler.ErrParamIllegalIdent,
+				compiler.ErrParamIllegalIdent,
+			},
+		},
+		"RedundantPropParam": ErrCase{
+			Src: `schema test
+			resolver S {
+				foo(foo String, foo Int32) String
+			}`,
+			Errs: []ErrCode{compiler.ErrResolverPropParamRedecl},
+		},
+	})
+}
