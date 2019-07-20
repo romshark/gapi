@@ -28,8 +28,6 @@ func (c *Compiler) parseDeclEnm(node *node32) error {
 		Values: make(map[string]EnumValue),
 	}
 
-	checkVals := true
-
 	// Parse values
 	nd = skipUntil(nd.next, ruleBlkEn)
 	nd = skipUntil(nd.up, ruleWrd)
