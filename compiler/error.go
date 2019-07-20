@@ -69,6 +69,9 @@ const (
 	// ErrStructFieldRedecl indicates a redeclared struct field
 	ErrStructFieldRedecl
 
+	// ErrStructFieldImpure indicates a struct field of impure (non-data) type
+	ErrStructFieldImpure
+
 	// ErrStructNoFields indicates an empty struct type missing fields
 	ErrStructNoFields
 
@@ -137,6 +140,8 @@ func (c ErrCode) String() string {
 		return "StructFieldIllegalIdent"
 	case ErrStructFieldRedecl:
 		return "StructFieldRedecl"
+	case ErrStructFieldImpure:
+		return "StructFieldImpure"
 	case ErrStructNoFields:
 		return "StructNoFields"
 	case ErrStructRecurs:

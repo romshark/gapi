@@ -78,6 +78,20 @@ func (c *Compiler) parseStrFlds(
 				c.err(err)
 			}
 
+			// Ensure all struct fields are of a pure type
+			if !fieldType.IsPure() {
+				c.err(cErr{
+					ErrStructFieldImpure,
+					fmt.Sprintf(
+						"Struct field %s has impure type %s at %d:%d",
+						newField.GraphNodeName(),
+						fieldType,
+						ndField.begin,
+						ndField.end,
+					),
+				})
+			}
+
 			// Set the field type
 			newField.Type = fieldType
 
