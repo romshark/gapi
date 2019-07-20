@@ -1,5 +1,10 @@
 package compiler
 
+import (
+	"fmt"
+	"strings"
+)
+
 // ErrCode represents a compiler error code
 type ErrCode int
 
@@ -146,3 +151,20 @@ type cErr struct {
 func (e cErr) Error() string   { return e.code.String() + " " + e.msg }
 func (e cErr) Code() ErrCode   { return e.code }
 func (e cErr) Message() string { return e.msg }
+
+// CompilationErr represents a compilation error
+type CompilationErr struct {
+	Errors []Error
+}
+
+func (e CompilationErr) Error() string {
+	s := make([]string, len(e.Errors))
+	for i, err := range e.Errors {
+		s[i] = fmt.Sprintf("%d: %s(%s)", i+1, err.Code(), err.Message())
+	}
+	return fmt.Sprintf(
+		"%d compilation errors: [%s]",
+		len(s),
+		strings.Join(s, "; "),
+	)
+}

@@ -267,7 +267,7 @@ func (c *Compiler) Compile() error {
 	wg.Wait()
 
 	if len(c.errors) > 0 {
-		return errors.Errorf("%d compiler errors", len(c.errors))
+		return CompilationErr{c.Errors()}
 	}
 
 	return nil
