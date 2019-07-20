@@ -1639,3 +1639,96 @@ func TestParamImpureType(t *testing.T) {
 		},
 	})
 }
+
+// TestStructImpureFieldType tests specifying struct fields of non-pure types
+func TestStructImpureFieldType(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"Resolver": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			struct S {
+				f R
+			}`,
+			Errs: []ErrCode{compiler.ErrStructFieldImpure},
+		},
+		"ImpureUnion": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			union U {
+				R
+				Int32
+			}
+			struct S {
+				f U
+			}`,
+			Errs: []ErrCode{compiler.ErrStructFieldImpure},
+		},
+		"ImpureAliasToResolver": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			alias A = R
+			struct S {
+				f A
+			}`,
+			Errs: []ErrCode{compiler.ErrStructFieldImpure},
+		},
+		"ImpureUnionOfImpureAlias": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			alias A = R
+			union U {
+				Int32
+				A
+			}
+			struct S {
+				f U
+			}`,
+			Errs: []ErrCode{compiler.ErrStructFieldImpure},
+		},
+		"ImpureOptional": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			struct S {
+				f ?R
+			}`,
+			Errs: []ErrCode{compiler.ErrStructFieldImpure},
+		},
+		"ImpureList": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			struct S {
+				f []R
+			}`,
+			Errs: []ErrCode{compiler.ErrStructFieldImpure},
+		},
+		"ImpureOptionalList": ErrCase{
+			Src: `schema test
+			resolver R {
+				x Int32
+			}
+			struct S {
+				f ?[]R
+			}`,
+			Errs: []ErrCode{compiler.ErrStructFieldImpure},
+		},
+		"None": ErrCase{
+			Src: `schema test
+			struct S {
+				f None
+			}`,
+			Errs: []ErrCode{compiler.ErrStructFieldImpure},
+		},
+	})
+}
