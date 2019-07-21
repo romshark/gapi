@@ -1903,5 +1903,25 @@ func TestTypeErr(t *testing.T) {
 			}`,
 			Errs: []ErrCode{compiler.ErrTypeOptChain},
 		},
+		"QueryUndefinedType": ErrCase{
+			Src: `schema test
+			query q Undefined`,
+			Errs: []ErrCode{compiler.ErrTypeUndef},
+		},
+		"QueryParamUndefinedType": ErrCase{
+			Src: `schema test
+			query q(x Undefined) String`,
+			Errs: []ErrCode{compiler.ErrTypeUndef},
+		},
+		"MutationUndefinedType": ErrCase{
+			Src: `schema test
+			mutation m Undefined`,
+			Errs: []ErrCode{compiler.ErrTypeUndef},
+		},
+		"MutationParamUndefinedType": ErrCase{
+			Src: `schema test
+			mutation m(x Undefined) String`,
+			Errs: []ErrCode{compiler.ErrTypeUndef},
+		},
 	})
 }
