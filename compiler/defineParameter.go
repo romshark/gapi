@@ -44,7 +44,7 @@ func (c *Compiler) defineParameter(newParam *Parameter) {
 
 	// Ensure the parameter is of a pure (data-only) type
 	c.deferJob(func() error {
-		if !newParam.Type.IsPure() {
+		if newParam.Type != nil && !newParam.Type.IsPure() {
 			c.err(cErr{
 				ErrParamImpure,
 				fmt.Sprintf(
