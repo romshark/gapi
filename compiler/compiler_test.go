@@ -1732,3 +1732,23 @@ func TestStructImpureFieldType(t *testing.T) {
 		},
 	})
 }
+
+// TestTypeErr tests property type errors
+func TestTypeErr(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"StructFieldOptionalChain": ErrCase{
+			Src: `schema test
+			struct S {
+				optChain ??T
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeOptChain},
+		},
+		"StructFieldOptionalChain2": ErrCase{
+			Src: `schema test
+			struct S {
+				optChain []?[]??T
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeOptChain},
+		},
+	})
+}
