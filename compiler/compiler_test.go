@@ -1542,6 +1542,145 @@ func TestDeclQueries(t *testing.T) {
 	})
 }
 
+// TestDeclMutations tests mutation declarations
+func TestDeclMutations(t *testing.T) {
+	src := `schema test
+	struct Foo {
+		foo String
+	}
+	resolver Bar {
+		bar String
+	}
+	mutation foo Foo
+	mutation bar Bar
+	mutation str String
+	mutation foo2(foo Foo) Foo
+	mutation bar2(bar Int32, baz Float64) Bar
+	mutation baz(
+		first Int32,
+		second Bool,
+		third Uint64,
+	) String
+	`
+
+	test(t, src, func(ast AST) {
+		require.Len(t, ast.Types, 2)
+		require.Len(t, ast.Mutations, 6)
+		require.Len(t, ast.QueryEndpoints, 0)
+
+		require.Len(t, ast.StructTypes, 1)
+		tFoo := ast.StructTypes[0]
+
+		require.Len(t, ast.ResolverTypes, 1)
+		tBar := ast.ResolverTypes[0]
+
+		expected := []compiler.Mutation{
+			compiler.Mutation{
+				GraphID: 4,
+				Name:    "bar",
+				Type:    tBar,
+			},
+			compiler.Mutation{
+				GraphID: 7,
+				Name:    "bar2",
+				Type:    tBar,
+				Parameters: []*compiler.Parameter{
+					&compiler.Parameter{
+						ID:   2,
+						Name: "bar",
+						Type: compiler.TypeStdInt32{},
+					},
+					&compiler.Parameter{
+						ID:   3,
+						Name: "baz",
+						Type: compiler.TypeStdFloat64{},
+					},
+				},
+			},
+			compiler.Mutation{
+				GraphID: 8,
+				Name:    "baz",
+				Type:    compiler.TypeStdString{},
+				Parameters: []*compiler.Parameter{
+					&compiler.Parameter{
+						ID:   4,
+						Name: "first",
+						Type: compiler.TypeStdInt32{},
+					},
+					&compiler.Parameter{
+						ID:   5,
+						Name: "second",
+						Type: compiler.TypeStdBool{},
+					},
+					&compiler.Parameter{
+						ID:   6,
+						Name: "third",
+						Type: compiler.TypeStdUint64{},
+					},
+				},
+			},
+			compiler.Mutation{
+				GraphID: 3,
+				Name:    "foo",
+				Type:    tFoo,
+			},
+			compiler.Mutation{
+				GraphID: 6,
+				Name:    "foo2",
+				Type:    tFoo,
+				Parameters: []*compiler.Parameter{
+					&compiler.Parameter{
+						ID:   1,
+						Name: "foo",
+						Type: tFoo,
+					},
+				},
+			},
+			compiler.Mutation{
+				GraphID: 5,
+				Name:    "str",
+				Type:    compiler.TypeStdString{},
+			},
+		}
+		require.Len(t, ast.Mutations, len(expected))
+		for i1, expec := range expected {
+			require.IsType(t, compiler.Mutation{}, expec)
+
+			actual := ast.Mutations[i1]
+			require.Equal(t, expec.Name, actual.Name)
+			require.Equal(t, expec.GraphID, actual.GraphID)
+			require.Equal(t, expec.Type, actual.Type)
+
+			// Make sure the graph nodes are registered correctly
+			foundNode := ast.FindGraphNodeByID(expec.GraphID)
+			require.Equal(t, actual, foundNode)
+
+			// Make sure parameters match expectations
+			require.Len(t, actual.Parameters, len(expec.Parameters))
+			for i2, param := range expec.Parameters {
+				actualParam := actual.Parameters[i2]
+				require.Equal(t, param.Name, actualParam.Name)
+				require.Equal(t, param.ID, actualParam.ID)
+				require.Equal(t, param.Type, actualParam.Type)
+				require.IsType(
+					t,
+					&compiler.Mutation{},
+					actualParam.Target,
+				)
+				require.Equal(
+					t,
+					actual,
+					actualParam.Target.(*compiler.Mutation),
+				)
+
+				// Make sure parameters are registered correctly
+				regParam := ast.FindParameterByID(param.ID)
+				require.Equal(t, actualParam, regParam)
+			}
+		}
+	})
+}
+
 // TestDeclQueryErrs tests query endpoint declaration errors
 func TestDeclQueryErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
