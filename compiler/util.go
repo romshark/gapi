@@ -10,6 +10,12 @@ func sortTypesByName(types []Type) {
 	})
 }
 
+func sortMutationsByName(mutations []*Mutation) {
+	sort.Slice(mutations, func(i, j int) bool {
+		return mutations[i].GraphNodeName() < mutations[j].GraphNodeName()
+	})
+}
+
 func stringifyType(t Type) (name string) {
 	if t == nil {
 		return

@@ -151,6 +151,13 @@ func (ast *AST) FindParameterByID(id ParamID) *Parameter {
 			}
 		}
 	}
+	for _, mut := range ast.Mutations {
+		for _, param := range mut.Parameters {
+			if param.ID == id {
+				return param
+			}
+		}
+	}
 	//TODO: search in mutations
 	//TODO: search in subscriptions
 	return nil

@@ -203,7 +203,7 @@ func (c *Compiler) Compile() error {
 			handler = c.parseDeclQry
 		case ruleDclMt:
 			// Mutation declaration
-			log.Print("Mutation declaration")
+			handler = c.parseDeclMut
 		case ruleDclSb:
 			// Subscription declaration
 			log.Print("Subscription declaration")
@@ -226,13 +226,14 @@ func (c *Compiler) Compile() error {
 	wg := &sync.WaitGroup{}
 
 	// Sort everything by name (ascending)
-	wg.Add(6)
+	wg.Add(7)
 	go func() { sortTypesByName(c.ast.Types); wg.Done() }()
 	go func() { sortTypesByName(c.ast.AliasTypes); wg.Done() }()
 	go func() { sortTypesByName(c.ast.EnumTypes); wg.Done() }()
 	go func() { sortTypesByName(c.ast.UnionTypes); wg.Done() }()
 	go func() { sortTypesByName(c.ast.StructTypes); wg.Done() }()
 	go func() { sortTypesByName(c.ast.ResolverTypes); wg.Done() }()
+	go func() { sortMutationsByName(c.ast.Mutations); wg.Done() }()
 	//TODO: sort trait types
 	//TODO: sort query endpoints
 	//TODO: sort mutations
