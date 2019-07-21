@@ -158,7 +158,6 @@ func (ast *AST) FindParameterByID(id ParamID) *Parameter {
 			}
 		}
 	}
-	//TODO: search in mutations
 	//TODO: search in subscriptions
 	return nil
 }

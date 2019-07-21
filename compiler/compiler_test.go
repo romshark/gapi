@@ -1437,31 +1437,9 @@ func TestDeclQueries(t *testing.T) {
 
 		expected := []compiler.QueryEndpoint{
 			compiler.QueryEndpoint{
-				GraphID: 3,
-				Name:    "foo",
-				Type:    tFoo,
-			},
-			compiler.QueryEndpoint{
 				GraphID: 4,
 				Name:    "bar",
 				Type:    tBar,
-			},
-			compiler.QueryEndpoint{
-				GraphID: 5,
-				Name:    "str",
-				Type:    compiler.TypeStdString{},
-			},
-			compiler.QueryEndpoint{
-				GraphID: 6,
-				Name:    "foo2",
-				Type:    tFoo,
-				Parameters: []*compiler.Parameter{
-					&compiler.Parameter{
-						ID:   1,
-						Name: "foo",
-						Type: tFoo,
-					},
-				},
 			},
 			compiler.QueryEndpoint{
 				GraphID: 7,
@@ -1501,6 +1479,28 @@ func TestDeclQueries(t *testing.T) {
 						Type: compiler.TypeStdUint64{},
 					},
 				},
+			},
+			compiler.QueryEndpoint{
+				GraphID: 3,
+				Name:    "foo",
+				Type:    tFoo,
+			},
+			compiler.QueryEndpoint{
+				GraphID: 6,
+				Name:    "foo2",
+				Type:    tFoo,
+				Parameters: []*compiler.Parameter{
+					&compiler.Parameter{
+						ID:   1,
+						Name: "foo",
+						Type: tFoo,
+					},
+				},
+			},
+			compiler.QueryEndpoint{
+				GraphID: 5,
+				Name:    "str",
+				Type:    compiler.TypeStdString{},
 			},
 		}
 		require.Len(t, ast.QueryEndpoints, len(expected))

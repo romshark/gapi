@@ -226,17 +226,16 @@ func (c *Compiler) Compile() error {
 	wg := &sync.WaitGroup{}
 
 	// Sort everything by name (ascending)
-	wg.Add(7)
+	wg.Add(8)
 	go func() { sortTypesByName(c.ast.Types); wg.Done() }()
 	go func() { sortTypesByName(c.ast.AliasTypes); wg.Done() }()
 	go func() { sortTypesByName(c.ast.EnumTypes); wg.Done() }()
 	go func() { sortTypesByName(c.ast.UnionTypes); wg.Done() }()
 	go func() { sortTypesByName(c.ast.StructTypes); wg.Done() }()
 	go func() { sortTypesByName(c.ast.ResolverTypes); wg.Done() }()
+	go func() { sortQueryEndpointsByName(c.ast.QueryEndpoints); wg.Done() }()
 	go func() { sortMutationsByName(c.ast.Mutations); wg.Done() }()
 	//TODO: sort trait types
-	//TODO: sort query endpoints
-	//TODO: sort mutations
 	wg.Wait()
 
 	wg.Add(2)

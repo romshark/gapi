@@ -10,6 +10,12 @@ func sortTypesByName(types []Type) {
 	})
 }
 
+func sortQueryEndpointsByName(endpoints []*QueryEndpoint) {
+	sort.Slice(endpoints, func(i, j int) bool {
+		return endpoints[i].GraphNodeName() < endpoints[j].GraphNodeName()
+	})
+}
+
 func sortMutationsByName(mutations []*Mutation) {
 	sort.Slice(mutations, func(i, j int) bool {
 		return mutations[i].GraphNodeName() < mutations[j].GraphNodeName()
