@@ -76,6 +76,7 @@ func (c *Compiler) parseStrFlds(
 			fieldType, err := c.parseType(ndFldTp)
 			if err != nil {
 				c.err(err)
+				return nil
 			}
 
 			// Ensure all struct fields are of a pure type

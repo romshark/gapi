@@ -38,7 +38,7 @@ func (c *Compiler) findStructTypeCycles() (cycles []structTypeCycle) {
 	toBeChecked := intset.NewIntSet()
 	for _, n := range c.ast.StructTypes {
 		for _, f := range n.(*TypeStruct).Fields {
-			if f.Type.Category() == TypeCategoryStruct {
+			if f.Type != nil && f.Type.Category() == TypeCategoryStruct {
 				toBeChecked.Insert(int(f.GraphNodeID()))
 			}
 		}
