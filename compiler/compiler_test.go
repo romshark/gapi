@@ -1750,5 +1750,19 @@ func TestTypeErr(t *testing.T) {
 			}`,
 			Errs: []ErrCode{compiler.ErrTypeOptChain},
 		},
+		"ResolverPropOptionalChain": ErrCase{
+			Src: `schema test
+			resolver R {
+				optChain ??T
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeOptChain},
+		},
+		"ResolverPropOptionalChain2": ErrCase{
+			Src: `schema test
+			resolver R {
+				optChain []?[]??T
+			}`,
+			Errs: []ErrCode{compiler.ErrTypeOptChain},
+		},
 	})
 }
