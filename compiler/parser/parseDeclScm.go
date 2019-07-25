@@ -1,6 +1,6 @@
 package parser
 
-func (pr *Parser) parseDeclScm(lex *Lexer) Fragment {
+func (pr *Parser) parseDeclScm(lex *Lexer) (Fragment, string) {
 	// Read schema declaration keyword
 	fDeclScmKeyword, err := readWordExact(
 		lex,
@@ -9,7 +9,7 @@ func (pr *Parser) parseDeclScm(lex *Lexer) Fragment {
 		"schema declaration keyword",
 	)
 	if pr.err(err) {
-		return nil
+		return nil, ""
 	}
 
 	// Read schema name
@@ -20,11 +20,11 @@ func (pr *Parser) parseDeclScm(lex *Lexer) Fragment {
 		lowerCamelCase,
 	)
 	if pr.err(err) {
-		return nil
+		return nil, ""
 	}
 
 	return NewConstruct(lex, FragDeclSchema,
 		fDeclScmKeyword,
 		fName,
-	)
+	), fName.src
 }

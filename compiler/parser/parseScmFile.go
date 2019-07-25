@@ -4,10 +4,12 @@ import "fmt"
 
 // parseScmFile parses a schema file
 func (pr *Parser) parseScmFile(lex *Lexer) Fragment {
-	fDeclScm := pr.parseDeclScm(lex)
+	fDeclScm, schemaName := pr.parseDeclScm(lex)
 	if fDeclScm == nil {
 		return nil
 	}
+
+	pr.ast.SchemaName = schemaName
 
 	frags := []Fragment{fDeclScm}
 
