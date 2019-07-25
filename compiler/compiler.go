@@ -8,5 +8,8 @@ func Compile(source parser.SourceFile) (*parser.AST, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, parser.Parse(source)
+	if err := parser.Parse(source); err != nil {
+		return nil, err
+	}
+	return parser.AST(), nil
 }
