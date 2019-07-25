@@ -4,8 +4,10 @@ import (
 	"flag"
 	"io/ioutil"
 	"log"
+	"path/filepath"
 
 	"github.com/romshark/gapi/compiler"
+	"github.com/romshark/gapi/compiler/parser"
 )
 
 var schemaFilePath = flag.String("schema", "", "schema file path")
@@ -24,18 +26,18 @@ func main() {
 		log.Fatalf("reading file: %s", err)
 	}
 
-	// Initialize compiler
-	compiler, err := compiler.NewCompiler(string(fileContents))
+	// Compiler
+	ast, err := compiler.Compile(parser.SourceFile{
+		File: parser.File{
+			Name: filepath.Base(*schemaFilePath),
+			Path: filepath.Dir(*schemaFilePath),
+		},
+		Src: string(fileContents),
+	})
 	if err != nil {
-		log.Fatalf("compiler init: %s", err)
-	}
-
-	// Compile
-	if err := compiler.Compile(); err != nil {
 		log.Fatalf("compiler: %s", err)
 	}
 
-	ast := compiler.AST()
 	log.Print("SUCCESS: ", ast)
 	log.Print("SCHEMA NAME: ", ast.SchemaName)
 }

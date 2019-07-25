@@ -30,7 +30,7 @@ script:
   - golangci-lint run ./...
 
   # golint
-  - golint ./...
+  - golint -set_exit_status $(go list ./...)
 
   # Build cmd/gapi
   - go build -o gapi ./cmd/gapi
