@@ -224,6 +224,7 @@ func (mod *SchemaModel) MarshalJSON() ([]byte, error) {
 			Name:        q.Name,
 			GraphNodeID: int(q.GraphID),
 			Parameters:  copyParams(q.Parameters),
+			Type:        int(q.Type.TypeID()),
 		}
 	}
 
@@ -233,6 +234,7 @@ func (mod *SchemaModel) MarshalJSON() ([]byte, error) {
 			Name:        m.Name,
 			GraphNodeID: int(m.GraphID),
 			Parameters:  copyParams(m.Parameters),
+			Type:        int(m.Type.TypeID()),
 		}
 	}
 
