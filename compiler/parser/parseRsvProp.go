@@ -57,7 +57,9 @@ func (pr *Parser) parseRsvProp(
 	}
 
 	// Define the graph node
-	pr.defineGraphNode(newProp)
+	if !pr.onGraphNode(newProp) {
+		return nil
+	}
 
 	return newProp
 }

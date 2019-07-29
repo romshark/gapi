@@ -58,7 +58,9 @@ func (pr *Parser) parseDeclQry(lex *Lexer) *Query {
 	)
 
 	// Define the endpoint
-	pr.defineGraphNode(newQuery)
+	if !pr.onGraphNode(newQuery) {
+		return nil
+	}
 
 	return newQuery
 }

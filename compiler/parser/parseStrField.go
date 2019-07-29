@@ -51,7 +51,9 @@ func (pr *Parser) parseStrField(
 	)
 
 	// Define the graph node
-	pr.defineGraphNode(newField)
+	if !pr.onGraphNode(newField) {
+		return nil
+	}
 
 	return newField
 }

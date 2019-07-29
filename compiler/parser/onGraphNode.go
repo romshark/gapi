@@ -2,8 +2,9 @@ package parser
 
 import "fmt"
 
-// defineGraphNode returns a new unique graph node identifier
-func (pr *Parser) defineGraphNode(newNode GraphNode) {
+// onGraphNode returns true if the registration of a new graph node
+// was successful, otherwise returns false
+func (pr *Parser) onGraphNode(newNode GraphNode) bool {
 	// Prepare
 	var errCodeRedecl ErrCode
 	targetType := "<unknown>"
@@ -37,7 +38,7 @@ func (pr *Parser) defineGraphNode(newNode GraphNode) {
 				definedSrc.Begin(),
 			),
 		})
-		return
+		return false
 	}
 
 	// Assign unique identifier and register node
@@ -59,4 +60,6 @@ func (pr *Parser) defineGraphNode(newNode GraphNode) {
 	pr.mod.GraphNodes = append(pr.mod.GraphNodes, newNode)
 	pr.graphNodeByID[newNode.GraphNodeID()] = newNode
 	pr.graphNodeByName[newNodeName] = newNode
+
+	return true
 }

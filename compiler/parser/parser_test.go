@@ -1977,18 +1977,43 @@ func TestNoEndpoints(t *testing.T) {
 // of illegal None-types
 func TestIllegalNoneTypes(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
-		"StructFieldOptionalChain": ErrCase{
+		"NoneQueryEndpoints": ErrCase{
 			Src: `schema test
-			query q ?None
-			query q []None
-			query q []?None
-			query q ?[]?None`,
+			query q1 ?None
+			query q2 []None
+			query q3 []?None
+			query q4 ?[]?None`,
 			Errs: []ErrCode{
 				parser.ErrSyntax,
 				parser.ErrSyntax,
 				parser.ErrSyntax,
 				parser.ErrSyntax,
 			},
+		},
+	})
+}
+
+// TestGraphRootNodeRedecl expects the parser to fail in case
+// of a name conflict between multiple graph root nodes
+func TestGraphRootNodeRedecl(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"Queries": ErrCase{
+			Src: `schema test
+			query q String
+			query q Int32`,
+			Errs: []ErrCode{parser.ErrGraphRootNodeRedecl},
+		},
+		"Mutations": ErrCase{
+			Src: `schema test
+			mutation m String
+			mutation m Int32`,
+			Errs: []ErrCode{parser.ErrGraphRootNodeRedecl},
+		},
+		"QueryMutation": ErrCase{
+			Src: `schema test
+			query q String
+			mutation q Int32`,
+			Errs: []ErrCode{parser.ErrGraphRootNodeRedecl},
 		},
 	})
 }

@@ -49,7 +49,9 @@ func (pr *Parser) parseDeclMut(lex *Lexer) *Mutation {
 	)
 
 	// Define the endpoint
-	pr.defineGraphNode(newMutation)
+	if !pr.onGraphNode(newMutation) {
+		return nil
+	}
 
 	return newMutation
 }
