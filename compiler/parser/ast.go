@@ -19,11 +19,11 @@ type GraphNode interface {
 type AST struct {
 	SchemaName     string
 	Types          []Type
-	AliasTypes     []Type
 	EnumTypes      []Type
 	UnionTypes     []Type
 	StructTypes    []Type
 	ResolverTypes  []Type
+	AnonymousTypes []Type
 	QueryEndpoints []*Query
 	Mutations      []*Mutation
 	GraphNodes     []GraphNode
@@ -38,9 +38,6 @@ func (ast *AST) Clone() *AST {
 	types := make([]Type, len(ast.Types))
 	copy(types, ast.Types)
 
-	aliasTypes := make([]Type, len(ast.AliasTypes))
-	copy(aliasTypes, ast.AliasTypes)
-
 	enumTypes := make([]Type, len(ast.EnumTypes))
 	copy(enumTypes, ast.EnumTypes)
 
@@ -52,6 +49,9 @@ func (ast *AST) Clone() *AST {
 
 	resolverTypes := make([]Type, len(ast.ResolverTypes))
 	copy(resolverTypes, ast.ResolverTypes)
+
+	anonymousTypes := make([]Type, len(ast.AnonymousTypes))
+	copy(anonymousTypes, ast.AnonymousTypes)
 
 	queryEndpoints := make([]*Query, len(ast.QueryEndpoints))
 	copy(queryEndpoints, ast.QueryEndpoints)
@@ -65,47 +65,25 @@ func (ast *AST) Clone() *AST {
 	return &AST{
 		SchemaName:     ast.SchemaName,
 		Types:          types,
-		AliasTypes:     aliasTypes,
 		EnumTypes:      enumTypes,
 		UnionTypes:     unionTypes,
 		StructTypes:    structTypes,
 		ResolverTypes:  resolverTypes,
+		AnonymousTypes: anonymousTypes,
 		QueryEndpoints: queryEndpoints,
 		Mutations:      mutations,
 		GraphNodes:     graphNodes,
 	}
 }
 
-// FindTypeByName returns a type given its category and name
-func (ast *AST) FindTypeByName(category TypeCategory, name string) Type {
-	findUserDefined := func() Type {
-		for _, tp := range ast.Types {
-			if tp.Name() == name {
-				return tp
-			}
-		}
-		return nil
+// FindTypeByDesignation returns a type given its designation
+func (ast *AST) FindTypeByDesignation(name string) Type {
+	if t := stdTypeByName(name); t != nil {
+		return t
 	}
-
-	switch category {
-	case TypeCategoryPrimitive:
-		// Search in primitives only
-		return stdTypeByName(name)
-	case TypeCategoryUserDefined:
-		// Search in all user-defined types
-		return findUserDefined()
-	case "":
-		// Search in all categories including primitives
-		if t := stdTypeByName(name); t != nil {
-			return t
-		}
-		return findUserDefined()
-	default:
-		// Search in specific category
-		for _, tp := range ast.Types {
-			if tp.Category() == category && tp.Name() == name {
-				return tp
-			}
+	for _, tp := range ast.Types {
+		if tp.String() == name {
+			return tp
 		}
 	}
 	return nil

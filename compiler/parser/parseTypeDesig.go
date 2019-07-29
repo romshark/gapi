@@ -2,25 +2,45 @@ package parser
 
 import "fmt"
 
-// parseType parses a type reference fragment.
+// dereferenceAlias returns the type aliased (recursively) by the alias
+// if tp is an alias type
+func dereferenceAlias(tp Type) Type {
+	beforeDeref := tp
+	for {
+		if alias, isAlias := tp.(*TypeAlias); isAlias {
+			if alias.AliasedType == tp {
+				break
+			}
+			tp = alias.AliasedType
+		} else {
+			break
+		}
+	}
+	if tp == nil {
+		tp = beforeDeref
+	}
+	return tp
+}
+
+// parseTypeDesig parses a type reference fragment.
 // returns an incomplete type that's completed
-func (pr *Parser) parseType(lex *Lexer, onTypeResolved func(Type)) Fragment {
+func (pr *Parser) parseTypeDesig(lex *Lexer, onTypeResolved func(Type)) Fragment {
 	var tp Type
-	var tailTp Type
+	var previousTp Type
 	frags := []Fragment{}
 
 	appendTp := func(t Type) {
 		if tp == nil {
 			tp = t
 		} else {
-			switch v := tailTp.(type) {
+			switch v := previousTp.(type) {
 			case *TypeOptional:
 				v.StoreType = t
 			case *TypeList:
 				v.StoreType = t
 			}
 		}
-		tailTp = t
+		previousTp = t
 	}
 
 	// Parse chain
@@ -49,8 +69,8 @@ SCAN_LOOP:
 		case FragTkSymOpt:
 			// Optional container type
 			// Ensure the previous type in the chain was not also an optional
-			if tailTp != nil {
-				if _, tailIsOpt := tailTp.(*TypeOptional); tailIsOpt {
+			if previousTp != nil {
+				if _, tailIsOpt := previousTp.(*TypeOptional); tailIsOpt {
 					// Illegal optionals chain detected
 					// (Optional type of optional types)
 					pr.err(&pErr{
@@ -87,7 +107,8 @@ SCAN_LOOP:
 			frags = append(frags, tk)
 
 			pr.deferJob(func() {
-				terminalType := pr.findTypeByName(tk.src)
+				// Make sure the terminal type is defined
+				terminalType := pr.findTypeByDesignation(tk.src)
 				if terminalType == nil {
 					pr.err(&pErr{
 						at:   tk.begin,
@@ -104,18 +125,25 @@ SCAN_LOOP:
 				// Reference the terminal type in the type chain
 				for t := tp; t != nil; {
 					if v, isOpt := t.(*TypeOptional); isOpt {
-						v.Terminal = tailTp
+						v.Terminal = previousTp
 						t = v.StoreType
 						continue
 					}
 					if v, isList := t.(*TypeList); isList {
-						v.Terminal = tailTp
+						v.Terminal = previousTp
 						t = v.StoreType
 						continue
 					}
 					break
 				}
+
+				if tp.TerminalType() != nil {
+					tp = pr.onAnonymousType(tp)
+				} else {
+					tp = dereferenceAlias(tp)
+				}
 				onTypeResolved(tp)
+
 			})
 			break SCAN_LOOP
 

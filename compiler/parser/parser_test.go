@@ -246,8 +246,7 @@ func TestASTAliases(t *testing.T) {
 		}
 
 		for _, expec := range expected {
-			require.Equal(t, expec.Name, expec.Type.Name())
-			require.Equal(t, parser.TypeCategoryAlias, a1.Category())
+			require.Equal(t, expec.Name, expec.Type.String())
 			require.IsType(t, &parser.TypeAlias{}, a1)
 			require.Equal(
 				t,
@@ -375,9 +374,8 @@ func TestASTEnums(t *testing.T) {
 		}
 
 		for _, expec := range expected {
-			require.Equal(t, expec.Name, expec.Type.Name())
-			require.NotNil(t, ast.FindTypeByName("", expec.Name))
-			require.Equal(t, parser.TypeCategoryEnum, expec.Type.Category())
+			require.Equal(t, expec.Name, expec.Type.String())
+			require.NotNil(t, ast.FindTypeByDesignation(expec.Name))
 			require.IsType(t, &parser.TypeEnum{}, expec.Type)
 			tpe := expec.Type.(*parser.TypeEnum)
 
@@ -521,8 +519,7 @@ func TestASTUnions(t *testing.T) {
 			}},
 		}
 		for _, expec := range expected {
-			require.Equal(t, expec.Name, expec.Type.Name())
-			require.Equal(t, parser.TypeCategoryUnion, expec.Type.Category())
+			require.Equal(t, expec.Name, expec.Type.String())
 			require.IsType(t, &parser.TypeUnion{}, expec.Type)
 			tpe := expec.Type.(*parser.TypeUnion)
 
@@ -531,7 +528,7 @@ func TestASTUnions(t *testing.T) {
 				types []parser.Type,
 			) bool {
 				for _, tp := range types {
-					if tp.Name() == expected {
+					if tp.String() == expected {
 						return true
 					}
 				}
@@ -539,7 +536,10 @@ func TestASTUnions(t *testing.T) {
 			}
 
 			for i, referencedType := range expec.Types {
-				require.True(t, containsType(referencedType.Name(), tpe.Types))
+				require.True(t, containsType(
+					referencedType.String(),
+					tpe.Types,
+				))
 				require.Equal(t, referencedType, tpe.Types[i])
 			}
 		}
@@ -795,8 +795,7 @@ func TestASTStructs(t *testing.T) {
 		}
 		graphNodes := make(map[parser.GraphNodeID]*parser.StructField)
 		for _, expec := range expected {
-			require.Equal(t, expec.Name, expec.Type.Name())
-			require.Equal(t, parser.TypeCategoryStruct, expec.Type.Category())
+			require.Equal(t, expec.Name, expec.Type.String())
 			require.IsType(t, &parser.TypeStruct{}, expec.Type)
 			structType := expec.Type.(*parser.TypeStruct)
 
@@ -804,7 +803,7 @@ func TestASTStructs(t *testing.T) {
 			for i, field := range expec.Fields {
 				actualField := structType.Fields[i]
 				require.Equal(t, field.Name, actualField.Name)
-				require.Equal(t, field.Type.Name(), actualField.Type.Name())
+				require.Equal(t, field.Type.String(), actualField.Type.String())
 				require.Equal(t, field.GraphID, actualField.GraphID)
 				require.Equal(t, structType, expec.Type)
 
@@ -1193,12 +1192,7 @@ func TestASTResolvers(t *testing.T) {
 		graphNodes := make(map[parser.GraphNodeID]*parser.ResolverProperty)
 		parameters := make(map[parser.ParamID]*parser.Parameter)
 		for _, expec := range expected {
-			require.Equal(t, expec.Name, expec.Type.Name())
-			require.Equal(
-				t,
-				parser.TypeCategoryResolver,
-				expec.Type.Category(),
-			)
+			require.Equal(t, expec.Name, expec.Type.String())
 			require.IsType(t, &parser.TypeResolver{}, expec.Type)
 			resolverType := expec.Type.(*parser.TypeResolver)
 

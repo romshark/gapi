@@ -92,7 +92,7 @@ SCAN_LOOP:
 			code: ErrResolverNoProps,
 			message: fmt.Sprintf(
 				"resolver %s is missing properties",
-				resolver.TypeName,
+				resolver.Name,
 			),
 		})
 		return nil, nil

@@ -2,10 +2,12 @@ package parser
 
 import "fmt"
 
-// defineType returns an error if the type name is already reserved
-func (pr *Parser) defineType(newType Type) {
+// onTypeDecl is executed when a type declaration was parsed.
+// It check the new type for name collisions and redeclarations
+// and registers it in the parser's context if necessary
+func (pr *Parser) onTypeDecl(newType Type) {
 	src := newType.Source()
-	name := newType.Name()
+	name := newType.String()
 
 	// Check for collisions with reserved primitive types
 	if stdTypeByName(name) != nil {
@@ -27,29 +29,37 @@ func (pr *Parser) defineType(newType Type) {
 			at:   src.Begin(),
 			code: ErrTypeRedecl,
 			message: fmt.Sprintf("Redeclaration of type %s "+
-				"(previous declaration: %s (%s))",
+				"(previous declaration at %s)",
 				name,
 				reservedBySrcNode.Begin(),
-				reservedBy.Category(),
 			),
 		})
 		return
 	}
 
-	// Increment last issued type ID
+	// Don't issue type IDs to alias types
+	if alias, isAlias := newType.(*TypeAlias); isAlias {
+		// Issue a new alias type ID
+		pr.lastIssuedAliasTypeID += TypeID(1)
+		newID := pr.lastIssuedAliasTypeID
+		alias.ID = newID
+
+		pr.aliasByName[name] = alias
+		pr.aliasByID[newID] = alias
+		return
+	}
+
+	// Issue a new type ID
 	pr.lastIssuedTypeID += TypeID(1)
 	newID := pr.lastIssuedTypeID
 
-	// Define a new type
+	// Register the newly defined type
 	pr.ast.Types = append(pr.ast.Types, newType)
 	pr.typeByID[newID] = newType
 	pr.typeByName[name] = newType
 
-	// Set ID and define in sub-category
+	// Set ID and define in the AST
 	switch t := newType.(type) {
-	case *TypeAlias:
-		t.terminalType.ID = newID
-		pr.ast.AliasTypes = append(pr.ast.AliasTypes, newType)
 	case *TypeEnum:
 		t.terminalType.ID = newID
 		pr.ast.EnumTypes = append(pr.ast.EnumTypes, newType)

@@ -26,7 +26,7 @@ func (pr *Parser) parseDeclEnm(lex *Lexer) *TypeEnum {
 	// Instantiate type
 	newType := &TypeEnum{
 		terminalType: terminalType{
-			TypeName: fTypeID.src,
+			Name: fTypeID.src,
 		},
 	}
 
@@ -44,7 +44,7 @@ func (pr *Parser) parseDeclEnm(lex *Lexer) *TypeEnum {
 	)
 
 	// Define the type
-	pr.defineType(newType)
+	pr.onTypeDecl(newType)
 
 	return newType
 }

@@ -24,5 +24,10 @@ func (pr *ResolverProperty) NodeName() string { return pr.Name }
 
 // GraphNodeName returns the graph node name
 func (pr *ResolverProperty) GraphNodeName() string {
-	return pr.Resolver.TypeName + "." + pr.Name
+	return pr.Resolver.String() + "." + pr.Name
+}
+
+// String returns the field designation
+func (pr *ResolverProperty) String() string {
+	return pr.GraphNodeName() + "(" + pr.Type.String() + ")"
 }

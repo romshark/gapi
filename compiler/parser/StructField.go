@@ -23,5 +23,10 @@ func (sf *StructField) NodeName() string { return sf.Name }
 
 // GraphNodeName returns the graph node name
 func (sf *StructField) GraphNodeName() string {
-	return sf.Struct.TypeName + "." + sf.Name
+	return sf.Struct.String() + "." + sf.Name
+}
+
+// String returns the field designation
+func (sf *StructField) String() string {
+	return sf.GraphNodeName() + "(" + sf.Type.String() + ")"
 }

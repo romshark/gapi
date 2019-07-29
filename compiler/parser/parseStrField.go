@@ -25,7 +25,11 @@ func (pr *Parser) parseStrField(
 	}
 
 	// Read type and set it when it's determined
-	fType := pr.parseType(lex, func(t Type) {
+	fType := pr.parseTypeDesig(lex, func(t Type) {
+		if t == nil {
+			return
+		}
+
 		// Make sure the type of the field is pure
 		if !t.IsPure() {
 			pr.err(&pErr{

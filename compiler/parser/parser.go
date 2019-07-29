@@ -19,18 +19,21 @@ type SourceFile struct {
 
 // Parser represents a GAPI parser
 type Parser struct {
-	errors            []Error
-	errorsLock        *sync.Mutex
-	deferredJobs      []func()
-	ast               *AST
-	lastIssuedGraphID GraphNodeID
-	lastIssuedTypeID  TypeID
-	lastIssuedParamID ParamID
-	graphNodeByName   map[string]GraphNode
-	typeByName        map[string]Type
-	typeByID          map[TypeID]Type
-	graphNodeByID     map[GraphNodeID]GraphNode
-	paramByID         map[ParamID]*Parameter
+	errors                []Error
+	errorsLock            *sync.Mutex
+	deferredJobs          []func()
+	ast                   *AST
+	lastIssuedGraphID     GraphNodeID
+	lastIssuedTypeID      TypeID
+	lastIssuedAliasTypeID TypeID
+	lastIssuedParamID     ParamID
+	graphNodeByName       map[string]GraphNode
+	typeByName            map[string]Type
+	typeByID              map[TypeID]Type
+	aliasByID             map[TypeID]*TypeAlias
+	aliasByName           map[string]*TypeAlias
+	graphNodeByID         map[GraphNodeID]GraphNode
+	paramByID             map[ParamID]*Parameter
 }
 
 // NewParser creates a new GAPI parser instance
@@ -43,10 +46,15 @@ func NewParser() (*Parser, error) {
 // ResetState resets the parser state
 func (pr *Parser) ResetState() {
 	pr.ast = nil
+	pr.lastIssuedGraphID = 0
 	pr.lastIssuedTypeID = TypeIDUserTypeOffset
+	pr.lastIssuedAliasTypeID = 0
+	pr.lastIssuedParamID = 0
 	pr.graphNodeByName = make(map[string]GraphNode)
 	pr.typeByName = make(map[string]Type)
 	pr.typeByID = make(map[TypeID]Type)
+	pr.aliasByName = make(map[string]*TypeAlias)
+	pr.aliasByID = make(map[TypeID]*TypeAlias)
 	pr.graphNodeByID = make(map[GraphNodeID]GraphNode)
 	pr.paramByID = make(map[ParamID]*Parameter)
 }
@@ -95,7 +103,6 @@ func (pr *Parser) Parse(source SourceFile) error {
 	// Initialize AST
 	pr.ast = &AST{
 		Types:          make([]Type, 0),
-		AliasTypes:     make([]Type, 0),
 		EnumTypes:      make([]Type, 0),
 		UnionTypes:     make([]Type, 0),
 		QueryEndpoints: make([]*Query, 0),
@@ -112,14 +119,13 @@ func (pr *Parser) Parse(source SourceFile) error {
 	}
 
 	// Execute all deferred jobs
-	for _, job := range pr.deferredJobs {
-		job()
+	for j := 0; j < len(pr.deferredJobs); j++ {
+		pr.deferredJobs[j]()
 	}
 
 	// Sort everything by name (ascending)
-	wg.Add(8)
+	wg.Add(7)
 	go func() { sortTypesByName(pr.ast.Types); wg.Done() }()
-	go func() { sortTypesByName(pr.ast.AliasTypes); wg.Done() }()
 	go func() { sortTypesByName(pr.ast.EnumTypes); wg.Done() }()
 	go func() { sortTypesByName(pr.ast.UnionTypes); wg.Done() }()
 	go func() { sortTypesByName(pr.ast.StructTypes); wg.Done() }()

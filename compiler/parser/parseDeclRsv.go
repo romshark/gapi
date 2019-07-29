@@ -26,7 +26,7 @@ func (pr *Parser) parseDeclRsv(lex *Lexer) *TypeResolver {
 	// Create a new resolver type instance
 	newResolver := &TypeResolver{
 		terminalType: terminalType{
-			TypeName: fType.src,
+			Name: fType.src,
 		},
 	}
 
@@ -44,7 +44,7 @@ func (pr *Parser) parseDeclRsv(lex *Lexer) *TypeResolver {
 	)
 
 	// Define the type
-	pr.defineType(newResolver)
+	pr.onTypeDecl(newResolver)
 
 	return newResolver
 }

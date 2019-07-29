@@ -22,7 +22,7 @@ func (pr *Parser) parseParam(lex *Lexer, target GraphNode) *Parameter {
 	}
 
 	// Read type and set it when it's determined
-	fType := pr.parseType(lex, func(t Type) {
+	fType := pr.parseTypeDesig(lex, func(t Type) {
 		// Make sure the type of the parameter is pure
 		if !t.IsPure() {
 			pr.err(&pErr{

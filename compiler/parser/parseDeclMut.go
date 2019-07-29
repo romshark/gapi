@@ -52,7 +52,7 @@ func (pr *Parser) parseDeclMut(lex *Lexer) *Mutation {
 
 	pr.deferJob(func() {
 		// Ensure the type of the query endpoint exists
-		resultType := pr.findTypeByName(fType.src)
+		resultType := pr.findTypeByDesignation(fType.src)
 		if resultType != nil {
 			// Set the type
 			newMutation.Type = resultType

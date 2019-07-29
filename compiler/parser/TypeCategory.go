@@ -4,20 +4,14 @@ package parser
 type TypeCategory string
 
 const (
-	// TypeCategoryOptional represents a primitive optional container type
-	TypeCategoryOptional TypeCategory = "optional"
-
-	// TypeCategoryList represents a primitive list container type
-	TypeCategoryList TypeCategory = "list"
+	// TypeCategoryAnonymous represents an anonymous type
+	TypeCategoryAnonymous TypeCategory = "anonymous"
 
 	// TypeCategoryPrimitive represents a standard scalar type
 	TypeCategoryPrimitive TypeCategory = "primitive"
 
 	// TypeCategoryUserDefined represents all user-defined types
 	TypeCategoryUserDefined TypeCategory = "user-defined"
-
-	// TypeCategoryAlias represents an alias type
-	TypeCategoryAlias TypeCategory = "alias"
 
 	// TypeCategoryEnum represents an enum type
 	TypeCategoryEnum TypeCategory = "enum"

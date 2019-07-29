@@ -102,7 +102,7 @@ SCAN_LOOP:
 			code: ErrEnumNoVal,
 			message: fmt.Sprintf(
 				"enum %s is missing values",
-				enum.terminalType.TypeName,
+				enum.terminalType.Name,
 			),
 		})
 		return nil, nil

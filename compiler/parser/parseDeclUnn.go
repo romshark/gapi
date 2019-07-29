@@ -26,7 +26,7 @@ func (pr *Parser) parseDeclUnn(lex *Lexer) *TypeUnion {
 	// Create a new resolver type instance
 	newUnion := &TypeUnion{
 		terminalType: terminalType{
-			TypeName: fType.src,
+			Name: fType.src,
 		},
 	}
 
@@ -45,7 +45,7 @@ func (pr *Parser) parseDeclUnn(lex *Lexer) *TypeUnion {
 	)
 
 	// Define the type
-	pr.defineType(newUnion)
+	pr.onTypeDecl(newUnion)
 
 	return newUnion
 }

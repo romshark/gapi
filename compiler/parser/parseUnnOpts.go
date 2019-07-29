@@ -68,25 +68,22 @@ SCAN_LOOP:
 
 		// Parse the type and remember it
 		typeOptionsNum++
-		fOption := pr.parseType(lex, func(t Type) {
+		fOption := pr.parseTypeDesig(lex, func(t Type) {
 			typeOptions = append(typeOptions, t)
 			typeOptionsNum--
 			// Execute onTypesResolved if/when all types are resolved
 			if typeOptionsNum < 1 {
-				terminalTypeName := t.Name()
-				if t := t.TerminalType(); t != nil {
-					t.Name()
-				}
+				terminalTypeName := t.String()
 
 				// Ensure the union doesn't reference itself as an option
-				if terminalTypeName == unionType.TypeName {
+				if terminalTypeName == unionType.Name {
 					pr.err(&pErr{
 						at:   tk.begin,
 						code: ErrUnionRecurs,
 						message: fmt.Sprintf(
 							"union type %s references itself "+
 								"as one of its options",
-							unionType.TypeName,
+							unionType,
 						),
 					})
 					return
@@ -99,7 +96,7 @@ SCAN_LOOP:
 						code: ErrUnionIncludesNone,
 						message: fmt.Sprintf(
 							"union type %s includes the None primitive",
-							unionType.TypeName,
+							unionType,
 						),
 					})
 					return
@@ -121,7 +118,7 @@ SCAN_LOOP:
 				message: fmt.Sprintf(
 					"redelaration of option-type %s in union type %s",
 					optTypeDesc,
-					unionType.TypeName,
+					unionType,
 				),
 			})
 			return nil
@@ -136,7 +133,7 @@ SCAN_LOOP:
 			code: ErrUnionMissingOpts,
 			message: fmt.Sprintf(
 				"union %s is missing options",
-				unionType.TypeName,
+				unionType,
 			),
 		})
 		return nil
@@ -144,49 +141,3 @@ SCAN_LOOP:
 
 	return NewConstruct(lex, FragUnnOpts, frags...)
 }
-
-/*
-valid = true
-nd := first
-for nd != nil {
-	referencedTypeName := c.getSrc(nd)
-
-	if err := verifyCapitalizedCamelCase(referencedTypeName); err != nil {
-		c.err(pErr{
-			ErrTypeIllegalIdent,
-			fmt.Sprintf(
-				"invalid union option-type identifier at %d:%d: %s",
-				nd.begin,
-				nd.end,
-				err,
-			),
-		})
-		valid = false
-		goto NEXT
-	}
-
-	// Check for duplicate values
-	if _, isDefined := unionType.Types[referencedTypeName]; isDefined {
-		c.err(pErr{
-			ErrUnionRedund,
-			fmt.Sprintf(
-				"multiple references to the same type (%s) "+
-					"in union type %s at %d:%d ",
-				referencedTypeName,
-				unionType.name,
-				nd.begin,
-				nd.end,
-			),
-		})
-		valid = false
-		goto NEXT
-	}
-
-	// Mark type for deferred checking
-	unionType.Types[referencedTypeName] = nil
-
-NEXT:
-	nd = skipUntil(nd.next, ruleWrd)
-}
-return
-*/

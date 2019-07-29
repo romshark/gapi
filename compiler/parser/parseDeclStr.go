@@ -26,7 +26,7 @@ func (pr *Parser) parseDeclStr(lex *Lexer) *TypeStruct {
 	// Create a new struct type instance
 	newStruct := &TypeStruct{
 		terminalType: terminalType{
-			TypeName: fType.src,
+			Name: fType.src,
 		},
 	}
 
@@ -44,7 +44,7 @@ func (pr *Parser) parseDeclStr(lex *Lexer) *TypeStruct {
 	)
 
 	// Define the type
-	pr.defineType(newStruct)
+	pr.onTypeDecl(newStruct)
 
 	return newStruct
 }

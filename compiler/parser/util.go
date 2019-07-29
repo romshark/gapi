@@ -148,7 +148,7 @@ func lowerCamelCase(ident string) error {
 
 func sortTypesByName(types []Type) {
 	sort.Slice(types, func(i, j int) bool {
-		return types[i].Name() < types[j].Name()
+		return types[i].String() < types[j].String()
 	})
 }
 
@@ -170,11 +170,19 @@ func stringifyType(t Type) (name string) {
 	}
 	for {
 		if v, isOptional := t.(*TypeOptional); isOptional {
+			if v.StoreType == nil {
+				name += "?<unknown>"
+				break
+			}
 			name += "?"
 			t = v.StoreType
 			continue
 		}
 		if v, isList := t.(*TypeList); isList {
+			if v.StoreType == nil {
+				name += "[]<unknown>"
+				break
+			}
 			name += "[]"
 			t = v.StoreType
 			continue

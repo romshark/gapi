@@ -29,7 +29,7 @@ func (pr *Parser) parseRsvProp(
 	newProp.Parameters = params
 
 	// Read type and set it when it's determined
-	fType := pr.parseType(lex, func(t Type) { newProp.Type = t })
+	fType := pr.parseTypeDesig(lex, func(t Type) { newProp.Type = t })
 	if fType == nil {
 		return nil
 	}

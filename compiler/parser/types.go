@@ -2,9 +2,9 @@ package parser
 
 // Type represents an abstract type implementation
 type Type interface {
-	Name() string
 	Source() Fragment
-	Category() TypeCategory
+
+	// String returns the designation of the type
 	String() string
 
 	// TerminalType returns the terminal type or nil if the current
@@ -19,14 +19,13 @@ type Type interface {
 }
 
 type terminalType struct {
-	Src      Fragment
-	TypeName string
-	ID       TypeID
+	Src  Fragment
+	Name string
+	ID   TypeID
 }
 
 func (i terminalType) Source() Fragment   { return i.Src }
-func (i terminalType) Name() string       { return i.TypeName }
-func (i terminalType) String() string     { return i.TypeName }
+func (i terminalType) String() string     { return i.Name }
 func (i terminalType) TerminalType() Type { return nil }
 func (i terminalType) TypeID() TypeID     { return i.ID }
 
@@ -40,11 +39,6 @@ type TypeAlias struct {
 	AliasedType Type
 }
 
-// Category implements the Type interface
-func (t *TypeAlias) Category() TypeCategory {
-	return TypeCategoryAlias
-}
-
 // IsPure returns true if the aliased type is pure
 func (t *TypeAlias) IsPure() bool { return t.AliasedType.IsPure() }
 
@@ -56,11 +50,6 @@ func (t *TypeAlias) IsPure() bool { return t.AliasedType.IsPure() }
 type TypeUnion struct {
 	terminalType
 	Types []Type
-}
-
-// Category implements the Type interface
-func (t *TypeUnion) Category() TypeCategory {
-	return TypeCategoryUnion
 }
 
 // IsPure returns true if all option types are pure
@@ -90,11 +79,6 @@ type TypeEnum struct {
 	Values []*EnumValue
 }
 
-// Category implements the Type interface
-func (t *TypeEnum) Category() TypeCategory {
-	return TypeCategoryEnum
-}
-
 // IsPure always returns true for enumeration types
 func (t *TypeEnum) IsPure() bool { return true }
 
@@ -105,6 +89,7 @@ func (t *TypeEnum) IsPure() bool { return true }
 // TypeOptional represents an optional type implementation
 type TypeOptional struct {
 	Src       Fragment
+	ID        TypeID
 	StoreType Type
 	Terminal  Type
 }
@@ -113,10 +98,7 @@ type TypeOptional struct {
 func (t *TypeOptional) Source() Fragment { return t.Src }
 
 // Name implements the Type interface
-func (t *TypeOptional) Name() string { return "?" + t.StoreType.Name() }
-
-// Category implements the Type interface
-func (t *TypeOptional) Category() TypeCategory { return TypeCategoryOptional }
+func (t *TypeOptional) Name() string { return "?" + t.StoreType.String() }
 
 // String implements the Type interface
 func (t *TypeOptional) String() string { return stringifyType(t) }
@@ -125,7 +107,7 @@ func (t *TypeOptional) String() string { return stringifyType(t) }
 func (t *TypeOptional) TerminalType() Type { return t.Terminal }
 
 // TypeID returns the type's unique identifier
-func (t *TypeOptional) TypeID() TypeID { return TypeIDOptional }
+func (t *TypeOptional) TypeID() TypeID { return t.ID }
 
 // IsPure returns true if the terminal type is pure
 func (t *TypeOptional) IsPure() bool { return t.Terminal.IsPure() }
@@ -137,6 +119,7 @@ func (t *TypeOptional) IsPure() bool { return t.Terminal.IsPure() }
 // TypeList represents a list type implementation
 type TypeList struct {
 	Src       Fragment
+	ID        TypeID
 	StoreType Type
 	Terminal  Type
 }
@@ -145,10 +128,7 @@ type TypeList struct {
 func (t *TypeList) Source() Fragment { return t.Src }
 
 // Name implements the Type interface
-func (t *TypeList) Name() string { return "[]" + t.StoreType.Name() }
-
-// Category implements the Type interface
-func (t *TypeList) Category() TypeCategory { return TypeCategoryList }
+func (t *TypeList) Name() string { return "[]" + t.StoreType.String() }
 
 // String implements the Type interface
 func (t *TypeList) String() string { return stringifyType(t) }
@@ -157,7 +137,7 @@ func (t *TypeList) String() string { return stringifyType(t) }
 func (t *TypeList) TerminalType() Type { return t.Terminal }
 
 // TypeID returns the type's unique identifier
-func (t *TypeList) TypeID() TypeID { return TypeIDList }
+func (t *TypeList) TypeID() TypeID { return t.ID }
 
 // IsPure returns true if the terminal type is pure
 func (t *TypeList) IsPure() bool { return t.Terminal.IsPure() }
