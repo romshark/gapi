@@ -58,4 +58,5 @@ func (pr *Parser) defineGraphNode(newNode GraphNode) {
 
 	pr.mod.GraphNodes = append(pr.mod.GraphNodes, newNode)
 	pr.graphNodeByID[newNode.GraphNodeID()] = newNode
+	pr.graphNodeByName[newNodeName] = newNode
 }
