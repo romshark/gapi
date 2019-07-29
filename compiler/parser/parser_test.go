@@ -1972,3 +1972,23 @@ func TestNoEndpoints(t *testing.T) {
 		},
 	})
 }
+
+// TestIllegalNoneTypes expects the parser to fail in case
+// of illegal None-types
+func TestIllegalNoneTypes(t *testing.T) {
+	testErrs(t, map[string]ErrCase{
+		"StructFieldOptionalChain": ErrCase{
+			Src: `schema test
+			query q ?None
+			query q []None
+			query q []?None
+			query q ?[]?None`,
+			Errs: []ErrCode{
+				parser.ErrSyntax,
+				parser.ErrSyntax,
+				parser.ErrSyntax,
+				parser.ErrSyntax,
+			},
+		},
+	})
+}
