@@ -228,32 +228,7 @@ func TestASTAliases(t *testing.T) {
 	test(t, src, func(ast AST) {
 		require.Len(t, ast.QueryEndpoints, 0)
 		require.Len(t, ast.Mutations, 0)
-
-		require.Len(t, ast.Types, 3)
-		a1 := ast.Types[0]
-		a2 := ast.Types[1]
-		a3 := ast.Types[2]
-
-		type Expectation struct {
-			Name        string
-			Type        parser.Type
-			AliasedType parser.Type
-		}
-		expected := []Expectation{
-			Expectation{"A1", a1, parser.TypeStdString{}},
-			Expectation{"A2", a2, parser.TypeStdUint32{}},
-			Expectation{"A3", a3, a1},
-		}
-
-		for _, expec := range expected {
-			require.Equal(t, expec.Name, expec.Type.String())
-			require.IsType(t, &parser.TypeAlias{}, a1)
-			require.Equal(
-				t,
-				expec.AliasedType,
-				expec.Type.(*parser.TypeAlias).AliasedType,
-			)
-		}
+		require.Len(t, ast.Types, 0)
 	})
 }
 
