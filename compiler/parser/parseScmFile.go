@@ -9,7 +9,7 @@ func (pr *Parser) parseScmFile(lex *Lexer) Fragment {
 		return nil
 	}
 
-	pr.ast.SchemaName = schemaName
+	pr.mod.SchemaName = schemaName
 
 	frags := []Fragment{fDeclScm}
 

@@ -22,7 +22,7 @@ type Parser struct {
 	errors                []Error
 	errorsLock            *sync.Mutex
 	deferredJobs          []func()
-	ast                   *AST
+	mod                   *SchemaModel
 	lastIssuedGraphID     GraphNodeID
 	lastIssuedTypeID      TypeID
 	lastIssuedAliasTypeID TypeID
@@ -45,7 +45,7 @@ func NewParser() (*Parser, error) {
 
 // ResetState resets the parser state
 func (pr *Parser) ResetState() {
-	pr.ast = nil
+	pr.mod = nil
 	pr.lastIssuedGraphID = 0
 	pr.lastIssuedTypeID = TypeIDUserTypeOffset
 	pr.lastIssuedAliasTypeID = 0
@@ -86,13 +86,13 @@ func (pr *Parser) Errors() []Error {
 	return errs
 }
 
-// AST returns a copy of the abstract syntax tree or nil if parsing failed
+// SchemaModel returns a copy of the schema model or nil if parsing failed
 // or wasn't yet executed
-func (pr *Parser) AST() *AST {
+func (pr *Parser) SchemaModel() *SchemaModel {
 	if len(pr.errors) > 0 {
 		return nil
 	}
-	return pr.ast.Clone()
+	return pr.mod.Clone()
 }
 
 // Parse starts parsing the source code reseting the parser
@@ -100,8 +100,8 @@ func (pr *Parser) Parse(source SourceFile) error {
 	pr.ResetState()
 	wg := &sync.WaitGroup{}
 
-	// Initialize AST
-	pr.ast = &AST{
+	// Initialize the model
+	pr.mod = &SchemaModel{
 		Types:          make([]Type, 0),
 		EnumTypes:      make([]Type, 0),
 		UnionTypes:     make([]Type, 0),
@@ -125,13 +125,13 @@ func (pr *Parser) Parse(source SourceFile) error {
 
 	// Sort everything by name (ascending)
 	wg.Add(7)
-	go func() { sortTypesByName(pr.ast.Types); wg.Done() }()
-	go func() { sortTypesByName(pr.ast.EnumTypes); wg.Done() }()
-	go func() { sortTypesByName(pr.ast.UnionTypes); wg.Done() }()
-	go func() { sortTypesByName(pr.ast.StructTypes); wg.Done() }()
-	go func() { sortTypesByName(pr.ast.ResolverTypes); wg.Done() }()
-	go func() { sortQueryEndpointsByName(pr.ast.QueryEndpoints); wg.Done() }()
-	go func() { sortMutationsByName(pr.ast.Mutations); wg.Done() }()
+	go func() { sortTypesByName(pr.mod.Types); wg.Done() }()
+	go func() { sortTypesByName(pr.mod.EnumTypes); wg.Done() }()
+	go func() { sortTypesByName(pr.mod.UnionTypes); wg.Done() }()
+	go func() { sortTypesByName(pr.mod.StructTypes); wg.Done() }()
+	go func() { sortTypesByName(pr.mod.ResolverTypes); wg.Done() }()
+	go func() { sortQueryEndpointsByName(pr.mod.QueryEndpoints); wg.Done() }()
+	go func() { sortMutationsByName(pr.mod.Mutations); wg.Done() }()
 	//TODO: sort trait types
 	wg.Wait()
 

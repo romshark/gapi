@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 )
 
-// JSONModelAST represents the AST JSON model
-type JSONModelAST struct {
+// JSONSchemaModel represents the schema JSON model
+type JSONSchemaModel struct {
 	SchemaName     string                   `json:"schema-name"`
 	EnumTypes      []JSONModelEnumType      `json:"enum-types"`
 	UnionTypes     []JSONModelUnionType     `json:"union-types"`
@@ -88,8 +88,8 @@ type JSONModelMutation struct {
 	Parameters  []JSONModelParameter `json:"parameters"`
 }
 
-// MarshalJSON marshal the AST into its JSON representation
-func (ast *AST) MarshalJSON() ([]byte, error) {
+// MarshalJSON marshal the schema model into its JSON representation
+func (mod *SchemaModel) MarshalJSON() ([]byte, error) {
 	copyParams := func(ps []*Parameter) []JSONModelParameter {
 		v := make([]JSONModelParameter, len(ps))
 		for i, p := range ps {
@@ -102,19 +102,19 @@ func (ast *AST) MarshalJSON() ([]byte, error) {
 		return v
 	}
 
-	model := &JSONModelAST{
-		SchemaName:     ast.SchemaName,
-		EnumTypes:      make([]JSONModelEnumType, len(ast.EnumTypes)),
-		UnionTypes:     make([]JSONModelUnionType, len(ast.UnionTypes)),
-		StructTypes:    make([]JSONModelStructType, len(ast.StructTypes)),
-		ResolverTypes:  make([]JSONModelResolverType, len(ast.ResolverTypes)),
-		AnonymousTypes: make([]JSONModelAnonymousType, len(ast.AnonymousTypes)),
-		QueryEndpoints: make([]JSONModelQueryEndpoint, len(ast.QueryEndpoints)),
-		Mutations:      make([]JSONModelMutation, len(ast.Mutations)),
+	model := &JSONSchemaModel{
+		SchemaName:     mod.SchemaName,
+		EnumTypes:      make([]JSONModelEnumType, len(mod.EnumTypes)),
+		UnionTypes:     make([]JSONModelUnionType, len(mod.UnionTypes)),
+		StructTypes:    make([]JSONModelStructType, len(mod.StructTypes)),
+		ResolverTypes:  make([]JSONModelResolverType, len(mod.ResolverTypes)),
+		AnonymousTypes: make([]JSONModelAnonymousType, len(mod.AnonymousTypes)),
+		QueryEndpoints: make([]JSONModelQueryEndpoint, len(mod.QueryEndpoints)),
+		Mutations:      make([]JSONModelMutation, len(mod.Mutations)),
 	}
 
 	// Enum types
-	for i, t := range ast.EnumTypes {
+	for i, t := range mod.EnumTypes {
 		v := t.(*TypeEnum)
 
 		// Values
@@ -131,7 +131,7 @@ func (ast *AST) MarshalJSON() ([]byte, error) {
 	}
 
 	// Union types
-	for i, t := range ast.UnionTypes {
+	for i, t := range mod.UnionTypes {
 		v := t.(*TypeUnion)
 
 		// Option types
@@ -148,7 +148,7 @@ func (ast *AST) MarshalJSON() ([]byte, error) {
 	}
 
 	// Struct types
-	for i, t := range ast.StructTypes {
+	for i, t := range mod.StructTypes {
 		v := t.(*TypeStruct)
 
 		// Fields
@@ -169,7 +169,7 @@ func (ast *AST) MarshalJSON() ([]byte, error) {
 	}
 
 	// Resolver types
-	for i, t := range ast.ResolverTypes {
+	for i, t := range mod.ResolverTypes {
 		v := t.(*TypeResolver)
 
 		// Properties
@@ -191,7 +191,7 @@ func (ast *AST) MarshalJSON() ([]byte, error) {
 	}
 
 	// Anonymous types
-	for i, t := range ast.AnonymousTypes {
+	for i, t := range mod.AnonymousTypes {
 		model.AnonymousTypes[i] = JSONModelAnonymousType{
 			Designation: t.String(),
 			ID:          int(t.TypeID()),
@@ -199,7 +199,7 @@ func (ast *AST) MarshalJSON() ([]byte, error) {
 	}
 
 	// Query endpoints
-	for i, q := range ast.QueryEndpoints {
+	for i, q := range mod.QueryEndpoints {
 		model.QueryEndpoints[i] = JSONModelQueryEndpoint{
 			Name:        q.Name,
 			GraphNodeID: int(q.GraphID),
@@ -208,7 +208,7 @@ func (ast *AST) MarshalJSON() ([]byte, error) {
 	}
 
 	// Mutations
-	for i, m := range ast.Mutations {
+	for i, m := range mod.Mutations {
 		model.Mutations[i] = JSONModelMutation{
 			Name:        m.Name,
 			GraphNodeID: int(m.GraphID),

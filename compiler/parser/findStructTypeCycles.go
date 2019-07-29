@@ -91,7 +91,7 @@ func (pr *Parser) findStructTypeCycles() (cycles []structTypeCycle) {
 	cycleReg := intset.NewIntSet()
 
 	// Collect all fields of struct type
-	for _, tp := range pr.ast.StructTypes {
+	for _, tp := range pr.mod.StructTypes {
 		for _, fd := range tp.(*TypeStruct).Fields {
 			typeChainReg := intset.NewIntSet()
 			typeChainReg.Insert(int(fd.Parent().TypeID()))

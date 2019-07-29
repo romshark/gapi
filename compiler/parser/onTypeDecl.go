@@ -54,23 +54,23 @@ func (pr *Parser) onTypeDecl(newType Type) {
 	newID := pr.lastIssuedTypeID
 
 	// Register the newly defined type
-	pr.ast.Types = append(pr.ast.Types, newType)
+	pr.mod.Types = append(pr.mod.Types, newType)
 	pr.typeByID[newID] = newType
 	pr.typeByName[name] = newType
 
-	// Set ID and define in the AST
+	// Set ID and define in the schema model
 	switch t := newType.(type) {
 	case *TypeEnum:
 		t.terminalType.ID = newID
-		pr.ast.EnumTypes = append(pr.ast.EnumTypes, newType)
+		pr.mod.EnumTypes = append(pr.mod.EnumTypes, newType)
 	case *TypeUnion:
 		t.terminalType.ID = newID
-		pr.ast.UnionTypes = append(pr.ast.UnionTypes, newType)
+		pr.mod.UnionTypes = append(pr.mod.UnionTypes, newType)
 	case *TypeStruct:
 		t.terminalType.ID = newID
-		pr.ast.StructTypes = append(pr.ast.StructTypes, newType)
+		pr.mod.StructTypes = append(pr.mod.StructTypes, newType)
 	case *TypeResolver:
 		t.terminalType.ID = newID
-		pr.ast.ResolverTypes = append(pr.ast.ResolverTypes, newType)
+		pr.mod.ResolverTypes = append(pr.mod.ResolverTypes, newType)
 	}
 }

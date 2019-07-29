@@ -15,8 +15,8 @@ type GraphNode interface {
 	GraphNodeName() string
 }
 
-// AST represents the abstract GAPI syntax tree
-type AST struct {
+// SchemaModel represents a schema model
+type SchemaModel struct {
 	SchemaName     string
 	Types          []Type
 	EnumTypes      []Type
@@ -30,40 +30,40 @@ type AST struct {
 }
 
 // Clone returns a copy of the abstract syntax tree
-func (ast *AST) Clone() *AST {
-	if ast == nil {
+func (mod *SchemaModel) Clone() *SchemaModel {
+	if mod == nil {
 		return nil
 	}
 
-	types := make([]Type, len(ast.Types))
-	copy(types, ast.Types)
+	types := make([]Type, len(mod.Types))
+	copy(types, mod.Types)
 
-	enumTypes := make([]Type, len(ast.EnumTypes))
-	copy(enumTypes, ast.EnumTypes)
+	enumTypes := make([]Type, len(mod.EnumTypes))
+	copy(enumTypes, mod.EnumTypes)
 
-	unionTypes := make([]Type, len(ast.UnionTypes))
-	copy(unionTypes, ast.UnionTypes)
+	unionTypes := make([]Type, len(mod.UnionTypes))
+	copy(unionTypes, mod.UnionTypes)
 
-	structTypes := make([]Type, len(ast.StructTypes))
-	copy(structTypes, ast.StructTypes)
+	structTypes := make([]Type, len(mod.StructTypes))
+	copy(structTypes, mod.StructTypes)
 
-	resolverTypes := make([]Type, len(ast.ResolverTypes))
-	copy(resolverTypes, ast.ResolverTypes)
+	resolverTypes := make([]Type, len(mod.ResolverTypes))
+	copy(resolverTypes, mod.ResolverTypes)
 
-	anonymousTypes := make([]Type, len(ast.AnonymousTypes))
-	copy(anonymousTypes, ast.AnonymousTypes)
+	anonymousTypes := make([]Type, len(mod.AnonymousTypes))
+	copy(anonymousTypes, mod.AnonymousTypes)
 
-	queryEndpoints := make([]*Query, len(ast.QueryEndpoints))
-	copy(queryEndpoints, ast.QueryEndpoints)
+	queryEndpoints := make([]*Query, len(mod.QueryEndpoints))
+	copy(queryEndpoints, mod.QueryEndpoints)
 
-	mutations := make([]*Mutation, len(ast.Mutations))
-	copy(mutations, ast.Mutations)
+	mutations := make([]*Mutation, len(mod.Mutations))
+	copy(mutations, mod.Mutations)
 
-	graphNodes := make([]GraphNode, len(ast.GraphNodes))
-	copy(graphNodes, ast.GraphNodes)
+	graphNodes := make([]GraphNode, len(mod.GraphNodes))
+	copy(graphNodes, mod.GraphNodes)
 
-	return &AST{
-		SchemaName:     ast.SchemaName,
+	return &SchemaModel{
+		SchemaName:     mod.SchemaName,
 		Types:          types,
 		EnumTypes:      enumTypes,
 		UnionTypes:     unionTypes,
@@ -77,11 +77,11 @@ func (ast *AST) Clone() *AST {
 }
 
 // FindTypeByDesignation returns a type given its designation
-func (ast *AST) FindTypeByDesignation(name string) Type {
+func (mod *SchemaModel) FindTypeByDesignation(name string) Type {
 	if t := stdTypeByName(name); t != nil {
 		return t
 	}
-	for _, tp := range ast.Types {
+	for _, tp := range mod.Types {
 		if tp.String() == name {
 			return tp
 		}
@@ -90,8 +90,8 @@ func (ast *AST) FindTypeByDesignation(name string) Type {
 }
 
 // FindGraphNodeByID returns a graph node given its unique identifier
-func (ast *AST) FindGraphNodeByID(id GraphNodeID) GraphNode {
-	for _, nd := range ast.GraphNodes {
+func (mod *SchemaModel) FindGraphNodeByID(id GraphNodeID) GraphNode {
+	for _, nd := range mod.GraphNodes {
 		if nd.GraphNodeID() == id {
 			return nd
 		}
@@ -101,8 +101,8 @@ func (ast *AST) FindGraphNodeByID(id GraphNodeID) GraphNode {
 
 // FindTypeByID returns a type given its unique identifier or nil
 // if no type is identified by the given identifier
-func (ast *AST) FindTypeByID(id TypeID) Type {
-	for _, tp := range ast.Types {
+func (mod *SchemaModel) FindTypeByID(id TypeID) Type {
+	for _, tp := range mod.Types {
 		if tp.TypeID() == id {
 			return tp
 		}
@@ -112,8 +112,8 @@ func (ast *AST) FindTypeByID(id TypeID) Type {
 
 // FindParameterByID returns a parameter given its unique identifier or nil
 // if no parameter is identified by the given identifier
-func (ast *AST) FindParameterByID(id ParamID) *Parameter {
-	for _, rsv := range ast.ResolverTypes {
+func (mod *SchemaModel) FindParameterByID(id ParamID) *Parameter {
+	for _, rsv := range mod.ResolverTypes {
 		for _, prop := range rsv.(*TypeResolver).Properties {
 			for _, param := range prop.Parameters {
 				if param.ID == id {
@@ -122,14 +122,14 @@ func (ast *AST) FindParameterByID(id ParamID) *Parameter {
 			}
 		}
 	}
-	for _, qry := range ast.QueryEndpoints {
+	for _, qry := range mod.QueryEndpoints {
 		for _, param := range qry.Parameters {
 			if param.ID == id {
 				return param
 			}
 		}
 	}
-	for _, mut := range ast.Mutations {
+	for _, mut := range mod.Mutations {
 		for _, param := range mut.Parameters {
 			if param.ID == id {
 				return param

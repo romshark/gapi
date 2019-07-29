@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type AST = *parser.AST
+type SchemaModel = *parser.SchemaModel
 type ErrCode = parser.ErrCode
 
 func src(src string) parser.SourceFile {
@@ -26,7 +26,7 @@ func src(src string) parser.SourceFile {
 func test(
 	t *testing.T,
 	source string,
-	astInspector func(AST),
+	modInspector func(SchemaModel),
 ) {
 	// Initialize parser
 	pr, err := parser.NewParser()
@@ -35,13 +35,13 @@ func test(
 
 	// Compile
 	require.NoError(t, pr.Parse(src(source)))
-	ast := pr.AST()
-	require.NotNil(t, ast)
+	mod := pr.SchemaModel()
+	require.NotNil(t, mod)
 
-	verifyAST(t, ast)
+	verifyModel(t, mod)
 
-	// Inspect AST
-	astInspector(ast)
+	// Inspect SchemaModel
+	modInspector(mod)
 }
 
 type ErrCase struct {
@@ -67,7 +67,7 @@ func testErrs(t *testing.T, cases map[string]ErrCase) {
 			require.Error(t, pr.Parse(src(errCase.Src)))
 			actualErrs := pr.Errors()
 			require.True(t, len(actualErrs) > 0)
-			require.Nil(t, pr.AST())
+			require.Nil(t, pr.SchemaModel())
 
 			type Err struct {
 				Code ErrCode
@@ -102,31 +102,31 @@ func testErrs(t *testing.T, cases map[string]ErrCase) {
 	}
 }
 
-func verifyAST(t *testing.T, ast AST) {
+func verifyModel(t *testing.T, mod SchemaModel) {
 	typeIDs := intset.NewIntSet()
 	graphNodeIDs := intset.NewIntSet()
 	paramIDs := intset.NewIntSet()
 
 	// Ensure type ID uniqueness
-	for _, tp := range ast.Types {
+	for _, tp := range mod.Types {
 		id := tp.TypeID()
 		require.NotEqual(t, parser.TypeIDUserTypeOffset, id)
 		require.False(t, typeIDs.Has(int(id)))
 		typeIDs.Insert(int(id))
 
 		// Ensure correct type ID mapping
-		require.Equal(t, tp, ast.FindTypeByID(id))
+		require.Equal(t, tp, mod.FindTypeByID(id))
 	}
 
 	// Ensure graph node ID uniqueness
-	for _, str := range ast.StructTypes {
+	for _, str := range mod.StructTypes {
 		for _, fld := range str.(*parser.TypeStruct).Fields {
 			intID := int(fld.GraphNodeID())
 			require.False(t, graphNodeIDs.Has(intID))
 			graphNodeIDs.Insert(intID)
 		}
 	}
-	for _, rsv := range ast.ResolverTypes {
+	for _, rsv := range mod.ResolverTypes {
 		for _, prop := range rsv.(*parser.TypeResolver).Properties {
 			intID := int(prop.GraphNodeID())
 			require.False(t, graphNodeIDs.Has(intID))
@@ -216,8 +216,8 @@ func TestDeclTypeErrs(t *testing.T) {
 	testErrs(t, testCases)
 }
 
-// TestASTAliases tests alias type declaration in AST
-func TestASTAliases(t *testing.T) {
+// TestModAliases tests alias type declaration in SchemaModel
+func TestModAliases(t *testing.T) {
 	src := `schema test
 	
 	alias A1 = String
@@ -225,10 +225,10 @@ func TestASTAliases(t *testing.T) {
 	alias A3 = A1
 	`
 
-	test(t, src, func(ast AST) {
-		require.Len(t, ast.QueryEndpoints, 0)
-		require.Len(t, ast.Mutations, 0)
-		require.Len(t, ast.Types, 0)
+	test(t, src, func(mod SchemaModel) {
+		require.Len(t, mod.QueryEndpoints, 0)
+		require.Len(t, mod.Mutations, 0)
+		require.Len(t, mod.Types, 0)
 	})
 }
 
@@ -310,8 +310,8 @@ func TestDeclAliasTypeErrs(t *testing.T) {
 	})
 }
 
-// TestASTEnums tests enum type declaration in AST
-func TestASTEnums(t *testing.T) {
+// TestModEnums tests enum type declaration in SchemaModel
+func TestModEnums(t *testing.T) {
 	src := `schema test
 	
 	enum E1 {
@@ -328,14 +328,14 @@ func TestASTEnums(t *testing.T) {
 	}
 	`
 
-	test(t, src, func(ast AST) {
-		require.Len(t, ast.QueryEndpoints, 0)
-		require.Len(t, ast.Mutations, 0)
-		require.Len(t, ast.Types, 3)
+	test(t, src, func(mod SchemaModel) {
+		require.Len(t, mod.QueryEndpoints, 0)
+		require.Len(t, mod.Mutations, 0)
+		require.Len(t, mod.Types, 3)
 
-		e1 := ast.EnumTypes[0]
-		e2 := ast.EnumTypes[1]
-		e3 := ast.EnumTypes[2]
+		e1 := mod.EnumTypes[0]
+		e2 := mod.EnumTypes[1]
+		e3 := mod.EnumTypes[2]
 
 		type Expectation struct {
 			Name   string
@@ -350,7 +350,7 @@ func TestASTEnums(t *testing.T) {
 
 		for _, expec := range expected {
 			require.Equal(t, expec.Name, expec.Type.String())
-			require.NotNil(t, ast.FindTypeByDesignation(expec.Name))
+			require.NotNil(t, mod.FindTypeByDesignation(expec.Name))
 			require.IsType(t, &parser.TypeEnum{}, expec.Type)
 			tpe := expec.Type.(*parser.TypeEnum)
 
@@ -441,8 +441,8 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 	})
 }
 
-// TestASTUnions tests union type declarations in AST
-func TestASTUnions(t *testing.T) {
+// TestModUnions tests union type declarations in SchemaModel
+func TestModUnions(t *testing.T) {
 	src := `schema test
 	
 	union U1 {
@@ -462,14 +462,14 @@ func TestASTUnions(t *testing.T) {
 	}
 	`
 
-	test(t, src, func(ast AST) {
-		require.Len(t, ast.QueryEndpoints, 0)
-		require.Len(t, ast.Mutations, 0)
-		require.Len(t, ast.Types, 3)
+	test(t, src, func(mod SchemaModel) {
+		require.Len(t, mod.QueryEndpoints, 0)
+		require.Len(t, mod.Mutations, 0)
+		require.Len(t, mod.Types, 3)
 
-		u1 := ast.UnionTypes[0]
-		u2 := ast.UnionTypes[1]
-		u3 := ast.UnionTypes[2]
+		u1 := mod.UnionTypes[0]
+		u2 := mod.UnionTypes[1]
+		u3 := mod.UnionTypes[2]
 
 		type Expectation struct {
 			Name  string
@@ -606,8 +606,8 @@ func TestDeclUnionTypeErrs(t *testing.T) {
 	})
 }
 
-// TestASTStructs tests struct type declarations in AST
-func TestASTStructs(t *testing.T) {
+// TestModStructs tests struct type declarations in SchemaModel
+func TestModStructs(t *testing.T) {
 	src := `schema test
 	struct S1 {
 		x String
@@ -628,14 +628,14 @@ func TestASTStructs(t *testing.T) {
 	}
 	`
 
-	test(t, src, func(ast AST) {
-		require.Len(t, ast.QueryEndpoints, 0)
-		require.Len(t, ast.Mutations, 0)
-		require.Len(t, ast.Types, 3)
+	test(t, src, func(mod SchemaModel) {
+		require.Len(t, mod.QueryEndpoints, 0)
+		require.Len(t, mod.Mutations, 0)
+		require.Len(t, mod.Types, 3)
 
-		s1 := ast.StructTypes[0]
-		s2 := ast.StructTypes[1]
-		s3 := ast.StructTypes[2]
+		s1 := mod.StructTypes[0]
+		s2 := mod.StructTypes[1]
+		s3 := mod.StructTypes[2]
 
 		type Expectation struct {
 			Name   string
@@ -789,9 +789,9 @@ func TestASTStructs(t *testing.T) {
 		}
 
 		// Make sure the graph nodes are registered correctly
-		require.Len(t, ast.GraphNodes, len(graphNodes))
+		require.Len(t, mod.GraphNodes, len(graphNodes))
 		for id, field := range graphNodes {
-			node := ast.FindGraphNodeByID(id)
+			node := mod.FindGraphNodeByID(id)
 			require.NotNil(t, node, "graph node (%d) not found", id)
 			require.Equal(t, id, node.GraphNodeID())
 			require.Equal(t, field.Struct, node.Parent())
@@ -941,8 +941,8 @@ func TestDeclStructTypeErrs(t *testing.T) {
 	})
 }
 
-// TestASTResolvers tests resolver type declarations in AST
-func TestASTResolvers(t *testing.T) {
+// TestModResolvers tests resolver type declarations in SchemaModel
+func TestModResolvers(t *testing.T) {
 	src := `schema test
 	resolver R1 {
 		x String
@@ -969,15 +969,15 @@ func TestASTResolvers(t *testing.T) {
 	}
 	`
 
-	test(t, src, func(ast AST) {
-		require.Len(t, ast.QueryEndpoints, 0)
-		require.Len(t, ast.Mutations, 0)
-		require.Len(t, ast.Types, 4+11)
+	test(t, src, func(mod SchemaModel) {
+		require.Len(t, mod.QueryEndpoints, 0)
+		require.Len(t, mod.Mutations, 0)
+		require.Len(t, mod.Types, 4+11)
 
-		r1 := ast.ResolverTypes[0]
-		r2 := ast.ResolverTypes[1]
-		r3 := ast.ResolverTypes[2]
-		r4 := ast.ResolverTypes[3]
+		r1 := mod.ResolverTypes[0]
+		r2 := mod.ResolverTypes[1]
+		r3 := mod.ResolverTypes[2]
+		r4 := mod.ResolverTypes[3]
 
 		type Expectation struct {
 			Name  string
@@ -1238,19 +1238,19 @@ func TestASTResolvers(t *testing.T) {
 		}
 
 		// Make sure the graph nodes are registered correctly
-		require.Len(t, ast.GraphNodes, len(graphNodes))
+		require.Len(t, mod.GraphNodes, len(graphNodes))
 		for id, prop := range graphNodes {
 
-			node := ast.FindGraphNodeByID(id)
-			require.NotNil(t, node, "graph node (%d) not found in AST", id)
+			node := mod.FindGraphNodeByID(id)
+			require.NotNil(t, node, "graph node (%d) not found in SchemaModel", id)
 			require.Equal(t, id, node.GraphNodeID())
 			require.Equal(t, prop.Resolver, node.Parent())
 		}
 
 		// Make sure parameters are registered correctly
 		for id, p := range parameters {
-			param := ast.FindParameterByID(id)
-			require.NotNil(t, param, "parameter (%d) not found in AST", id)
+			param := mod.FindParameterByID(id)
+			require.NotNil(t, param, "parameter (%d) not found in SchemaModel", id)
 			require.Equal(t, id, param.ID)
 			require.IsType(t, &parser.ResolverProperty{}, param.Target)
 			require.Equal(t, p.Target, param.Target)
@@ -1356,8 +1356,8 @@ func TestDeclResolverTypeErrs(t *testing.T) {
 	})
 }
 
-// TestASTQueries tests query declarations in AST
-func TestASTQueries(t *testing.T) {
+// TestModQueries tests query declarations in SchemaModel
+func TestModQueries(t *testing.T) {
 	src := `schema test
 	struct Foo {
 		foo String
@@ -1377,16 +1377,16 @@ func TestASTQueries(t *testing.T) {
 	) String
 	`
 
-	test(t, src, func(ast AST) {
-		require.Len(t, ast.Types, 2)
-		require.Len(t, ast.Mutations, 0)
-		require.Len(t, ast.QueryEndpoints, 6)
+	test(t, src, func(mod SchemaModel) {
+		require.Len(t, mod.Types, 2)
+		require.Len(t, mod.Mutations, 0)
+		require.Len(t, mod.QueryEndpoints, 6)
 
-		require.Len(t, ast.StructTypes, 1)
-		tFoo := ast.StructTypes[0]
+		require.Len(t, mod.StructTypes, 1)
+		tFoo := mod.StructTypes[0]
 
-		require.Len(t, ast.ResolverTypes, 1)
-		tBar := ast.ResolverTypes[0]
+		require.Len(t, mod.ResolverTypes, 1)
+		tBar := mod.ResolverTypes[0]
 
 		expected := []parser.Query{
 			parser.Query{
@@ -1456,17 +1456,17 @@ func TestASTQueries(t *testing.T) {
 				Type:    parser.TypeStdString{},
 			},
 		}
-		require.Len(t, ast.QueryEndpoints, len(expected))
+		require.Len(t, mod.QueryEndpoints, len(expected))
 		for i1, expec := range expected {
 			require.IsType(t, parser.Query{}, expec)
 
-			actual := ast.QueryEndpoints[i1]
+			actual := mod.QueryEndpoints[i1]
 			require.Equal(t, expec.Name, actual.Name)
 			require.Equal(t, expec.GraphID, actual.GraphID)
 			require.Equal(t, expec.Type, actual.Type)
 
 			// Make sure the graph nodes are registered correctly
-			foundNode := ast.FindGraphNodeByID(expec.GraphID)
+			foundNode := mod.FindGraphNodeByID(expec.GraphID)
 			require.Equal(t, actual, foundNode)
 
 			// Make sure parameters match expectations
@@ -1488,15 +1488,15 @@ func TestASTQueries(t *testing.T) {
 				)
 
 				// Make sure parameters are registered correctly
-				regParam := ast.FindParameterByID(param.ID)
+				regParam := mod.FindParameterByID(param.ID)
 				require.Equal(t, actualParam, regParam)
 			}
 		}
 	})
 }
 
-// TestASTMutations tests mutation declarations in AST
-func TestASTMutations(t *testing.T) {
+// TestModMutations tests mutation declarations in SchemaModel
+func TestModMutations(t *testing.T) {
 	src := `schema test
 	struct Foo {
 		foo String
@@ -1516,16 +1516,16 @@ func TestASTMutations(t *testing.T) {
 	) String
 	`
 
-	test(t, src, func(ast AST) {
-		require.Len(t, ast.Types, 2)
-		require.Len(t, ast.Mutations, 6)
-		require.Len(t, ast.QueryEndpoints, 0)
+	test(t, src, func(mod SchemaModel) {
+		require.Len(t, mod.Types, 2)
+		require.Len(t, mod.Mutations, 6)
+		require.Len(t, mod.QueryEndpoints, 0)
 
-		require.Len(t, ast.StructTypes, 1)
-		tFoo := ast.StructTypes[0]
+		require.Len(t, mod.StructTypes, 1)
+		tFoo := mod.StructTypes[0]
 
-		require.Len(t, ast.ResolverTypes, 1)
-		tBar := ast.ResolverTypes[0]
+		require.Len(t, mod.ResolverTypes, 1)
+		tBar := mod.ResolverTypes[0]
 
 		expected := []parser.Mutation{
 			parser.Mutation{
@@ -1595,17 +1595,17 @@ func TestASTMutations(t *testing.T) {
 				Type:    parser.TypeStdString{},
 			},
 		}
-		require.Len(t, ast.Mutations, len(expected))
+		require.Len(t, mod.Mutations, len(expected))
 		for i1, expec := range expected {
 			require.IsType(t, parser.Mutation{}, expec)
 
-			actual := ast.Mutations[i1]
+			actual := mod.Mutations[i1]
 			require.Equal(t, expec.Name, actual.Name)
 			require.Equal(t, expec.GraphID, actual.GraphID)
 			require.Equal(t, expec.Type, actual.Type)
 
 			// Make sure the graph nodes are registered correctly
-			foundNode := ast.FindGraphNodeByID(expec.GraphID)
+			foundNode := mod.FindGraphNodeByID(expec.GraphID)
 			require.Equal(t, actual, foundNode)
 
 			// Make sure parameters match expectations
@@ -1627,7 +1627,7 @@ func TestASTMutations(t *testing.T) {
 				)
 
 				// Make sure parameters are registered correctly
-				regParam := ast.FindParameterByID(param.ID)
+				regParam := mod.FindParameterByID(param.ID)
 				require.Equal(t, actualParam, regParam)
 			}
 		}

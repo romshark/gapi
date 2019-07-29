@@ -29,8 +29,8 @@ func (pr *Parser) onAnonymousType(newType Type) Type {
 	// Register the newly defined anonymous type
 	pr.typeByID[newID] = newType
 	pr.typeByName[name] = newType
-	pr.ast.Types = append(pr.ast.Types, newType)
-	pr.ast.AnonymousTypes = append(pr.ast.AnonymousTypes, newType)
+	pr.mod.Types = append(pr.mod.Types, newType)
+	pr.mod.AnonymousTypes = append(pr.mod.AnonymousTypes, newType)
 
 	// Set ID
 	switch t := newType.(type) {

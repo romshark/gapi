@@ -50,12 +50,12 @@ func (pr *Parser) defineGraphNode(newNode GraphNode) {
 		newNode.GraphID = newID
 	case *Query:
 		newNode.GraphID = newID
-		pr.ast.QueryEndpoints = append(pr.ast.QueryEndpoints, newNode)
+		pr.mod.QueryEndpoints = append(pr.mod.QueryEndpoints, newNode)
 	case *Mutation:
 		newNode.GraphID = newID
-		pr.ast.Mutations = append(pr.ast.Mutations, newNode)
+		pr.mod.Mutations = append(pr.mod.Mutations, newNode)
 	}
 
-	pr.ast.GraphNodes = append(pr.ast.GraphNodes, newNode)
+	pr.mod.GraphNodes = append(pr.mod.GraphNodes, newNode)
 	pr.graphNodeByID[newNode.GraphNodeID()] = newNode
 }
