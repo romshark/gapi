@@ -4,7 +4,10 @@ import "fmt"
 
 // parseTypeDesig parses a type reference fragment.
 // returns an incomplete type that's completed
-func (pr *Parser) parseTypeDesig(lex *Lexer, onTypeResolved func(Type)) Fragment {
+func (pr *Parser) parseTypeDesig(
+	lex *Lexer,
+	onTypeResolved func(Type),
+) Fragment {
 	var tp Type
 	var previousTp Type
 	frags := []Fragment{}
@@ -115,6 +118,15 @@ SCAN_LOOP:
 						continue
 					}
 					break
+				}
+
+				_, terminalIsNone := previousTp.(TypeStdNone)
+				if _, isNone := tp.(TypeStdNone); !isNone && terminalIsNone {
+					pr.err(&pErr{
+						at:      frags[0].Begin(),
+						code:    ErrSyntax,
+						message: "illegal None-type",
+					})
 				}
 
 				if tp.TerminalType() != nil {
