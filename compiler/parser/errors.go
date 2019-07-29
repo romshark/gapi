@@ -68,9 +68,11 @@ const (
 	// ErrParamImpure indicates a parameter of a non-data (impure) type
 	ErrParamImpure
 
-	// ErrParamRedecl indicates a redeclared resolver property
-	// parameter
+	// ErrParamRedecl indicates a redeclared resolver property parameter
 	ErrParamRedecl
+
+	// ErrNoEndpoints indicates the absence of any API endpoints
+	ErrNoEndpoints
 )
 
 // String stringifies the error code
@@ -116,6 +118,8 @@ func (c ErrCode) String() string {
 		return "ParamImpure"
 	case ErrParamRedecl:
 		return "ParamRedecl"
+	case ErrNoEndpoints:
+		return "NoEndpoints"
 	}
 	return ""
 }

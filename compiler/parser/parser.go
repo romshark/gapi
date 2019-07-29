@@ -165,6 +165,12 @@ func (pr *Parser) Parse(source SourceFile) error {
 			})
 		}
 	}()
+	if len(pr.mod.QueryEndpoints) < 1 && len(pr.mod.Mutations) < 1 {
+		pr.err(&pErr{
+			code:    ErrNoEndpoints,
+			message: fmt.Sprintf("The schema is missing API endpoints"),
+		})
+	}
 	wg.Wait()
 
 END:
