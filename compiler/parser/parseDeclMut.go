@@ -1,9 +1,5 @@
 package parser
 
-import (
-	"fmt"
-)
-
 func (pr *Parser) parseDeclMut(lex *Lexer) *Mutation {
 	// Read keyword
 	fDeclKeyword, err := readWordExact(
@@ -40,34 +36,10 @@ func (pr *Parser) parseDeclMut(lex *Lexer) *Mutation {
 	newMutation.Parameters = params
 
 	// Read type ID
-	fType, err := readWord(
-		lex,
-		"mutation type identifier",
-		FragTkIdnType,
-		capitalizedCamelCase,
-	)
-	if pr.err(err) {
+	fType := pr.parseTypeDesig(lex, func(t Type) { newMutation.Type = t })
+	if fType == nil {
 		return nil
 	}
-
-	pr.deferJob(func() {
-		// Ensure the type of the query endpoint exists
-		resultType := pr.findTypeByDesignation(fType.src)
-		if resultType != nil {
-			// Set the type
-			newMutation.Type = resultType
-			return
-		}
-		pr.err(&pErr{
-			at:   fType.begin,
-			code: ErrTypeUndef,
-			message: fmt.Sprintf(
-				"undefined type %s referenced by query endpoint %s",
-				fType.src,
-				fName.src,
-			),
-		})
-	})
 
 	newMutation.Src = NewConstruct(lex, FragDeclMut,
 		fDeclKeyword,

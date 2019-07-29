@@ -1,9 +1,5 @@
 package parser
 
-import (
-	"fmt"
-)
-
 func (pr *Parser) parseDeclQry(lex *Lexer) *Query {
 	// Read keyword
 	fDeclKeyword, err := readWordExact(
@@ -40,34 +36,10 @@ func (pr *Parser) parseDeclQry(lex *Lexer) *Query {
 	newQuery.Parameters = params
 
 	// Read type ID
-	fType, err := readWord(
-		lex,
-		"query type identifier",
-		FragTkIdnType,
-		capitalizedCamelCase,
-	)
-	if pr.err(err) {
+	fType := pr.parseTypeDesig(lex, func(t Type) { newQuery.Type = t })
+	if fType == nil {
 		return nil
 	}
-
-	pr.deferJob(func() {
-		// Ensure the type of the query endpoint exists
-		resultType := pr.findTypeByDesignation(fType.src)
-		if resultType != nil {
-			// Set the type
-			newQuery.Type = resultType
-			return
-		}
-		pr.err(&pErr{
-			at:   fType.begin,
-			code: ErrTypeUndef,
-			message: fmt.Sprintf(
-				"undefined type %s referenced by query endpoint %s",
-				fType.src,
-				fName.src,
-			),
-		})
-	})
 
 	newQuery.Src = NewConstruct(lex, FragDeclQry,
 		fDeclKeyword,
