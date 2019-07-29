@@ -155,9 +155,6 @@ func (t TypeStdNone) Source() Fragment { return nil }
 // Name implements the Type interface
 func (t TypeStdNone) Name() string { return "None" }
 
-// Category implements the Type interface
-func (t TypeStdNone) Category() TypeCategory { return TypeCategoryPrimitive }
-
 // String implements the Type interface
 func (t TypeStdNone) String() string { return "None" }
 
@@ -182,9 +179,6 @@ func (t TypeStdBool) Source() Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdBool) Name() string { return "Bool" }
-
-// Category implements the Type interface
-func (t TypeStdBool) Category() TypeCategory { return TypeCategoryPrimitive }
 
 // String implements the Type interface
 func (t TypeStdBool) String() string { return "Bool" }
@@ -211,9 +205,6 @@ func (t TypeStdByte) Source() Fragment { return nil }
 // Name implements the Type interface
 func (t TypeStdByte) Name() string { return "Byte" }
 
-// Category implements the Type interface
-func (t TypeStdByte) Category() TypeCategory { return TypeCategoryPrimitive }
-
 // String implements the Type interface
 func (t TypeStdByte) String() string { return "Byte" }
 
@@ -238,9 +229,6 @@ func (t TypeStdInt32) Source() Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdInt32) Name() string { return "Int32" }
-
-// Category implements the Type interface
-func (t TypeStdInt32) Category() TypeCategory { return TypeCategoryPrimitive }
 
 // String implements the Type interface
 func (t TypeStdInt32) String() string { return "Int32" }
@@ -267,9 +255,6 @@ func (t TypeStdUint32) Source() Fragment { return nil }
 // Name implements the Type interface
 func (t TypeStdUint32) Name() string { return "Uint32" }
 
-// Category implements the Type interface
-func (t TypeStdUint32) Category() TypeCategory { return TypeCategoryPrimitive }
-
 // String implements the Type interface
 func (t TypeStdUint32) String() string { return "Uint32" }
 
@@ -294,9 +279,6 @@ func (t TypeStdInt64) Source() Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdInt64) Name() string { return "Int64" }
-
-// Category implements the Type interface
-func (t TypeStdInt64) Category() TypeCategory { return TypeCategoryPrimitive }
 
 // String implements the Type interface
 func (t TypeStdInt64) String() string { return "Int64" }
@@ -323,9 +305,6 @@ func (t TypeStdUint64) Source() Fragment { return nil }
 // Name implements the Type interface
 func (t TypeStdUint64) Name() string { return "Uint64" }
 
-// Category implements the Type interface
-func (t TypeStdUint64) Category() TypeCategory { return TypeCategoryPrimitive }
-
 // String implements the Type interface
 func (t TypeStdUint64) String() string { return "Uint64" }
 
@@ -350,11 +329,6 @@ func (t TypeStdFloat64) Source() Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdFloat64) Name() string { return "Float64" }
-
-// Category implements the Type interface
-func (t TypeStdFloat64) Category() TypeCategory {
-	return TypeCategoryPrimitive
-}
 
 // String implements the Type interface
 func (t TypeStdFloat64) String() string { return "Float64" }
@@ -381,9 +355,6 @@ func (t TypeStdString) Source() Fragment { return nil }
 // Name implements the Type interface
 func (t TypeStdString) Name() string { return "String" }
 
-// Category implements the Type interface
-func (t TypeStdString) Category() TypeCategory { return TypeCategoryPrimitive }
-
 // String implements the Type interface
 func (t TypeStdString) String() string { return "String" }
 
@@ -409,9 +380,6 @@ func (t TypeStdTime) Source() Fragment { return nil }
 // Name implements the Type interface
 func (t TypeStdTime) Name() string { return "Time" }
 
-// Category implements the Type interface
-func (t TypeStdTime) Category() TypeCategory { return TypeCategoryPrimitive }
-
 // String implements the Type interface
 func (t TypeStdTime) String() string { return "Time" }
 
@@ -433,9 +401,6 @@ type TypeStruct struct {
 	terminalType
 	Fields []*StructField
 }
-
-// Category implements the Type interface
-func (t *TypeStruct) Category() TypeCategory { return TypeCategoryStruct }
 
 // IsPure always returns true for struct types
 func (t *TypeStruct) IsPure() bool { return true }
@@ -460,9 +425,6 @@ type TypeResolver struct {
 	Properties []*ResolverProperty
 }
 
-// Category implements the Type interface
-func (t *TypeResolver) Category() TypeCategory { return TypeCategoryResolver }
-
 // IsPure always returns false for resolver types
 func (t *TypeResolver) IsPure() bool { return false }
 
@@ -475,9 +437,4 @@ type TypeTrait struct {
 	terminalType
 	Pure       bool
 	Properties []ResolverProperty
-}
-
-// Category implements the Type interface
-func (t *TypeTrait) Category() TypeCategory {
-	return TypeCategoryTrait
 }
