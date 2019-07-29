@@ -939,7 +939,8 @@ func TestDeclStructTypeErrs(t *testing.T) {
 				y Y
 			}`,
 			Errs: []ErrCode{
-				parser.ErrStructRecurs, // Y.s -> S.x -> X.y -> Y
+				parser.ErrStructRecurs, // S.x -> X.y -> Y.s -> S
+				parser.ErrStructRecurs, // S.y -> Y.z -> S
 			},
 		},
 		"RecursMultiple": ErrCase{
@@ -996,7 +997,7 @@ func TestASTResolvers(t *testing.T) {
 	test(t, src, func(ast AST) {
 		require.Len(t, ast.QueryEndpoints, 0)
 		require.Len(t, ast.Mutations, 0)
-		require.Len(t, ast.Types, 4)
+		require.Len(t, ast.Types, 4+11)
 
 		r1 := ast.ResolverTypes[0]
 		r2 := ast.ResolverTypes[1]
@@ -1203,8 +1204,8 @@ func TestASTResolvers(t *testing.T) {
 				require.Equal(t, prop.Name, actualProp.Name)
 				require.Equal(
 					t,
-					prop.Type,
-					actualProp.Type,
+					prop.Type.String(),
+					actualProp.Type.String(),
 					"unexpected type %s for property %s of resolver type %s "+
 						"(expected: %s)",
 					actualProp.Type,
@@ -1237,8 +1238,8 @@ func TestASTResolvers(t *testing.T) {
 					require.Equal(t, param.ID, actualParam.ID)
 					require.Equal(
 						t,
-						param.Type,
-						actualParam.Type,
+						param.Type.String(),
+						actualParam.Type.String(),
 						"unexpected type %s for parameter %s "+
 							"of property %s of resolver type %s",
 						actualParam.Type,
