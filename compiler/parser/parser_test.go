@@ -631,7 +631,7 @@ func TestModStructs(t *testing.T) {
 	test(t, src, func(mod SchemaModel) {
 		require.Len(t, mod.QueryEndpoints, 0)
 		require.Len(t, mod.Mutations, 0)
-		require.Len(t, mod.Types, 3)
+		require.Len(t, mod.Types, 3+10)
 
 		s1 := mod.StructTypes[0]
 		s2 := mod.StructTypes[1]
