@@ -6,11 +6,6 @@ func (pr *Parser) findTypeByDesignation(designation string) Type {
 		return t
 	}
 
-	// Search in alias types
-	if alias, isAlias := pr.aliasByName[designation]; isAlias {
-		return alias
-	}
-
 	// Search in user-defined types
 	return pr.typeByName[designation]
 }

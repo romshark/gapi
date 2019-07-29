@@ -2,26 +2,6 @@ package parser
 
 import "fmt"
 
-// dereferenceAlias returns the type aliased (recursively) by the alias
-// if tp is an alias type
-func dereferenceAlias(tp Type) Type {
-	beforeDeref := tp
-	for {
-		if alias, isAlias := tp.(*TypeAlias); isAlias {
-			if alias.AliasedType == tp {
-				break
-			}
-			tp = alias.AliasedType
-		} else {
-			break
-		}
-	}
-	if tp == nil {
-		tp = beforeDeref
-	}
-	return tp
-}
-
 // parseTypeDesig parses a type reference fragment.
 // returns an incomplete type that's completed
 func (pr *Parser) parseTypeDesig(lex *Lexer, onTypeResolved func(Type)) Fragment {
@@ -139,8 +119,6 @@ SCAN_LOOP:
 
 				if tp.TerminalType() != nil {
 					tp = pr.onAnonymousType(tp)
-				} else {
-					tp = dereferenceAlias(tp)
 				}
 				onTypeResolved(tp)
 

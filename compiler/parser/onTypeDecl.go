@@ -37,18 +37,6 @@ func (pr *Parser) onTypeDecl(newType Type) {
 		return
 	}
 
-	// Don't issue type IDs to alias types
-	if alias, isAlias := newType.(*TypeAlias); isAlias {
-		// Issue a new alias type ID
-		pr.lastIssuedAliasTypeID += TypeID(1)
-		newID := pr.lastIssuedAliasTypeID
-		alias.ID = newID
-
-		pr.aliasByName[name] = alias
-		pr.aliasByID[newID] = alias
-		return
-	}
-
 	// Issue a new type ID
 	pr.lastIssuedTypeID += TypeID(1)
 	newID := pr.lastIssuedTypeID
@@ -60,6 +48,9 @@ func (pr *Parser) onTypeDecl(newType Type) {
 
 	// Set ID and define in the schema model
 	switch t := newType.(type) {
+	case *TypeAlias:
+		t.terminalType.ID = newID
+		pr.mod.AliasTypes = append(pr.mod.AliasTypes, newType)
 	case *TypeEnum:
 		t.terminalType.ID = newID
 		pr.mod.EnumTypes = append(pr.mod.EnumTypes, newType)

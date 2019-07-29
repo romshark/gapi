@@ -19,21 +19,18 @@ type SourceFile struct {
 
 // Parser represents a GAPI parser
 type Parser struct {
-	errors                []Error
-	errorsLock            *sync.Mutex
-	deferredJobs          []func()
-	mod                   *SchemaModel
-	lastIssuedGraphID     GraphNodeID
-	lastIssuedTypeID      TypeID
-	lastIssuedAliasTypeID TypeID
-	lastIssuedParamID     ParamID
-	graphNodeByName       map[string]GraphNode
-	typeByName            map[string]Type
-	typeByID              map[TypeID]Type
-	aliasByID             map[TypeID]*TypeAlias
-	aliasByName           map[string]*TypeAlias
-	graphNodeByID         map[GraphNodeID]GraphNode
-	paramByID             map[ParamID]*Parameter
+	errors            []Error
+	errorsLock        *sync.Mutex
+	deferredJobs      []func()
+	mod               *SchemaModel
+	lastIssuedGraphID GraphNodeID
+	lastIssuedTypeID  TypeID
+	lastIssuedParamID ParamID
+	graphNodeByName   map[string]GraphNode
+	typeByName        map[string]Type
+	typeByID          map[TypeID]Type
+	graphNodeByID     map[GraphNodeID]GraphNode
+	paramByID         map[ParamID]*Parameter
 }
 
 // NewParser creates a new GAPI parser instance
@@ -48,13 +45,10 @@ func (pr *Parser) ResetState() {
 	pr.mod = nil
 	pr.lastIssuedGraphID = 0
 	pr.lastIssuedTypeID = TypeIDUserTypeOffset
-	pr.lastIssuedAliasTypeID = 0
 	pr.lastIssuedParamID = 0
 	pr.graphNodeByName = make(map[string]GraphNode)
 	pr.typeByName = make(map[string]Type)
 	pr.typeByID = make(map[TypeID]Type)
-	pr.aliasByName = make(map[string]*TypeAlias)
-	pr.aliasByID = make(map[TypeID]*TypeAlias)
 	pr.graphNodeByID = make(map[GraphNodeID]GraphNode)
 	pr.paramByID = make(map[ParamID]*Parameter)
 }

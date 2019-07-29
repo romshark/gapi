@@ -236,7 +236,7 @@ func TestModAliases(t *testing.T) {
 	test(t, src, func(mod SchemaModel) {
 		require.Len(t, mod.QueryEndpoints, 1)
 		require.Len(t, mod.Mutations, 0)
-		require.Len(t, mod.Types, 0)
+		require.Len(t, mod.Types, 3)
 	})
 }
 

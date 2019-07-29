@@ -19,6 +19,7 @@ type GraphNode interface {
 type SchemaModel struct {
 	SchemaName     string
 	Types          []Type
+	AliasTypes     []Type
 	EnumTypes      []Type
 	UnionTypes     []Type
 	StructTypes    []Type
@@ -37,6 +38,9 @@ func (mod *SchemaModel) Clone() *SchemaModel {
 
 	types := make([]Type, len(mod.Types))
 	copy(types, mod.Types)
+
+	aliasTypes := make([]Type, len(mod.AliasTypes))
+	copy(aliasTypes, mod.AliasTypes)
 
 	enumTypes := make([]Type, len(mod.EnumTypes))
 	copy(enumTypes, mod.EnumTypes)
@@ -65,6 +69,7 @@ func (mod *SchemaModel) Clone() *SchemaModel {
 	return &SchemaModel{
 		SchemaName:     mod.SchemaName,
 		Types:          types,
+		AliasTypes:     aliasTypes,
 		EnumTypes:      enumTypes,
 		UnionTypes:     unionTypes,
 		StructTypes:    structTypes,

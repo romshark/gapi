@@ -31,17 +31,18 @@ func (pr *Parser) findAliasTypeCycles() (cycles []aliasTypeCycle) {
 
 	// Remember the nodes to be checked
 	toBeChecked := intset.NewIntSet()
-	for _, n := range pr.aliasByID {
+	for _, n := range pr.mod.AliasTypes {
 		toBeChecked.Insert(int(n.TypeID()))
 	}
 
 	// Check all nodes to be checked
 	for {
 		// Get any node that's still to be checked
-		node := pr.aliasByID[TypeID(toBeChecked.Take())]
-		if node == nil {
+		nodei := pr.typeByID[TypeID(toBeChecked.Take())]
+		if nodei == nil {
 			break
 		}
+		node := nodei.(*TypeAlias)
 
 		// chain keeps track of the order of nodes in the current chain
 		chain := []*TypeAlias{node}

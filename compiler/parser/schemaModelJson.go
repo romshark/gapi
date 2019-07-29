@@ -7,6 +7,7 @@ import (
 // JSONSchemaModel represents the schema JSON model
 type JSONSchemaModel struct {
 	SchemaName     string                   `json:"schema-name"`
+	AliasTypes     []JSONModelAliasType     `json:"alias-types"`
 	EnumTypes      []JSONModelEnumType      `json:"enum-types"`
 	UnionTypes     []JSONModelUnionType     `json:"union-types"`
 	StructTypes    []JSONModelStructType    `json:"struct-types"`
@@ -14,6 +15,13 @@ type JSONSchemaModel struct {
 	AnonymousTypes []JSONModelAnonymousType `json:"anonymous-types"`
 	QueryEndpoints []JSONModelQueryEndpoint `json:"query-endpoints"`
 	Mutations      []JSONModelMutation      `json:"mutations"`
+}
+
+// JSONModelAliasType represents the JSON model of an alias type
+type JSONModelAliasType struct {
+	Name          string `json:"name"`
+	ID            int    `json:"id"`
+	AliasedTypeID int    `json:"aliased-type-id"`
 }
 
 // JSONModelEnumType represents the JSON model of an enum type
@@ -104,6 +112,7 @@ func (mod *SchemaModel) MarshalJSON() ([]byte, error) {
 
 	model := &JSONSchemaModel{
 		SchemaName:     mod.SchemaName,
+		AliasTypes:     make([]JSONModelAliasType, len(mod.AliasTypes)),
 		EnumTypes:      make([]JSONModelEnumType, len(mod.EnumTypes)),
 		UnionTypes:     make([]JSONModelUnionType, len(mod.UnionTypes)),
 		StructTypes:    make([]JSONModelStructType, len(mod.StructTypes)),
@@ -111,6 +120,17 @@ func (mod *SchemaModel) MarshalJSON() ([]byte, error) {
 		AnonymousTypes: make([]JSONModelAnonymousType, len(mod.AnonymousTypes)),
 		QueryEndpoints: make([]JSONModelQueryEndpoint, len(mod.QueryEndpoints)),
 		Mutations:      make([]JSONModelMutation, len(mod.Mutations)),
+	}
+
+	// Alias types
+	for i, t := range mod.AliasTypes {
+		v := t.(*TypeAlias)
+
+		model.AliasTypes[i] = JSONModelAliasType{
+			Name:          v.Name,
+			ID:            int(v.ID),
+			AliasedTypeID: int(v.AliasedType.TypeID()),
+		}
 	}
 
 	// Enum types
