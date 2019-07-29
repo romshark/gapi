@@ -29,7 +29,16 @@ func (pr *Parser) parseRsvProp(
 	newProp.Parameters = params
 
 	// Read type and set it when it's determined
-	fType := pr.parseTypeDesig(lex, func(t Type) { newProp.Type = t })
+	fType := pr.parseTypeDesig(lex, func(t Type) {
+		if _, isNone := t.(TypeStdNone); isNone {
+			pr.err(&pErr{
+				at:      fName.begin,
+				code:    ErrSyntax,
+				message: "Resolver property resolves to None",
+			})
+		}
+		newProp.Type = t
+	})
 	if fType == nil {
 		return nil
 	}

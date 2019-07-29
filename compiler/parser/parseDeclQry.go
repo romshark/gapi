@@ -36,7 +36,16 @@ func (pr *Parser) parseDeclQry(lex *Lexer) *Query {
 	newQuery.Parameters = params
 
 	// Read type ID
-	fType := pr.parseTypeDesig(lex, func(t Type) { newQuery.Type = t })
+	fType := pr.parseTypeDesig(lex, func(t Type) {
+		if _, isNone := t.(TypeStdNone); isNone {
+			pr.err(&pErr{
+				at:      fDeclKeyword.begin,
+				code:    ErrSyntax,
+				message: "Query endpoint resolves to None",
+			})
+		}
+		newQuery.Type = t
+	})
 	if fType == nil {
 		return nil
 	}
