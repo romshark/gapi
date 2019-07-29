@@ -44,7 +44,7 @@ func (pr *Parser) parseParam(lex *Lexer, target GraphNode) *Parameter {
 	)
 
 	// Define the graph node
-	pr.defineParameter(newParam)
+	pr.onParameter(newParam)
 
 	return newParam
 }
