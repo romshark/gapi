@@ -1,6 +1,6 @@
 schema filesystem
 
-Str = struct {
-	example Int32
-	foo Int32
+Enum = enum {
+	abc
+	bde
 }

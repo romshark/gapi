@@ -51,6 +51,11 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Expectation: []rune("struct"),
 	}
 
+	keywordEnum := termEx{
+		Kind:        FragTkKwdEnm,
+		Expectation: []rune("enum"),
+	}
+
 	optSpace := opt{Pattern: term(misc.FrSpace)}
 
 	// File header
@@ -105,24 +110,6 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Action: pr.onDeclTypeAlias,
 	}
 
-	// Enum values block
-	ruleEnumValBlock := &parser.Rule{
-		Kind:        100,
-		Designation: "enum values block",
-		Pattern: seq{
-			symBlkOpen,
-			seq{
-				optSpace,
-				checked{
-					Designation: "enum value",
-					Fn:          lowerCamelCase,
-				},
-			},
-			optSpace,
-			symBlkClose,
-		},
-	}
-
 	// Enum type declaration
 	ruleDeclTypeEnum := &parser.Rule{
 		Kind:        FragDeclEnm,
@@ -135,7 +122,24 @@ func (pr *Parser) Grammar() *parser.Rule {
 			optSpace,
 			symEq,
 			optSpace,
-			ruleEnumValBlock,
+			seq{
+				keywordEnum,
+				optSpace,
+				symBlkOpen,
+				onePlus{Pattern: seq{
+					optSpace,
+					&parser.Rule{
+						Kind:        FragTkIdnEnumVal,
+						Designation: "enum value",
+						Pattern: checked{
+							Designation: "enum value",
+							Fn:          lowerCamelCase,
+						},
+					},
+				}},
+				optSpace,
+				symBlkClose,
+			},
 		},
 		Action: pr.onDeclTypeEnum,
 	}
