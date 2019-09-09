@@ -101,7 +101,6 @@ func (pr *Parser) parseType(
 					tp = pr.onAnonymousType(tp)
 				}
 				onDetermined(tp)
-
 			})
 		default:
 			panic(fmt.Errorf("unexpected token in type designation: %s", elem))

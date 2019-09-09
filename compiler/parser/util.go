@@ -183,17 +183,15 @@ func stringifyType(t Type) (name string) {
 }
 
 func findElement(
-	frag parser.Fragment,
+	frags []parser.Fragment,
 	kind parser.FragmentKind,
 	offset uint,
-) parser.Fragment {
-	elems := frag.Elements()
-
-	for ix := offset; ix < uint(len(elems)); ix++ {
-		elem := elems[ix]
+) (parser.Fragment, uint) {
+	for ix := offset; ix < uint(len(frags)); ix++ {
+		elem := frags[ix]
 		if elem.Kind() == kind {
-			return elem
+			return elem, ix
 		}
 	}
-	return nil
+	return nil, 0
 }

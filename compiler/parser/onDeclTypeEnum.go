@@ -1,8 +1,6 @@
 package parser
 
-import (
-	parser "github.com/romshark/llparser"
-)
+import parser "github.com/romshark/llparser"
 
 // onDeclTypeEnum is executed when an enum type declaration is matched
 func (pr *Parser) onDeclTypeEnum(frag parser.Fragment) error {

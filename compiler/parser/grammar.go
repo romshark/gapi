@@ -41,6 +41,16 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Expectation: []rune("[]"),
 	}
 
+	keywordSchema := termEx{
+		Kind:        FragTkKwdScm,
+		Expectation: []rune("schema"),
+	}
+
+	keywordStruct := termEx{
+		Kind:        FragTkKwdStr,
+		Expectation: []rune("struct"),
+	}
+
 	optSpace := opt{Pattern: term(misc.FrSpace)}
 
 	// File header
@@ -48,10 +58,7 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Kind:        FragDeclSchema,
 		Designation: "file header",
 		Pattern: seq{
-			termEx{
-				Kind:        FragTkKwdScm,
-				Expectation: []rune("schema"),
-			},
+			keywordSchema,
 			term(misc.FrSpace),
 			checked{
 				Designation: "schema name",
@@ -133,6 +140,47 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Action: pr.onDeclTypeEnum,
 	}
 
+	// Struct field
+	ruleStructField := &parser.Rule{
+		Kind:        FragStrField,
+		Designation: "struct field",
+		Pattern: seq{
+			checked{
+				Designation: "struct field name",
+				Fn:          lowerCamelCase,
+			},
+			term(misc.FrSpace),
+			ruleTypeDesig,
+		},
+	}
+
+	// Struct type declaration
+	ruleDeclTypeStruct := &parser.Rule{
+		Kind:        FragDeclStr,
+		Designation: "struct type declaration",
+		Pattern: seq{
+			checked{
+				Designation: "struct type name",
+				Fn:          capitalizedCamelCase,
+			},
+			optSpace,
+			symEq,
+			optSpace,
+			seq{
+				keywordStruct,
+				optSpace,
+				symBlkOpen,
+				onePlus{Pattern: seq{
+					optSpace,
+					ruleStructField,
+				}},
+				optSpace,
+				symBlkClose,
+			},
+		},
+		Action: pr.onDeclTypeStruct,
+	}
+
 	// File rule
 	return &parser.Rule{
 		Designation: "schema file",
@@ -143,6 +191,7 @@ func (pr *Parser) Grammar() *parser.Rule {
 				either{
 					ruleDeclTypeAlias,
 					ruleDeclTypeEnum,
+					ruleDeclTypeStruct,
 				},
 			}},
 			optSpace,

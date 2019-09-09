@@ -1,7 +1,6 @@
 schema filesystem
 
-ErrUnauth = []Enum
-
-Enum = {
-	val
+Str = struct {
+	example Int32
+	foo Int32
 }
