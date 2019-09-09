@@ -1,8 +1,10 @@
 package parser
 
+import parser "github.com/romshark/llparser"
+
 // ResolverProperty represents a resolver property
 type ResolverProperty struct {
-	Src        Fragment
+	Src        parser.Fragment
 	Resolver   *TypeResolver
 	Name       string
 	GraphID    GraphNodeID
@@ -11,7 +13,7 @@ type ResolverProperty struct {
 }
 
 // Source returns the source location of the declaration
-func (pr *ResolverProperty) Source() Fragment { return pr.Src }
+func (pr *ResolverProperty) Source() parser.Fragment { return pr.Src }
 
 // GraphNodeID returns the unique graph node identifier of the resolver prop
 func (pr *ResolverProperty) GraphNodeID() GraphNodeID { return pr.GraphID }

@@ -1,8 +1,10 @@
 package parser
 
+import parser "github.com/romshark/llparser"
+
 // Query represents a query endpoint
 type Query struct {
-	Src        Fragment
+	Src        parser.Fragment
 	Name       string
 	GraphID    GraphNodeID
 	Parameters []*Parameter
@@ -10,7 +12,7 @@ type Query struct {
 }
 
 // Source returns the source location of the declaration
-func (qe *Query) Source() Fragment { return qe.Src }
+func (qe *Query) Source() parser.Fragment { return qe.Src }
 
 // GraphNodeID returns the query endpoint's unique graph node identifier
 func (qe *Query) GraphNodeID() GraphNodeID { return qe.GraphID }

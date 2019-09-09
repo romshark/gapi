@@ -1,5 +1,7 @@
 package parser
 
+import parser "github.com/romshark/llparser"
+
 // GraphNodeID represents a unique graph node identifier
 type GraphNodeID int
 
@@ -8,7 +10,7 @@ type ParamID int
 
 // GraphNode represents a graph node
 type GraphNode interface {
-	Source() Fragment
+	Source() parser.Fragment
 	GraphNodeID() GraphNodeID
 	Parent() Type
 	NodeName() string

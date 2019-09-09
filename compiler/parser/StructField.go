@@ -1,8 +1,10 @@
 package parser
 
+import parser "github.com/romshark/llparser"
+
 // StructField represents a struct field
 type StructField struct {
-	Src     Fragment
+	Src     parser.Fragment
 	Struct  *TypeStruct
 	GraphID GraphNodeID
 	Name    string
@@ -10,7 +12,7 @@ type StructField struct {
 }
 
 // Source returns the source location of the declaration
-func (sf *StructField) Source() Fragment { return sf.Src }
+func (sf *StructField) Source() parser.Fragment { return sf.Src }
 
 // GraphNodeID returns the unique graph node identifier of the struct field
 func (sf *StructField) GraphNodeID() GraphNodeID { return sf.GraphID }

@@ -1,8 +1,10 @@
 package parser
 
+import parser "github.com/romshark/llparser"
+
 // Mutation represents a mutation endpoint
 type Mutation struct {
-	Src        Fragment
+	Src        parser.Fragment
 	Name       string
 	GraphID    GraphNodeID
 	Parameters []*Parameter
@@ -10,7 +12,7 @@ type Mutation struct {
 }
 
 // Source returns the source location of the declaration
-func (mt *Mutation) Source() Fragment { return mt.Src }
+func (mt *Mutation) Source() parser.Fragment { return mt.Src }
 
 // GraphNodeID returns the mutation endpoint's unique graph node identifier
 func (mt *Mutation) GraphNodeID() GraphNodeID { return mt.GraphID }

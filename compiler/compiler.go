@@ -8,7 +8,7 @@ func Compile(source parser.SourceFile) (*parser.SchemaModel, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := parser.Parse(source); err != nil {
+	if _, err = parser.Parse(source); err != nil {
 		return nil, err
 	}
 	return parser.SchemaModel(), nil

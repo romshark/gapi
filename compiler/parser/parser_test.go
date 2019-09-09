@@ -34,7 +34,9 @@ func test(
 	require.NotNil(t, pr)
 
 	// Compile
-	require.NoError(t, pr.Parse(src(source)))
+	mainFrag, err := pr.Parse(src(source))
+	require.NoError(t, err)
+	require.NotNil(t, mainFrag)
 	mod := pr.SchemaModel()
 	require.NotNil(t, mod)
 
@@ -64,7 +66,9 @@ func testErrs(t *testing.T, cases map[string]ErrCase) {
 			require.NotNil(t, pr)
 
 			// Parse
-			require.Error(t, pr.Parse(src(errCase.Src)))
+			mainFrag, err := pr.Parse(src(errCase.Src))
+			require.Error(t, err)
+			require.Nil(t, mainFrag)
 			actualErrs := pr.Errors()
 			require.True(t, len(actualErrs) > 0)
 			require.Nil(t, pr.SchemaModel())
@@ -228,10 +232,10 @@ func TestDeclTypeErrs(t *testing.T) {
 func TestModAliases(t *testing.T) {
 	src := `schema test
 	
-	alias A1 = String
-	alias A2 = Uint32
-	alias A3 = A1
-	query q Bool`
+	A1 = String
+	A2 = Uint32
+	A3 = A1
+	`
 
 	test(t, src, func(mod SchemaModel) {
 		require.Len(t, mod.QueryEndpoints, 1)
@@ -245,80 +249,80 @@ func TestDeclAliasTypeErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"IllegalTypeName": ErrCase{
 			Src: `schema test
-			alias illegalName = String
+			illegalName = String
 			query q Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName2": ErrCase{
 			Src: `schema test
-			alias Illegal_Name = String
+			Illegal_Name = String
 			query q Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName3": ErrCase{
 			Src: `schema test
-			alias _IllegalName = String
+			_IllegalName = String
 			query q Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalAliasedTypeName": ErrCase{
 			Src: `schema test
-			alias A = illegalName
+			A = illegalName
 			query q Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalAliasedTypeName2": ErrCase{
 			Src: `schema test
-			alias A = Illegal_Name
+			A = Illegal_Name
 			query q Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalAliasedTypeName3": ErrCase{
 			Src: `schema test
-			alias A = _IllegalName
+			A = _IllegalName
 			query q Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"UndefinedAliasedType": ErrCase{
 			Src: `schema test
-			alias A = Undefined
+			A = Undefined
 			query q Bool`,
 			Errs: []ErrCode{parser.ErrTypeUndef},
 		},
 		"DirectAliasCycle": ErrCase{
 			Src: `schema test
-			alias A = A
+			A = A
 			query q Bool`,
 			Errs: []ErrCode{parser.ErrAliasRecurs},
 		},
 		"IndirectAliasCycle1": ErrCase{
 			Src: `schema test
-			alias A = B
-			alias B = A
+			A = B
+			B = A
 			query q Bool`,
 			Errs: []ErrCode{parser.ErrAliasRecurs},
 		},
 		"IndirectAliasCycle2": ErrCase{
 			Src: `schema test
-			alias G = H
-			alias H = String
-			alias F = C
-			alias A = B
-			alias B = C
-			alias C = D
-			alias D = A
+			G = H
+			H = String
+			F = C
+			A = B
+			B = C
+			C = D
+			D = A
 			query q Bool`,
 			Errs: []ErrCode{parser.ErrAliasRecurs},
 		},
 		"MultipleIndirectAliasesCycles": ErrCase{
 			Src: `schema test
-			alias A = A
-			alias B = C
-			alias C = D
-			alias D = B
-			alias H = K
-			alias K = I
-			alias I = K
+			A = A
+			B = C
+			C = D
+			D = B
+			H = K
+			K = I
+			I = K
 			query q Bool`,
 			Errs: []ErrCode{
 				parser.ErrAliasRecurs,

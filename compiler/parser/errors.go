@@ -3,6 +3,8 @@ package parser
 import (
 	"fmt"
 	"strings"
+
+	parser "github.com/romshark/llparser"
 )
 
 // ErrCode represents a compiler error code
@@ -135,14 +137,14 @@ type Error interface {
 	Message() string
 
 	// At returns the error position in the source code
-	At() Cursor
+	At() parser.Cursor
 }
 
 // pErr represents a syntax error
 type pErr struct {
 	code    ErrCode
 	message string
-	at      Cursor
+	at      parser.Cursor
 }
 
 func (err *pErr) Error() string {
@@ -161,7 +163,7 @@ func (err *pErr) Code() ErrCode { return err.code }
 func (err *pErr) Message() string { return err.message }
 
 // At returns the error position in the source code
-func (err *pErr) At() Cursor { return err.at }
+func (err *pErr) At() parser.Cursor { return err.at }
 
 // ParseErr represents a parsing error
 type ParseErr struct {

@@ -10,14 +10,6 @@
   version = "v1.1.1"
 
 [[projects]]
-  digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
-  name = "github.com/pkg/errors"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
-  version = "v0.8.1"
-
-[[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
@@ -26,15 +18,26 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:5da8ce674952566deae4dbc23d07c85caafc6cfa815b0b3e03e41979cedb8750"
+  digest = "1:dbebcec3552ea4f5ece2f4b72648d2a0f4d24ddba0c243e9c2e101d30ddcbfbc"
+  name = "github.com/romshark/llparser"
+  packages = [
+    ".",
+    "misc",
+  ]
+  pruneopts = "UT"
+  revision = "2ae3898baefe44c6eace5eb3a47833ede2c12226"
+  version = "v0.2.0"
+
+[[projects]]
+  digest = "1:99d32780e5238c2621fff621123997c3e3cca96db8be13179013aea77dfab551"
   name = "github.com/stretchr/testify"
   packages = [
     "assert",
     "require",
   ]
   pruneopts = "UT"
-  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
-  version = "v1.3.0"
+  revision = "221dbe5ed46703ee255b1da0dec05086f5035f62"
+  version = "v1.4.0"
 
 [[projects]]
   branch = "master"
@@ -42,13 +45,22 @@
   name = "golang.org/x/tools"
   packages = ["container/intsets"]
   pruneopts = "UT"
-  revision = "128ec6dfca091cc7d4fe6d18d97911f37c95a590"
+  revision = "1d492ad1787f2cd942139a1e26160f9babe60bf1"
+
+[[projects]]
+  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
+  version = "v2.2.2"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/pkg/errors",
+    "github.com/romshark/llparser",
+    "github.com/romshark/llparser/misc",
     "github.com/stretchr/testify/require",
     "golang.org/x/tools/container/intsets",
   ]

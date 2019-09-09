@@ -1,47 +1,14 @@
 package parser
 
-import "fmt"
-
-// Cursor represents a source-code location
-type Cursor struct {
-	Index  uint32
-	Line   uint32
-	Column uint32
-	File   *File
-}
-
-// String returns the stringified cursor
-func (crs Cursor) String() string {
-	if crs.File == nil {
-		return "<unknown>"
-	}
-	return fmt.Sprintf(
-		"%s:%d:%d",
-		crs.File.Name,
-		crs.Line,
-		crs.Column,
-	)
-}
-
-// Fragment represents a typed source code fragment
-type Fragment interface {
-	Begin() Cursor
-	End() Cursor
-	Src() string
-	Elements() []Fragment
-}
-
-// FragID represents a GAPI source code fragment identifier
-type FragID int32
+import (
+	parser "github.com/romshark/llparser"
+	"github.com/romshark/llparser/misc"
+)
 
 const (
-	_ FragID = iota
+	_ parser.FragmentKind = misc.FrSign + iota
 
 	/* TERMINALS (Primitive) */
-
-	// FragTkSpace represents a space sequence token
-	// (any combinations of spaces, tabs & line-breaks)
-	FragTkSpace
 
 	// FragTkBlk represents a '{' token
 	FragTkBlk
@@ -58,20 +25,26 @@ const (
 	// FragTkSeq represents a sequence of non-space characters
 	FragTkSeq
 
-	// FragTkLatinAlphanum represents an alpha-numeric word token ([a-zA-Z])
-	FragTkLatinAlphanum
-
 	// FragTkMemAcc represents a member-accessor '.' token
 	FragTkMemAcc
 
 	// FragTkDocLineInit represents a documentation line initiator '#'
 	FragTkDocLineInit
 
+	// FragTkSym represents any special character token
+	FragTkSym
+
 	// FragTkSymSep represents a separator ',' token
 	FragTkSymSep
 
 	// FragTkSymEq represents an equals symbol '='
 	FragTkSymEq
+
+	// FragTkSymBlockOpen represents a block opening symbol '{'
+	FragTkSymBlockOpen
+
+	// FragTkSymBlockClose represents a block closing symbol '}'
+	FragTkSymBlockClose
 
 	// FragTkSymOpt represents an optionality symbol '?'
 	FragTkSymOpt
@@ -86,9 +59,6 @@ const (
 
 	// FragTkKwdEnm represents an enum type declaration keyword fragment
 	FragTkKwdEnm
-
-	// FragTkKwdAls represents a alias type declaration keyword fragment
-	FragTkKwdAls
 
 	// FragTkKwdUnn represents a union type declaration keyword fragment
 	FragTkKwdUnn
@@ -196,110 +166,3 @@ const (
 	// FragType represents a type definition
 	FragType
 )
-
-// String stringifies the fragment identifier
-func (id FragID) String() string {
-	switch id {
-	case FragTkSpace:
-		return "TkSpace"
-	case FragTkBlk:
-		return "TkBlk"
-	case FragTkBlkEnd:
-		return "TkBlkEnd"
-	case FragTkPar:
-		return "TkPar"
-	case FragTkParEnd:
-		return "TkParEnd"
-	case FragTkSeq:
-		return "TkSeq"
-	case FragTkLatinAlphanum:
-		return "TkLatinAlphanum"
-	case FragTkMemAcc:
-		return "TkMemAcc"
-	case FragTkDocLineInit:
-		return "TkDocLineInit"
-	case FragTkSymSep:
-		return "TkSymSep"
-	case FragTkSymEq:
-		return "TkSymEq"
-	case FragTkSymOpt:
-		return "TkSymOpt"
-	case FragTkSymList:
-		return "TkSymList"
-	case FragTkKwdScm:
-		return "TkKwdScm"
-	case FragTkKwdEnm:
-		return "TkKwdEnm"
-	case FragTkKwdAls:
-		return "TkKwdAls"
-	case FragTkKwdUnn:
-		return "TkKwdUnn"
-	case FragTkKwdStr:
-		return "TkKwdStr"
-	case FragTkKwdRsv:
-		return "TkKwdRsv"
-	case FragTkKwdTrt:
-		return "TkKwdTrt"
-	case FragTkKwdQry:
-		return "TkKwdQry"
-	case FragTkKwdMut:
-		return "TkKwdMut"
-	case FragTkKwdSub:
-		return "TkKwdSub"
-	case FragTkIdnScm:
-		return "TkIdnScm"
-	case FragTkIdnType:
-		return "TkIdnType"
-	case FragTkIdnProp:
-		return "TkIdnProp"
-	case FragTkIdnFld:
-		return "TkIdnFld"
-	case FragTkIdnParam:
-		return "TkIdnParam"
-	case FragTkIdnEnumVal:
-		return "TkIdnEnumVal"
-	case FragTkEnmVal:
-		return "TkEnmVal"
-	case FragScmFile:
-		return "ScmFile"
-	case FragDeclSchema:
-		return "DeclSchema"
-	case FragDeclAls:
-		return "DeclAls"
-	case FragDeclEnm:
-		return "DeclEnm"
-	case FragDeclUnn:
-		return "DeclUnn"
-	case FragDeclStr:
-		return "DeclStr"
-	case FragDeclRsv:
-		return "DeclRsv"
-	case FragDeclTrt:
-		return "DeclTrt"
-	case FragDeclQry:
-		return "DeclQry"
-	case FragDeclMut:
-		return "DeclMut"
-	case FragDeclSub:
-		return "DeclSub"
-	case FragEnmVals:
-		return "EnmVals"
-	case FragRsvProps:
-		return "RsvProps"
-	case FragRsvProp:
-		return "RsvProp"
-	case FragParams:
-		return "Params"
-	case FragParam:
-		return "Param"
-	case FragStrFields:
-		return "StrFields"
-	case FragStrField:
-		return "StrField"
-	case FragUnnOpts:
-		return "UnnOpts"
-	case FragType:
-		return "Type"
-	}
-	return ""
-}

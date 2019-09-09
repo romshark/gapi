@@ -3,6 +3,9 @@ package parser
 import (
 	"fmt"
 	"sync"
+
+	parser "github.com/romshark/llparser"
+	"github.com/romshark/llparser/misc"
 )
 
 // File represents a source file
@@ -19,9 +22,10 @@ type SourceFile struct {
 
 // Parser represents a GAPI parser
 type Parser struct {
+	parser            parser.Parser
+	deferredJobs      []func()
 	errors            []Error
 	errorsLock        *sync.Mutex
-	deferredJobs      []func()
 	mod               *SchemaModel
 	lastIssuedGraphID GraphNodeID
 	lastIssuedTypeID  TypeID
@@ -37,6 +41,7 @@ type Parser struct {
 func NewParser() (*Parser, error) {
 	return &Parser{
 		errorsLock: &sync.Mutex{},
+		parser:     parser.NewParser(),
 	}, nil
 }
 
@@ -90,7 +95,7 @@ func (pr *Parser) SchemaModel() *SchemaModel {
 }
 
 // Parse starts parsing the source code reseting the parser
-func (pr *Parser) Parse(source SourceFile) error {
+func (pr *Parser) Parse(source SourceFile) (parser.Fragment, error) {
 	pr.ResetState()
 	wg := &sync.WaitGroup{}
 
@@ -104,12 +109,15 @@ func (pr *Parser) Parse(source SourceFile) error {
 	}
 
 	// Initialize the lexer
-	lexer := NewLexer(source)
+	lexer := misc.NewLexer(&parser.SourceFile{
+		Name: source.Name,
+		Src:  []rune(source.Src),
+	})
 
 	// Parse file
-	fileFrag := pr.parseScmFile(lexer)
-	if fileFrag == nil {
-		goto END
+	mainFrag, err := pr.parser.Parse(lexer, pr.Grammar())
+	if err != nil {
+		return nil, err
 	}
 
 	// Execute all deferred jobs
@@ -167,10 +175,9 @@ func (pr *Parser) Parse(source SourceFile) error {
 	}
 	wg.Wait()
 
-END:
 	if len(pr.errors) > 0 {
-		return ParseErr{pr.Errors()}
+		return nil, ParseErr{pr.Errors()}
 	}
 
-	return nil
+	return mainFrag, nil
 }

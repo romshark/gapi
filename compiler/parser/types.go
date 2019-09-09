@@ -1,8 +1,10 @@
 package parser
 
+import parser "github.com/romshark/llparser"
+
 // Type represents an abstract type implementation
 type Type interface {
-	Source() Fragment
+	Source() parser.Fragment
 
 	// String returns the designation of the type
 	String() string
@@ -19,15 +21,15 @@ type Type interface {
 }
 
 type terminalType struct {
-	Src  Fragment
+	Src  parser.Fragment
 	Name string
 	ID   TypeID
 }
 
-func (i terminalType) Source() Fragment   { return i.Src }
-func (i terminalType) String() string     { return i.Name }
-func (i terminalType) TerminalType() Type { return nil }
-func (i terminalType) TypeID() TypeID     { return i.ID }
+func (i terminalType) Source() parser.Fragment { return i.Src }
+func (i terminalType) String() string          { return i.Name }
+func (i terminalType) TerminalType() Type      { return nil }
+func (i terminalType) TypeID() TypeID          { return i.ID }
 
 /****************************************************************
 	Alias
@@ -68,7 +70,7 @@ func (t *TypeUnion) IsPure() bool {
 
 // EnumValue represents an enumeration value
 type EnumValue struct {
-	Src  Fragment
+	Src  parser.Fragment
 	Name string
 	Enum *TypeEnum
 }
@@ -88,14 +90,14 @@ func (t *TypeEnum) IsPure() bool { return true }
 
 // TypeOptional represents an optional type implementation
 type TypeOptional struct {
-	Src       Fragment
+	Src       parser.Fragment
 	ID        TypeID
 	StoreType Type
 	Terminal  Type
 }
 
 // Source implements the Type interface
-func (t *TypeOptional) Source() Fragment { return t.Src }
+func (t *TypeOptional) Source() parser.Fragment { return t.Src }
 
 // Name implements the Type interface
 func (t *TypeOptional) Name() string { return "?" + t.StoreType.String() }
@@ -118,14 +120,14 @@ func (t *TypeOptional) IsPure() bool { return t.Terminal.IsPure() }
 
 // TypeList represents a list type implementation
 type TypeList struct {
-	Src       Fragment
+	Src       parser.Fragment
 	ID        TypeID
 	StoreType Type
 	Terminal  Type
 }
 
 // Source implements the Type interface
-func (t *TypeList) Source() Fragment { return t.Src }
+func (t *TypeList) Source() parser.Fragment { return t.Src }
 
 // Name implements the Type interface
 func (t *TypeList) Name() string { return "[]" + t.StoreType.String() }
@@ -150,7 +152,7 @@ func (t *TypeList) IsPure() bool { return t.Terminal.IsPure() }
 type TypeStdNone struct{}
 
 // Source implements the Type interface
-func (t TypeStdNone) Source() Fragment { return nil }
+func (t TypeStdNone) Source() parser.Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdNone) Name() string { return "None" }
@@ -175,7 +177,7 @@ func (t TypeStdNone) IsPure() bool { return false }
 type TypeStdBool struct{}
 
 // Source implements the Type interface
-func (t TypeStdBool) Source() Fragment { return nil }
+func (t TypeStdBool) Source() parser.Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdBool) Name() string { return "Bool" }
@@ -200,7 +202,7 @@ func (t TypeStdBool) IsPure() bool { return true }
 type TypeStdByte struct{}
 
 // Source implements the Type interface
-func (t TypeStdByte) Source() Fragment { return nil }
+func (t TypeStdByte) Source() parser.Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdByte) Name() string { return "Byte" }
@@ -225,7 +227,7 @@ func (t TypeStdByte) IsPure() bool { return true }
 type TypeStdInt32 struct{}
 
 // Source implements the Type interface
-func (t TypeStdInt32) Source() Fragment { return nil }
+func (t TypeStdInt32) Source() parser.Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdInt32) Name() string { return "Int32" }
@@ -250,7 +252,7 @@ func (t TypeStdInt32) IsPure() bool { return true }
 type TypeStdUint32 struct{}
 
 // Source implements the Type interface
-func (t TypeStdUint32) Source() Fragment { return nil }
+func (t TypeStdUint32) Source() parser.Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdUint32) Name() string { return "Uint32" }
@@ -275,7 +277,7 @@ func (t TypeStdUint32) IsPure() bool { return true }
 type TypeStdInt64 struct{}
 
 // Source implements the Type interface
-func (t TypeStdInt64) Source() Fragment { return nil }
+func (t TypeStdInt64) Source() parser.Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdInt64) Name() string { return "Int64" }
@@ -300,7 +302,7 @@ func (t TypeStdInt64) IsPure() bool { return true }
 type TypeStdUint64 struct{}
 
 // Source implements the Type interface
-func (t TypeStdUint64) Source() Fragment { return nil }
+func (t TypeStdUint64) Source() parser.Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdUint64) Name() string { return "Uint64" }
@@ -325,7 +327,7 @@ func (t TypeStdUint64) IsPure() bool { return true }
 type TypeStdFloat64 struct{}
 
 // Source implements the Type interface
-func (t TypeStdFloat64) Source() Fragment { return nil }
+func (t TypeStdFloat64) Source() parser.Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdFloat64) Name() string { return "Float64" }
@@ -350,7 +352,7 @@ func (t TypeStdFloat64) IsPure() bool { return true }
 type TypeStdString struct{}
 
 // Source implements the Type interface
-func (t TypeStdString) Source() Fragment { return nil }
+func (t TypeStdString) Source() parser.Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdString) Name() string { return "String" }
@@ -375,7 +377,7 @@ func (t TypeStdString) IsPure() bool { return true }
 type TypeStdTime struct{}
 
 // Source implements the Type interface
-func (t TypeStdTime) Source() Fragment { return nil }
+func (t TypeStdTime) Source() parser.Fragment { return nil }
 
 // Name implements the Type interface
 func (t TypeStdTime) Name() string { return "Time" }
@@ -412,7 +414,7 @@ func (t *TypeStruct) IsPure() bool { return true }
 // Parameter represents either a resolver property-, a query-, a mutation-
 // or a subscription parameter
 type Parameter struct {
-	Src    Fragment
+	Src    parser.Fragment
 	Target GraphNode
 	Name   string
 	ID     ParamID
