@@ -1,6 +1,10 @@
 package parser
 
-import parser "github.com/romshark/llparser"
+import (
+	"fmt"
+
+	parser "github.com/romshark/llparser"
+)
 
 // onDeclTypeEnum is executed when an enum type declaration is matched
 func (pr *Parser) onDeclTypeEnum(frag parser.Fragment) error {
@@ -12,6 +16,7 @@ func (pr *Parser) onDeclTypeEnum(frag parser.Fragment) error {
 		},
 	}
 
+	values := map[string]parser.Fragment{}
 	offset := uint(0)
 	var valueEl parser.Fragment
 	for {
@@ -32,6 +37,23 @@ func (pr *Parser) onDeclTypeEnum(frag parser.Fragment) error {
 			Enum: newType,
 			Name: string(fieldItems[0].Src()),
 		}
+
+		// Check for redefinitions
+		if defined, isDefined := values[value.Name]; isDefined {
+			pr.err(&pErr{
+				at:   valueEl.Begin(),
+				code: ErrEnumValRedecl,
+				message: fmt.Sprintf(
+					"Redeclaration of enum value %s "+
+						"(previously declared at %s)",
+					value.Name,
+					defined.Begin(),
+				),
+			})
+			return nil
+		}
+		values[value.Name] = valueEl
+
 		newType.Values = append(newType.Values, value)
 	}
 
