@@ -57,6 +57,18 @@ func (pr *Parser) onDeclTypeEnum(frag parser.Fragment) error {
 		newType.Values = append(newType.Values, value)
 	}
 
+	// Check for values
+	if len(newType.Values) < 1 {
+		pr.err(&pErr{
+			at:   frag.Begin(),
+			code: ErrEnumNoVal,
+			message: fmt.Sprintf(
+				"Enum %s is missing values",
+				newType.Name,
+			),
+		})
+	}
+
 	// Define the type
 	pr.onTypeDecl(newType)
 	return nil

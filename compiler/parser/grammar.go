@@ -156,7 +156,7 @@ func (pr *Parser) Grammar() *parser.Rule {
 				keywordEnum,
 				optSpace,
 				symBlkOpen,
-				onePlus{Pattern: seq{
+				zeroPlus{Pattern: seq{
 					optSpace,
 					&parser.Rule{
 						Kind:        FragTkIdnEnumVal,
