@@ -71,10 +71,10 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Expectation: []rune("enum"),
 	}
 
-	/* keywordResolver := termEx{
+	keywordResolver := termEx{
 		Kind:        FragTkKwdRsv,
 		Expectation: []rune("resolver"),
-	} */
+	}
 
 	keywordQuery := termEx{
 		Kind:        FragTkKwdQry,
@@ -212,6 +212,7 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Action: pr.onDeclTypeStruct,
 	}
 
+	// Parameter
 	ruleParameter := &parser.Rule{
 		Kind:        FragParam,
 		Designation: "parameter",
@@ -258,6 +259,52 @@ func (pr *Parser) Grammar() *parser.Rule {
 		},
 	}
 
+	// Resolver type declaration
+	ruleDeclTypeResolver := &parser.Rule{
+		Kind:        FragDeclRsv,
+		Designation: "resolver type declaration",
+		Pattern: seq{
+			checked{
+				Designation: "resolver type name",
+				Fn:          capitalizedCamelCase,
+			},
+			optSpace,
+			symEq,
+			optSpace,
+			keywordResolver,
+			optSpace,
+			symBlkOpen,
+			onePlus{Pattern: seq{
+				optSpace,
+				&parser.Rule{
+					Kind:        FragRsvProp,
+					Designation: "resolver property",
+					Pattern: seq{
+						checked{
+							Designation: "resolver property name",
+							Fn:          lowerCamelCase,
+						},
+						either{
+							seq{
+								term(misc.FrSpace),
+								ruleTypeDesig,
+							},
+							seq{
+								optSpace,
+								ruleParameters,
+								optSpace,
+								ruleTypeDesig,
+							},
+						},
+					},
+				},
+			}},
+			optSpace,
+			symBlkClose,
+		},
+		Action: pr.onDeclTypeResolver,
+	}
+
 	// Query endpoint declaration
 	ruleQueryDecl := &parser.Rule{
 		Kind:        FragDeclQry,
@@ -271,10 +318,18 @@ func (pr *Parser) Grammar() *parser.Rule {
 			symEq,
 			optSpace,
 			keywordQuery,
-			optSpace,
-			opt{Pattern: ruleParameters},
-			optSpace,
-			ruleTypeDesig,
+			either{
+				seq{
+					term(misc.FrSpace),
+					ruleTypeDesig,
+				},
+				seq{
+					optSpace,
+					ruleParameters,
+					optSpace,
+					ruleTypeDesig,
+				},
+			},
 		},
 		Action: pr.onDeclQuery,
 	}
@@ -292,10 +347,19 @@ func (pr *Parser) Grammar() *parser.Rule {
 			symEq,
 			optSpace,
 			keywordMutation,
-			optSpace,
-			opt{Pattern: ruleParameters},
-			optSpace,
-			ruleTypeDesig,
+			term(misc.FrSpace),
+			either{
+				seq{
+					term(misc.FrSpace),
+					ruleTypeDesig,
+				},
+				seq{
+					optSpace,
+					ruleParameters,
+					optSpace,
+					ruleTypeDesig,
+				},
+			},
 		},
 		Action: pr.onDeclMutation,
 	}
@@ -311,6 +375,7 @@ func (pr *Parser) Grammar() *parser.Rule {
 					ruleDeclTypeAlias,
 					ruleDeclTypeEnum,
 					ruleDeclTypeStruct,
+					ruleDeclTypeResolver,
 					ruleQueryDecl,
 					ruleMutationDecl,
 				},

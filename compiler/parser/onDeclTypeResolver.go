@@ -1,10 +1,15 @@
 package parser
 
-import parser "github.com/romshark/llparser"
+import (
+	"fmt"
+
+	parser "github.com/romshark/llparser"
+)
 
 // onDeclTypeResolver is executed when a resolver type declaration is matched
 func (pr *Parser) onDeclTypeResolver(frag parser.Fragment) error {
-	/* elems := frag.Elements()
+	elems := frag.Elements()
+	byName := map[string]parser.Fragment{}
 
 	// Instantiate type
 	newType := &TypeResolver{
@@ -15,36 +20,58 @@ func (pr *Parser) onDeclTypeResolver(frag parser.Fragment) error {
 	}
 
 	offset := uint(0)
-	var el parser.Fragment
+	var propEl parser.Fragment
 	for {
-		// Traverse all fields
-		el, offset = findElement(frag.Elements(), FragStrField, offset)
-		if el == nil {
+		// Traverse all properties
+		propEl, offset = findElement(frag.Elements(), FragRsvProp, offset)
+		if propEl == nil {
 			break
 		}
 		offset++
 
-		fieldItems := el.Elements()
-		field := &StructField{
-			Src:    el,
-			Struct: newType,
-			Name:   string(fieldItems[0].Src()),
+		propItems := propEl.Elements()
+		prop := &ResolverProperty{
+			Src:      propEl,
+			Resolver: newType,
+			Name:     string(propItems[0].Src()),
 		}
-		newType.Fields = append(newType.Fields, field)
-		if !pr.onGraphNode(field) {
+		newType.Properties = append(newType.Properties, prop)
+		if !pr.onGraphNode(prop) {
 			continue
 		}
 
-		// Defer parsing and setting the type of the field
+		// Check for redeclarations
+		if defined, isDefined := byName[prop.Name]; isDefined {
+			pr.err(&pErr{
+				at:   propEl.Begin(),
+				code: ErrResolverPropRedecl,
+				message: fmt.Sprintf(
+					"Redeclaration of resolver property %s "+
+						"(previously declared at %s)",
+					prop.Name,
+					defined.Begin(),
+				),
+			})
+			return nil
+		}
+		byName[prop.Name] = propEl
+
+		// Evaluate parameters if any
+		params, _ := findElement(propEl.Elements(), FragParams, 0)
+		if params != nil {
+			pr.parseParams(params, prop)
+		}
+
+		// Defer parsing and setting the type of the prop
 		pr.deferJob(func() {
 			pr.parseType(
-				fieldItems[2],
-				func(t Type) { field.Type = t },
+				propItems[len(propItems)-1],
+				func(t Type) { prop.Type = t },
 			)
 		})
 	}
 
 	// Define the type
-	pr.onTypeDecl(newType) */
+	pr.onTypeDecl(newType)
 	return nil
 }
