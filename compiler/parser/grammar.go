@@ -31,6 +31,21 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Expectation: []rune("}"),
 	}
 
+	symParOpen := termEx{
+		Kind:        FragTkSymParOpen,
+		Expectation: []rune("("),
+	}
+
+	symParClose := termEx{
+		Kind:        FragTkSymParClose,
+		Expectation: []rune(")"),
+	}
+
+	symSep := termEx{
+		Kind:        FragTkSymSep,
+		Expectation: []rune(","),
+	}
+
 	symOpt := termEx{
 		Kind:        FragTkSymOpt,
 		Expectation: []rune("?"),
@@ -54,6 +69,16 @@ func (pr *Parser) Grammar() *parser.Rule {
 	keywordEnum := termEx{
 		Kind:        FragTkKwdEnm,
 		Expectation: []rune("enum"),
+	}
+
+	/* keywordResolver := termEx{
+		Kind:        FragTkKwdRsv,
+		Expectation: []rune("resolver"),
+	} */
+
+	keywordQuery := termEx{
+		Kind:        FragTkKwdQry,
+		Expectation: []rune("query"),
 	}
 
 	optSpace := opt{Pattern: term(misc.FrSpace)}
@@ -144,20 +169,6 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Action: pr.onDeclTypeEnum,
 	}
 
-	// Struct field
-	ruleStructField := &parser.Rule{
-		Kind:        FragStrField,
-		Designation: "struct field",
-		Pattern: seq{
-			checked{
-				Designation: "struct field name",
-				Fn:          lowerCamelCase,
-			},
-			term(misc.FrSpace),
-			ruleTypeDesig,
-		},
-	}
-
 	// Struct type declaration
 	ruleDeclTypeStruct := &parser.Rule{
 		Kind:        FragDeclStr,
@@ -176,13 +187,91 @@ func (pr *Parser) Grammar() *parser.Rule {
 				symBlkOpen,
 				onePlus{Pattern: seq{
 					optSpace,
-					ruleStructField,
+					&parser.Rule{
+						Kind:        FragStrField,
+						Designation: "struct field",
+						Pattern: seq{
+							checked{
+								Designation: "struct field name",
+								Fn:          lowerCamelCase,
+							},
+							term(misc.FrSpace),
+							ruleTypeDesig,
+						},
+					},
 				}},
 				optSpace,
 				symBlkClose,
 			},
 		},
 		Action: pr.onDeclTypeStruct,
+	}
+
+	ruleParameter := &parser.Rule{
+		Kind:        FragParam,
+		Designation: "parameter",
+		Pattern: seq{
+			// Parameter body
+			checked{
+				Designation: "parameter name",
+				Fn:          lowerCamelCase,
+			},
+			term(misc.FrSpace),
+			ruleTypeDesig,
+		},
+	}
+
+	// Parameter list
+	ruleParameterList := &parser.Rule{
+		Kind:        FragParams,
+		Designation: "parameters list",
+	}
+	ruleParameterList.Pattern = either{
+		seq{
+			ruleParameter,
+			optSpace,
+			symSep,
+			optSpace,
+			ruleParameterList,
+		},
+		seq{
+			ruleParameter,
+			opt{Pattern: symSep},
+		},
+	}
+
+	// Parameters
+	ruleParameters := &parser.Rule{
+		Kind:        FragParams,
+		Designation: "parameters",
+		Pattern: seq{
+			symParOpen,
+			optSpace,
+			zeroPlus{Pattern: ruleParameterList},
+			optSpace,
+			symParClose,
+		},
+	}
+
+	// Resolver type declaration
+	ruleQueryDecl := &parser.Rule{
+		Kind:        FragDeclQry,
+		Designation: "query endpoint declaration",
+		Pattern: seq{
+			checked{
+				Designation: "query endpoint name",
+				Fn:          lowerCamelCase,
+			},
+			optSpace,
+			symEq,
+			optSpace,
+			keywordQuery,
+			optSpace,
+			opt{Pattern: ruleParameters},
+			optSpace,
+			ruleTypeDesig,
+		},
+		Action: pr.onDeclQuery,
 	}
 
 	// File rule
@@ -196,6 +285,7 @@ func (pr *Parser) Grammar() *parser.Rule {
 					ruleDeclTypeAlias,
 					ruleDeclTypeEnum,
 					ruleDeclTypeStruct,
+					ruleQueryDecl,
 				},
 			}},
 			optSpace,

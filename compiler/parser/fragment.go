@@ -16,12 +16,6 @@ const (
 	// FragTkBlkEnd represents a '}' token
 	FragTkBlkEnd
 
-	// FragTkPar represents a '(' token
-	FragTkPar
-
-	// FragTkParEnd represents a ')' token
-	FragTkParEnd
-
 	// FragTkSeq represents a sequence of non-space characters
 	FragTkSeq
 
@@ -45,6 +39,12 @@ const (
 
 	// FragTkSymBlockClose represents a block closing symbol '}'
 	FragTkSymBlockClose
+
+	// FragTkSymParOpen represents a '(' token
+	FragTkSymParOpen
+
+	// FragTkSymParClose represents a ')' token
+	FragTkSymParClose
 
 	// FragTkSymOpt represents an optionality symbol '?'
 	FragTkSymOpt
