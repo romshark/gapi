@@ -69,7 +69,8 @@ func testErrs(t *testing.T, cases map[string]ErrCase) {
 			mainFrag, err := pr.Parse(src(errCase.Src))
 			require.Error(t, err)
 			require.Nil(t, mainFrag)
-			actualErrs := pr.Errors()
+			require.IsType(t, parser.ParseErr{}, err)
+			actualErrs := err.(parser.ParseErr).Errors
 			require.True(t, len(actualErrs) > 0)
 			require.Nil(t, pr.SchemaModel())
 
@@ -151,20 +152,17 @@ func TestDeclSchemaErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"IllegalName": ErrCase{
 			Src: `schema _illegalName
-			enum E { e }
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalName2": ErrCase{
 			Src: `schema illegal_Name
-			enum E { e }
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalName3": ErrCase{
 			Src: `schema IllegalName
-			enum E { e }
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 	})
@@ -175,27 +173,27 @@ func TestDeclTypeErrs(t *testing.T) {
 	testCases := map[string]ErrCase{
 		"IllegalName": ErrCase{
 			Src: `schema test
-			enum _illegalName { e }
-			query q Bool`,
+			_illegalName = enum { e }
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalName2": ErrCase{
 			Src: `schema test
-			enum illegal_Name { e }
-			query q Bool`,
+			illegal_Name = enum { e }
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalName3": ErrCase{
 			Src: `schema test
-			enum Illegal_Name { e }
-			query q Bool`,
+			Illegal_Name = enum { e }
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"RedeclUserType": ErrCase{
 			Src: `schema test
-			enum X { a b }
-			alias X = String
-			query q Bool`,
+			X = enum { a b }
+			X = String
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrTypeRedecl},
 		},
 	}
@@ -217,8 +215,8 @@ func TestDeclTypeErrs(t *testing.T) {
 		testCases[fmt.Sprintf("RedeclPrimitive(%s)", primTypeName)] = ErrCase{
 			Src: fmt.Sprintf(
 				`schema tst
-				enum %s { e }
-				query q Bool`,
+				%s = enum { e }
+				q = query Bool`,
 				primTypeName,
 			),
 			Errs: []ErrCode{parser.ErrTypeRedecl},
@@ -235,6 +233,7 @@ func TestModAliases(t *testing.T) {
 	A1 = String
 	A2 = Uint32
 	A3 = A1
+	q = query Bool
 	`
 
 	test(t, src, func(mod SchemaModel) {
@@ -250,56 +249,56 @@ func TestDeclAliasTypeErrs(t *testing.T) {
 		"IllegalTypeName": ErrCase{
 			Src: `schema test
 			illegalName = String
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName2": ErrCase{
 			Src: `schema test
 			Illegal_Name = String
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName3": ErrCase{
 			Src: `schema test
 			_IllegalName = String
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalAliasedTypeName": ErrCase{
 			Src: `schema test
 			A = illegalName
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalAliasedTypeName2": ErrCase{
 			Src: `schema test
 			A = Illegal_Name
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalAliasedTypeName3": ErrCase{
 			Src: `schema test
 			A = _IllegalName
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"UndefinedAliasedType": ErrCase{
 			Src: `schema test
 			A = Undefined
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrTypeUndef},
 		},
 		"DirectAliasCycle": ErrCase{
 			Src: `schema test
 			A = A
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrAliasRecurs},
 		},
 		"IndirectAliasCycle1": ErrCase{
 			Src: `schema test
 			A = B
 			B = A
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrAliasRecurs},
 		},
 		"IndirectAliasCycle2": ErrCase{
@@ -311,7 +310,7 @@ func TestDeclAliasTypeErrs(t *testing.T) {
 			B = C
 			C = D
 			D = A
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrAliasRecurs},
 		},
 		"MultipleIndirectAliasesCycles": ErrCase{
@@ -323,7 +322,7 @@ func TestDeclAliasTypeErrs(t *testing.T) {
 			H = K
 			K = I
 			I = K
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{
 				parser.ErrAliasRecurs,
 				parser.ErrAliasRecurs,
@@ -337,19 +336,19 @@ func TestDeclAliasTypeErrs(t *testing.T) {
 func TestModEnums(t *testing.T) {
 	src := `schema test
 	
-	enum E1 {
+	E1 = enum {
 		oneVal
 	}
-	enum E2 {
+	E2 = enum {
 		foo
 		bar
 	}
-	enum E3 {
+	E3 = enum {
 		foo1
 		bar2
 		baz3
 	}
-	query q Bool`
+	q = query Bool`
 
 	test(t, src, func(mod SchemaModel) {
 		require.Len(t, mod.QueryEndpoints, 1)
@@ -402,71 +401,71 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"IllegalTypeName": ErrCase{
 			Src: `schema test
-			enum illegalName {
+			illegalName = enum {
 				foo
 				bar
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName2": ErrCase{
 			Src: `schema test
-			enum _IllegalName {
+			_IllegalName = enum {
 				foo
 				bar
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName3": ErrCase{
 			Src: `schema test
-			enum Illegal_Name {
+			Illegal_Name = enum {
 				foo
 				bar
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"RedundantValue": ErrCase{
 			Src: `schema test
-			enum E {
+			E = enum {
 				foo
 				foo
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrEnumValRedecl},
 		},
 		"NoValues": ErrCase{
 			Src: `schema test
-			enum E {}
-			query q Bool`,
+			E = enum {}
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrEnumNoVal},
 		},
 		"IllegalValueIdentifier": ErrCase{
 			Src: `schema test
-			enum E {
+			E = enum {
 				_foo
 				_bar
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalValueIdentifier2": ErrCase{
 			Src: `schema test
-			enum E {
+			E = enum {
 				1foo
 				2bar
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalValueIdentifier3": ErrCase{
 			Src: `schema test
-			enum E {
+			E = enum {
 				fo_o
 				ba_r
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 	})
@@ -476,16 +475,16 @@ func TestDeclEnumTypeErrs(t *testing.T) {
 func TestModUnions(t *testing.T) {
 	src := `schema test
 	
-	union U1 {
+	U1 = union {
 		String
 		Uint32
 	}
-	union U2 {
+	U2 = union {
 		Uint32
 		Float64
 		String
 	}
-	union U3 {
+	U3 = union {
 		String
 		Float64
 		Int32
@@ -557,91 +556,91 @@ func TestDeclUnionTypeErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"IllegalTypeName": ErrCase{
 			Src: `schema test
-			union illegalName {
+			illegalName = union {
 				String
 				Int32
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName2": ErrCase{
 			Src: `schema test
-			union _IllegalName {
+			_IllegalName = union {
 				String
 				Int32
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName3": ErrCase{
 			Src: `schema test
-			union Illegal_Name {
+			Illegal_Name = union {
 				String
 				Int32
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"OneTypeUnion": ErrCase{
 			Src: `schema test
-			union U {
+			U = union {
 				String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrUnionMissingOpts},
 		},
 		"RedundantOptionType": ErrCase{
 			Src: `schema test
-			union U {
+			U = union {
 				String
 				String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrUnionRedund},
 		},
 		"UndefinedType": ErrCase{
 			Src: `schema test
-			union U {
+			U = union {
 				String
 				Undefined
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrTypeUndef},
 		},
 		"SelfReference": ErrCase{
 			Src: `schema test
-			union U {
+			U = union {
 				Int32
 				U
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrUnionRecurs},
 		},
 		"NonTypeElements": ErrCase{
 			Src: `schema test
-			union U {
+			U = union {
 				foo
 				bar
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"NonTypeElements2": ErrCase{
 			Src: `schema test
-			union U {
+			U = union {
 				_foo
 				_bar
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IncludesNone": ErrCase{
 			Src: `schema test
-			union U {
+			U = union {
 				Int32
 				None
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrUnionIncludesNone},
 		},
 	})
@@ -650,14 +649,14 @@ func TestDeclUnionTypeErrs(t *testing.T) {
 // TestModStructs tests struct type declarations in SchemaModel
 func TestModStructs(t *testing.T) {
 	src := `schema test
-	struct S1 {
+	S1 = struct {
 		x String
 	}
-	struct S2 {
+	S2 = struct {
 		x []S2
 		y ?S2
 	}
-	struct S3 {
+	S3 = struct {
 		optional ?String
 		list []Float64
 		matrix [][]Int64
@@ -667,7 +666,7 @@ func TestModStructs(t *testing.T) {
 		optionalListOfOptionals ?[]?Int32
 		optionalListOfOptionalListsOfOptionals ?[]?[]?String
 	}
-	query q Bool`
+	q = query Bool`
 
 	test(t, src, func(mod SchemaModel) {
 		require.Len(t, mod.QueryEndpoints, 1)
@@ -845,127 +844,127 @@ func TestDeclStructTypeErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"IllegalTypeName": ErrCase{
 			Src: `schema test
-			struct illegalName {
+			illegalName = struct {
 				foo String
 				bar String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName2": ErrCase{
 			Src: `schema test
-			struct _IllegalName {
+			_IllegalName = struct {
 				foo String
 				bar String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName3": ErrCase{
 			Src: `schema test
-			struct Illegal_Name {
+			Illegal_Name = struct {
 				foo String
 				bar String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"NoFields": ErrCase{
 			Src: `schema test
-			struct S {}
-			query q Bool`,
+			S = struct {}
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrStructNoFields},
 		},
 		"RedundantField": ErrCase{
 			Src: `schema test
-			struct S {
+			S = struct {
 				foo String
 				foo String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrStructFieldRedecl},
 		},
 		"IllegalFieldIdentifier": ErrCase{
 			Src: `schema test
-			struct S {
+			S = struct {
 				_foo String
 				_bar String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalFieldIdentifier2": ErrCase{
 			Src: `schema test
-			struct S {
+			S = struct {
 				1foo String
 				2bar String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalFieldIdentifier3": ErrCase{
 			Src: `schema test
-			struct S {
+			S = struct {
 				fo_o String
 				ba_r String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"RecursDirect": ErrCase{
 			Src: `schema test
-			struct S {
+			S = struct {
 				s S
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{
 				parser.ErrStructRecurs, // S.s -> S
 			},
 		},
 		"RecursIndirect": ErrCase{
 			Src: `schema test
-			struct X {
+			X = struct {
 				s S
 			}
-			struct S {
+			S = struct {
 				x X
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{
 				parser.ErrStructRecurs, // X.s -> S.x -> X
 			},
 		},
 		"RecursIndirect2": ErrCase{
 			Src: `schema test
-			struct Y {
+			Y = struct {
 				s S
 			}
-			struct X {
+			X = struct {
 				y Y
 			}
-			struct S {
+			S = struct {
 				x X
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{
 				parser.ErrStructRecurs, // Y.s -> S.x -> X.y -> Y
 			},
 		},
 		"RecursIndirect3": ErrCase{
 			Src: `schema test
-			struct Y {
+			Y = struct {
 				s S
 				z S
 			}
-			struct X {
+			X = struct {
 				y Y
 				s S
 			}
-			struct S {
+			S = struct {
 				x X
 				y Y
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{
 				parser.ErrStructRecurs, // S.x -> X.y -> Y.s -> S
 				parser.ErrStructRecurs, // S.y -> Y.z -> S
@@ -973,19 +972,19 @@ func TestDeclStructTypeErrs(t *testing.T) {
 		},
 		"RecursMultiple": ErrCase{
 			Src: `schema test
-			struct A {
+			A = struct {
 				a A
 			}
-			struct B {
+			B = struct {
 				b B
 			}
-			struct X {
+			X = struct {
 				y Y
 			}
-			struct Y {
+			Y = struct {
 				x X
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{
 				parser.ErrStructRecurs, // A.a -> A
 				parser.ErrStructRecurs, // B.b -> B
@@ -998,16 +997,16 @@ func TestDeclStructTypeErrs(t *testing.T) {
 // TestModResolvers tests resolver type declarations in SchemaModel
 func TestModResolvers(t *testing.T) {
 	src := `schema test
-	resolver R1 {
+	R1 = resolver {
 		x String
 	}
-	resolver R2 {
+	R2 = resolver {
 		r R1
 		x R2
 		y []R2
 		z ?R3
 	}
-	resolver R3 {
+	R3 = resolver {
 		optional ?String
 		list []Float64
 		matrix [][]Int64
@@ -1017,11 +1016,11 @@ func TestModResolvers(t *testing.T) {
 		optionalListOfOptionals ?[]?Int32
 		optionalListOfOptionalListsOfOptionals ?[]?[]?String
 	}
-	resolver R4 {
+	R4 = resolver {
 		x(x Int32) Int32
 		y(x Int32, y ?String, z ?[]Bool) String
 	}
-	query q Bool`
+	q = query Bool`
 
 	test(t, src, func(mod SchemaModel) {
 		require.Len(t, mod.QueryEndpoints, 1)
@@ -1317,106 +1316,106 @@ func TestDeclResolverTypeErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"IllegalTypeName": ErrCase{
 			Src: `schema test
-			resolver illegalName {
+			illegalName = resolver {
 				foo String
 				bar String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName2": ErrCase{
 			Src: `schema test
-			resolver _IllegalName {
+			_IllegalName = resolver {
 				foo String
 				bar String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName3": ErrCase{
 			Src: `schema test
-			resolver Illegal_Name {
+			Illegal_Name = resolver {
 				foo String
 				bar String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"NoProps": ErrCase{
 			Src: `schema test
-			resolver S {}
-			query q Bool`,
+			S = resolver {}
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrResolverNoProps},
 		},
 		"RedundantProp": ErrCase{
 			Src: `schema test
-			resolver S {
+			S = resolver {
 				foo String
 				foo String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrResolverPropRedecl},
 		},
 		"IllegalPropIdentifier": ErrCase{
 			Src: `schema test
-			resolver S {
+			S = resolver {
 				_foo String
 				_bar String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalPropIdentifier2": ErrCase{
 			Src: `schema test
-			resolver S {
+			S = resolver {
 				1foo String
 				2bar String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalPropIdentifier3": ErrCase{
 			Src: `schema test
-			resolver S {
+			S = resolver {
 				fo_o String
 				ba_r String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalPropParamIdentifier": ErrCase{
 			Src: `schema test
-			resolver S {
+			S = resolver {
 				foo(_foo String) String
 				bar(_bar String) String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalPropParamIdentifier2": ErrCase{
 			Src: `schema test
-			resolver S {
+			S = resolver {
 				foo(1foo String) String
 				bar(2bar String) String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalPropParamIdentifier3": ErrCase{
 			Src: `schema test
-			resolver S {
+			S = resolver {
 				foo(fo_o String) String
 				bar(ba_r String) String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"RedundantPropParam": ErrCase{
 			Src: `schema test
-			resolver S {
+			S = resolver {
 				foo(foo String, foo Int32) String
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrParamRedecl},
 		},
 	})
@@ -1425,18 +1424,18 @@ func TestDeclResolverTypeErrs(t *testing.T) {
 // TestModQueries tests query declarations in SchemaModel
 func TestModQueries(t *testing.T) {
 	src := `schema test
-	struct Foo {
+	Foo = struct {
 		foo String
 	}
-	resolver Bar {
+	Bar = resolver {
 		bar String
 	}
-	query foo Foo
-	query bar Bar
-	query str String
-	query foo2(foo Foo) Foo
-	query bar2(bar Int32, baz Float64) Bar
-	query baz(
+	foo = query Foo
+	bar = query Bar
+	str = query String
+	foo2 = query(foo Foo) Foo
+	bar2 = query(bar Int32, baz Float64) Bar
+	baz = query(
 		first Int32,
 		second Bool,
 		third Uint64,
@@ -1564,18 +1563,18 @@ func TestModQueries(t *testing.T) {
 // TestModMutations tests mutation declarations in SchemaModel
 func TestModMutations(t *testing.T) {
 	src := `schema test
-	struct Foo {
+	Foo = struct {
 		foo String
 	}
-	resolver Bar {
+	Bar = resolver {
 		bar String
 	}
-	mutation foo Foo
-	mutation bar Bar
-	mutation str String
-	mutation foo2(foo Foo) Foo
-	mutation bar2(bar Int32, baz Float64) Bar
-	mutation baz(
+	foo = mutation Foo
+	bar = mutation Bar
+	str = mutation String
+	foo2 = mutation(foo Foo) Foo
+	bar2 = mutation(bar Int32, baz Float64) Bar
+	baz = mutation(
 		first Int32,
 		second Bool,
 		third Uint64,
@@ -1705,20 +1704,20 @@ func TestDeclQueryErrs(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"IllegalTypeName": ErrCase{
 			Src: `schema test
-			query IllegalName String
-			query q Bool`,
+			IllegalName = query String
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName2": ErrCase{
 			Src: `schema test
-			query _illegalName String
-			query q Bool`,
+			_illegalName = query String
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 		"IllegalTypeName3": ErrCase{
 			Src: `schema test
-			query illegal_Name String
-			query q Bool`,
+			illegal_Name = query String
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrSyntax},
 		},
 	})
@@ -1729,73 +1728,73 @@ func TestParamImpureType(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"Resolver": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			query q(param R) String`,
+			q = query(param R) String`,
 			Errs: []ErrCode{parser.ErrParamImpure},
 		},
 		"ImpureUnion": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			union U {
+			U = union {
 				R
 				Int32
 			}
-			query q(param U) String`,
+			q = query(param U) String`,
 			Errs: []ErrCode{parser.ErrParamImpure},
 		},
 		"ImpureAliasToResolver": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			alias A = R
-			query q(param A) String`,
+			A = R
+			q = query(param A) String`,
 			Errs: []ErrCode{parser.ErrParamImpure},
 		},
 		"ImpureUnionOfImpureAlias": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			alias A = R
-			union U {
+			A = R
+			U = union {
 				Int32
 				A
 			}
-			query q(param U) String`,
+			q = query(param U) String`,
 			Errs: []ErrCode{parser.ErrParamImpure},
 		},
 		"ImpureOptional": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			query q(param ?R) String`,
+			q = query(param ?R) String`,
 			Errs: []ErrCode{parser.ErrParamImpure},
 		},
 		"ImpureList": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			query q(param []R) String`,
+			q = query(param []R) String`,
 			Errs: []ErrCode{parser.ErrParamImpure},
 		},
 		"ImpureOptionalList": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			query q(param ?[]R) String`,
+			q = query(param ?[]R) String`,
 			Errs: []ErrCode{parser.ErrParamImpure},
 		},
 		"None": ErrCase{
 			Src: `schema test
-			query q(param None) String`,
+			q = query(param None) String`,
 			Errs: []ErrCode{parser.ErrParamImpure},
 		},
 	})
@@ -1806,97 +1805,97 @@ func TestStructImpureFieldType(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"Resolver": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			struct S {
+			S = struct {
 				f R
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrStructFieldImpure},
 		},
 		"ImpureUnion": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			union U {
+			U = union {
 				R
 				Int32
 			}
-			struct S {
+			S = struct {
 				f U
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrStructFieldImpure},
 		},
 		"ImpureAliasToResolver": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			alias A = R
-			struct S {
+			A = R
+			S = struct {
 				f A
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrStructFieldImpure},
 		},
 		"ImpureUnionOfImpureAlias": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			alias A = R
-			union U {
+			A = R
+			U = union {
 				Int32
 				A
 			}
-			struct S {
+			S = struct {
 				f U
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrStructFieldImpure},
 		},
 		"ImpureOptional": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			struct S {
+			S = struct {
 				f ?R
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrStructFieldImpure},
 		},
 		"ImpureList": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			struct S {
+			S = struct {
 				f []R
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrStructFieldImpure},
 		},
 		"ImpureOptionalList": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				x Int32
 			}
-			struct S {
+			S = struct {
 				f ?[]R
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrStructFieldImpure},
 		},
 		"None": ErrCase{
 			Src: `schema test
-			struct S {
+			S = struct {
 				f None
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrStructFieldImpure},
 		},
 	})
@@ -1907,54 +1906,54 @@ func TestTypeErr(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"StructFieldOptionalChain": ErrCase{
 			Src: `schema test
-			struct S {
+			S = struct {
 				optChain ??T
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrTypeOptChain},
 		},
 		"StructFieldOptionalChain2": ErrCase{
 			Src: `schema test
-			struct S {
+			S = struct {
 				optChain []?[]??T
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrTypeOptChain},
 		},
 		"ResolverPropOptionalChain": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				optChain ??T
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrTypeOptChain},
 		},
 		"ResolverPropOptionalChain2": ErrCase{
 			Src: `schema test
-			resolver R {
+			R = resolver {
 				optChain []?[]??T
 			}
-			query q Bool`,
+			q = query Bool`,
 			Errs: []ErrCode{parser.ErrTypeOptChain},
 		},
 		"QueryUndefinedType": ErrCase{
 			Src: `schema test
-			query q Undefined`,
+			q = query Undefined`,
 			Errs: []ErrCode{parser.ErrTypeUndef},
 		},
 		"QueryParamUndefinedType": ErrCase{
 			Src: `schema test
-			query q(x Undefined) String`,
+			q = query(x Undefined) String`,
 			Errs: []ErrCode{parser.ErrTypeUndef},
 		},
 		"MutationUndefinedType": ErrCase{
 			Src: `schema test
-			mutation m Undefined`,
+			m = mutation Undefined`,
 			Errs: []ErrCode{parser.ErrTypeUndef},
 		},
 		"MutationParamUndefinedType": ErrCase{
 			Src: `schema test
-			mutation m(x Undefined) String`,
+			m = mutation(x Undefined) String`,
 			Errs: []ErrCode{parser.ErrTypeUndef},
 		},
 	})
@@ -1966,10 +1965,10 @@ func TestNoEndpoints(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"StructFieldOptionalChain": ErrCase{
 			Src: `schema test
-			struct Foo {
+			Foo = struct {
 				foo String
 			}
-			resolver Bar {
+			Bar = resolver {
 				bar String
 			}`,
 			Errs: []ErrCode{parser.ErrNoEndpoints},
@@ -1983,10 +1982,10 @@ func TestIllegalNoneTypes(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"NoneQueryEndpoints": ErrCase{
 			Src: `schema test
-			query q1 ?None
-			query q2 []None
-			query q3 []?None
-			query q4 ?[]?None`,
+			q1 = query ?None
+			q2 = query []None
+			q3 = query []?None
+			q4 = query ?[]?None`,
 			Errs: []ErrCode{
 				parser.ErrSyntax,
 				parser.ErrSyntax,
@@ -2003,20 +2002,20 @@ func TestGraphRootNodeRedecl(t *testing.T) {
 	testErrs(t, map[string]ErrCase{
 		"Queries": ErrCase{
 			Src: `schema test
-			query q String
-			query q Int32`,
+			q = query String
+			q = query Int32`,
 			Errs: []ErrCode{parser.ErrGraphRootNodeRedecl},
 		},
 		"Mutations": ErrCase{
 			Src: `schema test
-			mutation m String
-			mutation m Int32`,
+			m = mutation String
+			m = mutation Int32`,
 			Errs: []ErrCode{parser.ErrGraphRootNodeRedecl},
 		},
 		"QueryMutation": ErrCase{
 			Src: `schema test
-			query q String
-			mutation q Int32`,
+			q = query String
+			q = mutation Int32`,
 			Errs: []ErrCode{parser.ErrGraphRootNodeRedecl},
 		},
 	})

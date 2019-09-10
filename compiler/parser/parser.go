@@ -65,24 +65,34 @@ func (pr *Parser) deferJob(job func()) {
 
 // err logs a parser error returning true if an error was logged,
 // otherwise returning false
-func (pr *Parser) err(err Error) bool {
+func (pr *Parser) err(err error) bool {
 	if err == nil {
 		return false
 	}
-	if err.Code() == 0 {
-		panic("invalid error code (0)")
+
+	var er Error
+
+	switch val := err.(type) {
+	case nil:
+		return false
+	case *parser.ErrUnexpectedToken:
+		er = &pErr{
+			code:    ErrSyntax,
+			message: val.Error(),
+			at:      val.At,
+		}
+	case Error:
+		er = val
+	case error:
+		er = &pErr{
+			message: val.Error(),
+		}
 	}
+
 	pr.errorsLock.Lock()
-	pr.errors = append(pr.errors, err)
+	pr.errors = append(pr.errors, er)
 	pr.errorsLock.Unlock()
 	return true
-}
-
-// Errors returns a copy of the list of all compiler errors
-func (pr *Parser) Errors() []Error {
-	errs := make([]Error, len(pr.errors))
-	copy(errs, pr.errors)
-	return errs
 }
 
 // SchemaModel returns a copy of the schema model or nil if parsing failed
@@ -117,7 +127,8 @@ func (pr *Parser) Parse(source SourceFile) (parser.Fragment, error) {
 	// Parse file
 	mainFrag, err := pr.parser.Parse(lexer, pr.Grammar())
 	if err != nil {
-		return nil, err
+		pr.err(err)
+		return nil, ParseErr{pr.errors}
 	}
 
 	// Execute all deferred jobs
@@ -175,8 +186,10 @@ func (pr *Parser) Parse(source SourceFile) (parser.Fragment, error) {
 	}
 	wg.Wait()
 
+	pr.errorsLock.Lock()
+	defer pr.errorsLock.Unlock()
 	if len(pr.errors) > 0 {
-		return nil, ParseErr{pr.Errors()}
+		return nil, ParseErr{pr.errors}
 	}
 
 	return mainFrag, nil
