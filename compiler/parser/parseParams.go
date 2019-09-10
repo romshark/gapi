@@ -59,6 +59,9 @@ func (pr *Parser) parseParams(
 
 	var parseGroup func(parser.Fragment)
 	parseGroup = func(frag parser.Fragment) {
+		if frag == nil {
+			return
+		}
 		for _, el := range frag.Elements() {
 			switch el.Kind() {
 			case FragParam:
