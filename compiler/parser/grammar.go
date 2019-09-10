@@ -81,6 +81,11 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Expectation: []rune("query"),
 	}
 
+	keywordMutation := termEx{
+		Kind:        FragTkKwdMut,
+		Expectation: []rune("mutation"),
+	}
+
 	optSpace := opt{Pattern: term(misc.FrSpace)}
 
 	// File header
@@ -253,7 +258,7 @@ func (pr *Parser) Grammar() *parser.Rule {
 		},
 	}
 
-	// Resolver type declaration
+	// Query endpoint declaration
 	ruleQueryDecl := &parser.Rule{
 		Kind:        FragDeclQry,
 		Designation: "query endpoint declaration",
@@ -274,6 +279,27 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Action: pr.onDeclQuery,
 	}
 
+	// Mutation endpoint declaration
+	ruleMutationDecl := &parser.Rule{
+		Kind:        FragDeclMut,
+		Designation: "mutation endpoint declaration",
+		Pattern: seq{
+			checked{
+				Designation: "mutation endpoint name",
+				Fn:          lowerCamelCase,
+			},
+			optSpace,
+			symEq,
+			optSpace,
+			keywordMutation,
+			optSpace,
+			opt{Pattern: ruleParameters},
+			optSpace,
+			ruleTypeDesig,
+		},
+		Action: pr.onDeclMutation,
+	}
+
 	// File rule
 	return &parser.Rule{
 		Designation: "schema file",
@@ -286,6 +312,7 @@ func (pr *Parser) Grammar() *parser.Rule {
 					ruleDeclTypeEnum,
 					ruleDeclTypeStruct,
 					ruleQueryDecl,
+					ruleMutationDecl,
 				},
 			}},
 			optSpace,
