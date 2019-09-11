@@ -71,6 +71,11 @@ func (pr *Parser) Grammar() *parser.Rule {
 		Expectation: []rune("enum"),
 	}
 
+	keywordUnion := termEx{
+		Kind:        FragTkKwdUnn,
+		Expectation: []rune("union"),
+	}
+
 	keywordResolver := termEx{
 		Kind:        FragTkKwdRsv,
 		Expectation: []rune("resolver"),
@@ -172,6 +177,31 @@ func (pr *Parser) Grammar() *parser.Rule {
 			},
 		},
 		Action: pr.onDeclTypeEnum,
+	}
+
+	// Union type declaration
+	ruleDeclTypeUnion := &parser.Rule{
+		Kind:        FragDeclUnn,
+		Designation: "union type declaration",
+		Pattern: seq{
+			checked{
+				Designation: "union type name",
+				Fn:          capitalizedCamelCase,
+			},
+			optSpace,
+			symEq,
+			optSpace,
+			keywordUnion,
+			optSpace,
+			symBlkOpen,
+			zeroPlus{Pattern: seq{
+				optSpace,
+				ruleTypeDesig,
+			}},
+			optSpace,
+			symBlkClose,
+		},
+		Action: pr.onDeclTypeUnion,
 	}
 
 	// Struct type declaration
@@ -374,6 +404,7 @@ func (pr *Parser) Grammar() *parser.Rule {
 				either{
 					ruleDeclTypeAlias,
 					ruleDeclTypeEnum,
+					ruleDeclTypeUnion,
 					ruleDeclTypeStruct,
 					ruleDeclTypeResolver,
 					ruleQueryDecl,
