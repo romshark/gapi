@@ -17,7 +17,6 @@ func (pr *Parser) onDeclTypeUnion(frag parser.Fragment) error {
 	}
 
 	types := map[string]parser.Fragment{}
-	deferOptionsCounter := 0
 	offset := uint(0)
 	var typeEl parser.Fragment
 	for {
@@ -67,8 +66,6 @@ func (pr *Parser) onDeclTypeUnion(frag parser.Fragment) error {
 		typeElement := typeEl
 		pr.deferJob(func() {
 			pr.parseType(typeElement, func(tp Type) {
-				deferOptionsCounter++
-
 				// Ensure the union type doesn't include None as an option
 				if _, isNone := tp.(TypeStdNone); isNone {
 					pr.err(&pErr{
@@ -83,22 +80,22 @@ func (pr *Parser) onDeclTypeUnion(frag parser.Fragment) error {
 				}
 
 				newType.Types = append(newType.Types, tp)
-
-				if deferOptionsCounter >= len(types) {
-					// Check for values
-					if len(newType.Types) < 1 {
-						pr.err(&pErr{
-							at:   frag.Begin(),
-							code: ErrUnionMissingOpts,
-							message: fmt.Sprintf(
-								"Union %s is missing type options",
-								newType.Name,
-							),
-						})
-					}
-				}
 			})
 		})
+	}
+
+	// Make sure there's at least 2 options
+	if len(types) < 2 {
+		pr.err(&pErr{
+			at:   frag.Begin(),
+			code: ErrUnionMissingOpts,
+			message: fmt.Sprintf(
+				"Union %s is missing type options (%d out of at least 2)",
+				newType.Name,
+				len(types),
+			),
+		})
+		return nil
 	}
 
 	// Define the type
