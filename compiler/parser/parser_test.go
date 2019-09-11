@@ -490,7 +490,7 @@ func TestModUnions(t *testing.T) {
 		Int32
 		Int64
 	}
-	query q Bool`
+	q = query Bool`
 
 	test(t, src, func(mod SchemaModel) {
 		require.Len(t, mod.QueryEndpoints, 1)
